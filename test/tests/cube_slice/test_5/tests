@@ -1,0 +1,14 @@
+[Tests]
+  [test]
+    [run]
+      type=RunCommand
+      command = './run.sh ../../../../hippo-opt'
+    []
+    [verify_num_nodes]
+      type=RunCommand
+      command = '../scripts/check.sh config run_out.e'
+      prereq=test/run
+    []
+  []
+[]
+          

@@ -1,0 +1,4 @@
+Copied from the OpenFOAM examples (with minor changes)
+Problems to run during development - added here for conveneince 
+
+NOT (yet?) Proper tests integrated into the testing framework
