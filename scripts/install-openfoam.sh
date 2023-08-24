@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+OUT_DIR="$(dirname ${SCRIPT_DIR})/external/openfoam"
 USAGE="usage: install-openfoam.sh [-h] [-o DIRECTORY]
 
 Install OpenFOAM for Ubuntu, applying the patch required by hippo.
 
 options:
   -o <DIRECTORY>  the directory to install OpenFOAM within
+                  [default: '${OUT_DIR}']
   -h              show help and exit
 "
 
@@ -17,7 +20,6 @@ for REQ in "${REQUIREMENTS[@]}"; do
     fi
 done
 
-OUT_DIR="$(pwd)"
 while getopts "o:h" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}"
@@ -30,13 +32,7 @@ done
 
 OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-10"
 OPENFOAM_REV="d72c3ccf156ba0191a0a090e651a0da0a96a83a3"
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-10"
-
-# (
-#     cd "${SCRIPT_DIR}" \
-#     && bash ./get_openfoam.sh "${OPENFOAM_DIR}"
-# )
 
 # Fetch and patch OpenFOAM
 mkdir -p "${OPENFOAM_DIR}"
