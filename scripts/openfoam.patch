@@ -270,6 +270,26 @@ index e8de3d053..56735790a 100644
      void runPar(int& argc, char**& argv, const bool needsThread)
      {
          RunPar = true;
+diff --git a/src/Pstream/dummy/UPstream.C b/src/Pstream/dummy/UPstream.C
+index f0553baee..95a67396d 100644
+--- a/src/Pstream/dummy/UPstream.C
++++ b/src/Pstream/dummy/UPstream.C
+@@ -42,6 +42,15 @@ bool Foam::UPstream::init(int& argc, char**& argv, const bool needsThread)
+     return false;
+ }
+ 
++bool Foam::UPstream::init(void *, bool needsThread) {
++    FatalErrorInFunction
++        << "Trying to use the dummy Pstream library." << nl
++        << "This dummy library cannot be used in parallel mode"
++        << Foam::exit(FatalError);
++
++    return false;
++}
++
+ 
+ void Foam::UPstream::exit(int errnum)
+ {
 diff --git a/src/Pstream/mpi/UPstream.C b/src/Pstream/mpi/UPstream.C
 index 03433b398..d0821ae8c 100644
 --- a/src/Pstream/mpi/UPstream.C
