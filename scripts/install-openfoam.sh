@@ -1,32 +1,46 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-OUT_DIR="$(dirname ${SCRIPT_DIR})/external/openfoam"
+OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
 USAGE="usage: install-openfoam.sh [-h] [-o DIRECTORY]
 
-Install OpenFOAM for Ubuntu, applying the patch required by hippo.
+Install OpenFOAM-10 for Ubuntu, applying the patch required by hippo.
+
+Note that you will need to install OpenFOAM's requirements separately.
+You can do this by running:
+
+    apt install \\
+        libqt5opengl5-dev \\
+        libqt5x11extras5-dev \\
+        libxt-dev \\
+        mpich \\
+        paraview \\
+        paraview-dev \\
+        qtbase5-dev \\
+        qttools5-dev \\
+        qttools5-dev-tools
 
 options:
-  -o <DIRECTORY>  the directory to install OpenFOAM within
+  -o <DIRECTORY>  the directory to install OpenFOAM within. This will be
+                  created if it doesn't exist
                   [default: '${OUT_DIR}']
   -h              show help and exit
 "
 
-REQUIREMENTS=("getopts" "tar" "wget")
-for REQ in "${REQUIREMENTS[@]}"; do
+SCRIPT_REQUIREMENTS=("getopts" "tar")
+for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     if ! command -v "${REQ}" > /dev/null; then
-        >&2 echo "install-openfoam: error: ${REQ} is not installed"
+        >&2 echo "install-openfoam: error: '${REQ}' is not installed and is required to run this script"
         exit 1
     fi
 done
 
 while getopts "o:h" opt; do
     case "${opt}" in
-        o) OUT_DIR="${OPTARG}"
-            ;;
-        h) echo "${USAGE}" && exit 0
-            ;;
-        *)  exit 1
+        o) OUT_DIR="${OPTARG}" ;;
+        h) echo "${USAGE}" && exit 0 ;;
+        *) exit 1
     esac
 done
 
