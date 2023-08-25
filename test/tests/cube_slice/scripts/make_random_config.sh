@@ -11,4 +11,3 @@ BEGIN {
             rint(0,2), rint(0,2), rint(0,2),
             rint(0,2), rint(0,2), rint(0,2));
 } ' > $1
-    

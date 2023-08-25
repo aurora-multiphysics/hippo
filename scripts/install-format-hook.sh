@@ -23,4 +23,3 @@ fi
 ' > $hookfile
 
 chmod a+x $hookfile
-

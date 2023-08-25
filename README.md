@@ -25,7 +25,7 @@ Follow instructions [Here](https://mooseframework.inl.gov/getting_started/instal
 
 ### Environment
 
-Set (recommend [direnv](https://direnv.net/) for this) 
+Set (recommend [direnv](https://direnv.net/) for this)
 
 ```
 MOOSE_DIR=/path/to/moose/dir

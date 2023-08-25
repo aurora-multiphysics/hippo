@@ -77,16 +77,16 @@ struct EnvImpl
 
 #if 0
   auto
-  getPatchInterpolator(int patch_id) 
+  getPatchInterpolator(int patch_id)
   {
-    return Foam::PrimitivePatchInterpolation(patch_id); 
+    return Foam::PrimitivePatchInterpolation(patch_id);
   }
 
   auto
-  getPatchInterpolator(std::string const & patch_name) 
+  getPatchInterpolator(std::string const & patch_name)
   {
     auto patch_id = getPatchID(patch_name)
-    return Foam::PrimitivePatchInterpolation(patch_id); 
+    return Foam::PrimitivePatchInterpolation(patch_id);
   }
 #endif
   Foam::Field<double> interpolateFaceToNode(int patch_id, Foam::fvPatchField<double> const & field)
