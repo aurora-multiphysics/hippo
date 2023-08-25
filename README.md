@@ -38,8 +38,25 @@ source /path/to/OpenFOAM/etc/bashrc
 Once everything else is built then (in theory) should be able to `make` in the root directory (or `METHOD=dbg make` for a debug build
 
 ### Tests
-Some basic tests can be run with `./run_tests`
 
+Some basic tests can be run with `./run_tests`.
+
+### Quality
+
+Some code quality checks are set up with
+[`pre-commit`](https://pre-commit.com/).
+
+Install the pre-commit hooks to run on each new commit:
+
+```console
+pre-commit install
+```
+
+Run the hooks manually:
+
+```console
+pre-commit run --all
+```
 
 # NOTES
 
