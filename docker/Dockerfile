@@ -25,7 +25,7 @@ COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 
 # Install OpenFOAM
-RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam
+RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s
 
 # Set required environment variables
 ENV MOOSE_DIR=/opt/moose

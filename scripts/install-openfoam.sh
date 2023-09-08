@@ -2,8 +2,9 @@
 # shellcheck disable=SC1091
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+STRIP_SOURCES=0
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
-USAGE="usage: install-openfoam.sh [-h] [-o DIRECTORY]
+USAGE="usage: install-openfoam.sh [-h] [-s] [-o DIRECTORY]
 
 Install OpenFOAM-10 for Ubuntu, applying the patch required by hippo.
 
@@ -25,6 +26,8 @@ options:
   -o <DIRECTORY>  the directory to install OpenFOAM within. This will be
                   created if it doesn't exist
                   [default: '${OUT_DIR}']
+  -s              if given, remove all OpenFOAM sources, keeping only the build
+                  artifacts
   -h              show help and exit
 "
 
@@ -36,9 +39,10 @@ for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     fi
 done
 
-while getopts "o:h" opt; do
+while getopts "o:sh" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}" ;;
+        s) STRIP_SOURCES=1 ;;
         h) echo "${USAGE}" && exit 0 ;;
         *) exit 1
     esac
@@ -73,5 +77,13 @@ wmRefresh
 # Build OpenFOAM
 (
     cd "${OPENFOAM_DIR}" \
-    && ./Allwmake -j
+    && ./Allwmake -j -s -q -l
 )
+
+if [ ${STRIP_SOURCES} -eq 1 ]; then
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/wmake"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/doc"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/src"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/test"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/tutorials"
+fi
