@@ -14,7 +14,7 @@ namespace Foam
 class polyPatch;
 template <typename T>
 class List;
-typedef int label;
+typedef long int label;
 typedef List<label> labelList;
 template <typename T>
 class autoPtr;

@@ -63,6 +63,16 @@ git -C "${OPENFOAM_DIR}" apply "${SCRIPT_DIR}/openfoam.patch"
 # Set up OpenFOAM
 source "${OPENFOAM_DIR}/etc/bashrc"
 
+echo "Hippo installing OpenFOAM-10 with options:"
+echo "------------------------------------------"
+echo "  WM_ARCH_OPTION:      ${WM_ARCH_OPTION}"
+echo "  WM_COMPILE_OPTION:   ${WM_COMPILE_OPTION}"
+echo "  WM_COMPILER_TYPE:    ${WM_COMPILER_TYPE}"
+echo "  WM_COMPILER:         ${WM_COMPILER}"
+echo "  WM_LABEL_SIZE:       ${WM_LABEL_SIZE}"
+echo "  WM_MPLIB:            ${WM_MPLIB}"
+echo "  WM_PRECISION_OPTION: ${WM_PRECISION_OPTION}"
+
 # Fetch and install OpenFOAM's third-party dependencies
 wget -O - http://dl.openfoam.org/third-party/10 | tar xvz
 mv "ThirdParty-10-version-10" "${THIRDPARTY_DIR}"
@@ -77,7 +87,7 @@ wmRefresh
 # Build OpenFOAM
 (
     cd "${OPENFOAM_DIR}" \
-    && ./Allwmake -j -s -q -l
+    && ./Allwmake -j -s -q
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then

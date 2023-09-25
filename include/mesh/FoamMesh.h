@@ -11,7 +11,7 @@ namespace Foam
 {
 template <typename T>
 class IOList;
-typedef int label;
+typedef long int label;
 typedef IOList<label> labelIOList;
 }
 
