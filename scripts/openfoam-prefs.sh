@@ -27,7 +27,7 @@ export WM_PRECISION_OPTION=DP
 
 #- Label size:
 #    WM_LABEL_SIZE = 32 | 64
-export WM_LABEL_SIZE=64
+export WM_LABEL_SIZE=32
 
 #- Optimised, debug, profiling:
 #    WM_COMPILE_OPTION = Opt | Debug | Prof

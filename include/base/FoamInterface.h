@@ -14,7 +14,7 @@ namespace Foam
 class polyPatch;
 template <typename T>
 class List;
-typedef long int label;
+typedef int label;
 typedef List<label> labelList;
 template <typename T>
 class autoPtr;
@@ -75,3 +75,4 @@ public:
   Foam::Field<double> interpolateFaceToNode(int patch_id, Foam::fvPatchField<double> const & field);
 };
 }
+
