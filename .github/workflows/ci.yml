@@ -1,0 +1,30 @@
+# Lint, build, and test hippo on a push to main or a pull request
+
+name: hippo-ci
+permissions: read-all
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/hippo/hippo:latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Quality Checks
+      run: |
+        pip install pre-commit
+        pre-commit install
+        pre-commit run --all
+    - name: Build
+      run: |
+        make
+    - name: Test
+      run: |
+        # Fully expect this to fail as it requires 8 cores, but the GitHub
+        # runners only have 2...
+        ./run_tests
