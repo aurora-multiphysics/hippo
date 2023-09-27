@@ -1,3 +1,15 @@
+# Docker file that can be used to build/run Hippo.
+#
+# This does not add a copy of hippo into the container. The expectation
+# is that the user mounts a local clone of hippo when launching the
+# container:
+#
+#   docker run -ti -v <path/to/hippo>:/opt/hippo/ hippo /bin/bash
+#
+# This container is not intended to be used as a development
+# environment, but it does provide a stable place to build and run
+# hippo (for example in a CI pipeline).
+
 FROM idaholab/moose:aff4e7127b5492794595c14a49115b75bd159b31
 
 WORKDIR "/opt/hippo"
