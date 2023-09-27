@@ -1,3 +1,5 @@
+# Build the hippo docker container and push it to Quay.io
+
 name: deploy-docker
 on: workflow_dispatch
 permissions: read-all
