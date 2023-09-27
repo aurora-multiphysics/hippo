@@ -12,6 +12,7 @@ Note that you will need to install OpenFOAM's requirements separately.
 You can do this by running:
 
     apt install \\
+        flex \\
         libqt5opengl5-dev \\
         libqt5x11extras5-dev \\
         libxt-dev \\

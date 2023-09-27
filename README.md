@@ -16,6 +16,7 @@ First install the build dependencies:
 
 ```console
 apt install \
+    flex \
     libqt5opengl5-dev \
     libqt5x11extras5-dev \
     libxt-dev \
