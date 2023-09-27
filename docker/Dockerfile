@@ -21,15 +21,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && \
     # Install OpenFOAM
     bash ./scripts/install-openfoam.sh -o /opt/openfoam -s && \
-    # Remove the bits of OpenFOAM we don't need
-    rm -rf /opt/openfoam/OpenFOAM-10/Allwmake && \
-    rm -rf /opt/openfoam/OpenFOAM-10/.git/ && \
-    rm -rf /opt/openfoam/OpenFOAM-10/.gitattributes/ && \
-    rm -rf /opt/openfoam/OpenFOAM-10/.gitignore/ && \
-    rm -rf /opt/openfoam/OpenFOAM-10/applications/ && \
-    rm -rf /opt/openfoam/OpenFOAM-10/doc/ && \
-    rm -rf /opt/openfoam/OpenFOAM-10/test/ && \
-    rm -rf /opt/openfoam/OpenFOAM-10/tutorials/ && \
     # The MOOSE container leaves an mpich tar lying around...
     rm "$(find /opt -maxdepth 1 -type f -name 'mpich-*')" && \
     # Clean up build dependencies

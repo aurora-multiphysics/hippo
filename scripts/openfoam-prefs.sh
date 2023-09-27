@@ -4,8 +4,11 @@
 # to override OpenFOAM's build options.
 #  - ~/.OpenFOAM/$WM_PROJECT_VERSION
 #  - ~/.OpenFOAM
-#  - $FOAM_INST_DIR/site/$WM_PROJECT_VERSION
-#  - $FOAM_INST_DIR/site
+#
+# In particular, we use this file to provide consistent build options within
+# our docker container.
+# Note that this file is executed by <OpenFOAM>/etc/bashrc, so changes to this
+# file will only take effect once the RC file is re-sourced.
 
 #- Compiler location:
 #    WM_COMPILER_TYPE= system | ThirdParty (OpenFOAM)

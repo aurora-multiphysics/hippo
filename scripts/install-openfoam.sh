@@ -26,8 +26,8 @@ options:
   -o <DIRECTORY>  the directory to install OpenFOAM within. This will be
                   created if it doesn't exist
                   [default: '${OUT_DIR}']
-  -s              if given, remove all OpenFOAM sources, keeping only the build
-                  artifacts
+  -s              if given, strip OpenFOAM source files not required by
+                  hippo
   -h              show help and exit
 "
 
@@ -91,9 +91,13 @@ wmRefresh
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then
-    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/wmake"
-    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/doc"
-    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/src"
-    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/test"
-    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/tutorials"
+    rm "${OPENFOAM_DIR}/OpenFOAM-10/Allwmake"
+    rm "${OPENFOAM_DIR}/OpenFOAM-10/.gitattributes"
+    rm "${OPENFOAM_DIR}/OpenFOAM-10/.gitignore"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/.git/"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/applications/"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/doc/"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/test/"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/tutorials/"
+    rm -rf "${OPENFOAM_DIR}/OpenFOAM-10/wmake/"
 fi
