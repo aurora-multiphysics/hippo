@@ -1,6 +1,15 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 ## Current Behaviour
 
-<!-- Describe the bug. -->
+<!-- Describe the bug, including any relevant error message or stack trace. -->
 
 ## Expected Behaviour
 
