@@ -5,8 +5,8 @@ COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 
-# Use a bash shell or OpenFOAM's bashrc won't work properly
 RUN DEBIAN_FRONTEND=noninteractive \
+    # Install OpenFOAM build dependencies
     apt-get update && \
     apt-get install -y --no-install-recommends \
         libqt5opengl5-dev=5.12.8+dfsg-0ubuntu2.1 \
