@@ -9,5 +9,3 @@ cp openfoam.patch $1/
 cd $1
 git checkout d72c3ccf156ba0191a0a090e651a0da0a96a83a3
 git apply openfoam.patch
-
-

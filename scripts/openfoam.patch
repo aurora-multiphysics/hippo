@@ -3,12 +3,12 @@ index 663993951..258b8fcbb 100644
 --- a/etc/bashrc
 +++ b/etc/bashrc
 @@ -81,12 +81,14 @@ export WM_LABEL_SIZE=32
- 
+
  #- Optimised, debug, profiling:
  #    WM_COMPILE_OPTION = Opt | Debug | Prof
 -export WM_COMPILE_OPTION=Opt
 +export WM_COMPILE_OPTION=Debug
- 
+
  #- MPI implementation:
  #    WM_MPLIB = SYSTEMOPENMPI | OPENMPI | SYSTEMMPI | MPICH | MPICH-GM | HPMPI
  #               | MPI | FJMPI | QSMPI | SGIMPI | INTELMPI
@@ -16,7 +16,7 @@ index 663993951..258b8fcbb 100644
 +#export WM_MPLIB=SYSTEMOPENMPI
 +export WM_MPLIB=SYSTEMMPI
 +
- 
+
  #- Operating System:
  #    WM_OSTYPE = POSIX | ???
 diff --git a/src/OpenFOAM/db/IOstreams/Pstreams/UPstream.H b/src/OpenFOAM/db/IOstreams/Pstreams/UPstream.H
@@ -33,14 +33,14 @@ index 3bc4fa20a..e560ba081 100644
 +//#include <mpi.h>
  namespace Foam
  {
- 
+
 @@ -58,7 +57,6 @@ namespace Foam
- 
+
  class UPstream
  {
 -
  public:
- 
+
      //- Types of communications
 @@ -369,6 +367,17 @@ public:
          //- Initialisation function called from main
@@ -57,9 +57,9 @@ index 3bc4fa20a..e560ba081 100644
 +            prob need to define on moose side too.
 +        */
 +        static bool init(void *comm, const bool needsThread);
- 
+
          // Non-blocking comms
- 
+
 diff --git a/src/OpenFOAM/global/argList/argList.C b/src/OpenFOAM/global/argList/argList.C
 index 9c5f42516..0dec89817 100644
 --- a/src/OpenFOAM/global/argList/argList.C
@@ -67,7 +67,7 @@ index 9c5f42516..0dec89817 100644
 @@ -578,6 +578,153 @@ Foam::argList::argList
      parse(checkArgs, checkOpts, initialise);
  }
- 
+
 +/* Everything the same as above - replicated (for now) to make patch cleaner */
 +Foam::argList::argList
 +(
@@ -215,7 +215,7 @@ index 9c5f42516..0dec89817 100644
 +    parse(checkArgs, checkOpts, initialise);
 +}
 +
- 
+
  Foam::argList::argList
  (
 diff --git a/src/OpenFOAM/global/argList/argList.H b/src/OpenFOAM/global/argList/argList.H
@@ -228,7 +228,7 @@ index 813e4bfbd..ea1302df9 100644
  #include "sigSegv.H"
 -
  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
- 
+
  namespace Foam
 @@ -200,6 +199,16 @@ public:
              bool checkOpts = true,
@@ -244,7 +244,7 @@ index 813e4bfbd..ea1302df9 100644
 +            bool checkOpts = true,
 +            bool initialise = true
 +        );
- 
+
          //- Construct copy with new options
          argList
 diff --git a/src/OpenFOAM/global/argList/parRun.H b/src/OpenFOAM/global/argList/parRun.H
@@ -254,7 +254,7 @@ index e8de3d053..56735790a 100644
 @@ -64,6 +64,18 @@ public:
          }
      }
- 
+
 +    /* Overload to call the (overloaded in turn) Pstream::init
 +       for when mpi already initialised */
 +    void runPar(void *external_comm, const bool needsThread)
@@ -382,11 +382,11 @@ index 03433b398..d0821ae8c 100644
 +    return true;
 +
 +}
- 
- 
+
+
  bool Foam::UPstream::init(int& argc, char**& argv, const bool needsThread)
 @@ -185,7 +282,9 @@ void Foam::UPstream::exit(int errnum)
- 
+
      if (errnum == 0)
      {
 -        MPI_Finalize();
