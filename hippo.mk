@@ -5,22 +5,22 @@ FOAM_LIB_DIR := $(FOAM_ROOT_DIR)/lib
 
 FOAM_INCLUDE_ROOT := $(shell echo $(WM_PROJECT_DIR)/src)
 ADDITIONAL_LIBS := -L$(FOAM_LIB_DIR) \
-	-lfiniteVolume \
-	-lfvModels \
-	-lfvConstraints \
+    -lfiniteVolume \
+    -lfvModels \
+    -lfvConstraints \
     -lmeshTools
 
 ADDITIONAL_INCLUDES := -I$(FOAM_INCLUDE_ROOT)/finiteVolume/lnInclude \
     -I$(FOAM_INCLUDE_ROOT)/conversion/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/meshTools/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/OpenFOAM/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/MomentumTransportModels/momentumTransportModels/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluidThermo/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/MomentumTransportModels/compressible/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/physicalProperties/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/thermophysicalModels/basic/lnInclude \
-	-I$(FOAM_INCLUDE_ROOT)/OSspecific/POSIX/lnInclude
+    -I$(FOAM_INCLUDE_ROOT)/meshTools/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/OpenFOAM/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/MomentumTransportModels/momentumTransportModels/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluidThermo/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/MomentumTransportModels/compressible/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/physicalProperties/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/thermophysicalModels/basic/lnInclude \
+    -I$(FOAM_INCLUDE_ROOT)/OSspecific/POSIX/lnInclude
 
 
 ADDITIONAL_CPPFLAGS += $(shell echo -D$(WM_ARCH) \

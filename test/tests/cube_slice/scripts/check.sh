@@ -17,8 +17,8 @@ then
     echo "Can't find exodiff"
     exit 1
 fi
-#Obscurely stupid bit of awk but the openfoam blockMeshDict 
-#is set up such that 
+#Obscurely stupid bit of awk but the openfoam blockMeshDict
+#is set up such that
 #0 and 3 faces are normal to the y,
 #1 and 4 faces are normal to the x,
 #2 and 5 faces are normal to the z,
@@ -34,7 +34,7 @@ expected_elem=$(awk 'NR==1 {nx=$1; ny=$2; nz=$3}
                           sum += nz*ny;
                        } else {
                           sum += nx*ny;
-                    }}} 
+                    }}}
                     print sum;}' $1)
 #Get the same number from exodiff
 actual_elem=$( $EXODIFF --summary $3 | awk '/Elements/ {print $13 + 0}')
@@ -45,5 +45,3 @@ if [ $actual_elem -ne $expected_elem ]; then
 fi
 echo "Passed"
 exit 0
-
-
