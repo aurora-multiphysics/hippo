@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: quay.io/hippo/hippo:latest
+      credentials:
+        username: ${{ secrets.QUAY_USERNAME }}
+        password: ${{ secrets.QUAY_LOGIN_TOKEN }}
 
     steps:
     - uses: actions/checkout@v3
