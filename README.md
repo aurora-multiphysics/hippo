@@ -7,17 +7,36 @@ Moose app that wraps OpenFOAM buoyantFoam solver.
 
 NOTE: Only tested with mpich and gcc
 
-# OpenFOAM
-Unfortunatly hippo relies on a patching openFOAM, there is a script `scripts/get_openfoam.sh` that will clone OpenFOAM and apply the patch e.g.
+Unfortunately hippo relies on patching OpenFOAM,
+there is a script `scripts/install-openfoam.sh` that will clone
+OpenFOAM-10, apply the patch, and build it.
 
+First install the build dependencies:
+
+```console
+apt install \
+    libqt5opengl5-dev \
+    libqt5x11extras5-dev \
+    libxt-dev \
+    mpich \
+    paraview \
+    paraview-dev \
+    qtbase5-dev \
+    qttools5-dev \
+    qttools5-dev-tools
 ```
-cd scripts/
-./get_openfoam.sh <path/to/where/you/want/openFOAM>
+
+Then run the script (use flag `-h` for help):
+
+```console
+bash ./scripts/install-openfoam.sh
 ```
 
-Once cloned build following instructions [Here](https://openfoam.org/download/10-source/) to build from source
+To set the OpenFOAM build options (e.g., Opt or Debug mode),
+copy `scripts/openfoam-prefs.sh` to `~/.OpenFOAM/prefs.sh`,
+and update the environment variables within.
+The variables will be loaded when `<path/to/OpenFOAM>/etc/bashrc` is sourced.
 
-# Moose
 
 Follow instructions [Here](https://mooseframework.inl.gov/getting_started/installation/gcc_install_moose.html) to build MOOSE
 
