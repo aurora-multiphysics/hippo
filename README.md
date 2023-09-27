@@ -1,11 +1,12 @@
-hippo
-=====
+# hippo
 
 Moose app that wraps OpenFOAM buoyantFoam solver.
 
-# Install/Build
+## Install/Build
 
 NOTE: Only tested with mpich and gcc
+
+### OpenFOAM
 
 Unfortunately hippo relies on patching OpenFOAM,
 there is a script `scripts/install-openfoam.sh` that will clone
@@ -35,12 +36,15 @@ bash ./scripts/install-openfoam.sh
 To set the OpenFOAM build options (e.g., Opt or Debug mode),
 copy `scripts/openfoam-prefs.sh` to `~/.OpenFOAM/prefs.sh`,
 and update the environment variables within.
-The variables will be loaded when `<path/to/OpenFOAM>/etc/bashrc` is sourced.
+The variables will be loaded when `<path/to/OpenFOAM>/etc/bashrc` is sourced
+(which is done automatically by the install script).
 
+### Moose
 
-Follow instructions [Here](https://mooseframework.inl.gov/getting_started/installation/gcc_install_moose.html) to build MOOSE
+Follow instructions
+[here](https://mooseframework.inl.gov/getting_started/installation/gcc_install_moose.html)
+to build MOOSE.
 
-# Hippo
 
 ### Environment
 
@@ -54,13 +58,25 @@ MPI_ARCH_LIBS="-L/path/to/mpi/libs -lmpi"
 source /path/to/OpenFOAM/etc/bashrc
 ```
 
-Once everything else is built then (in theory) should be able to `make` in the root directory (or `METHOD=dbg make` for a debug build
+### Build
 
-### Tests
+Once the dependencies are built, then (in theory) you should be able to `make` in the root directory:
+
+```console
+make
+```
+
+Or, for a debug build:
+
+```console
+METHOD=dbg make
+```
+
+## Tests
 
 Some basic tests can be run with `./run_tests`.
 
-### Quality
+## Quality
 
 Some code quality checks are set up with
 [`pre-commit`](https://pre-commit.com/).
@@ -77,7 +93,7 @@ Run the hooks manually:
 pre-commit run --all
 ```
 
-# NOTES
+## NOTES
 
 This work in progress so far hippo can:
  - Create a moose mesh from the boundary of an openfoam mesh
