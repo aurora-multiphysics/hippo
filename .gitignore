@@ -1,3 +1,9 @@
+# Hippo ignores:
+
+# Created by 'scripts/install-openfoam.sh'
+external/*
+
+# MOOSE ignores:
 .libs
 *.la
 *.lo

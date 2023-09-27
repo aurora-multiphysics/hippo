@@ -75,3 +75,4 @@ public:
   Foam::Field<double> interpolateFaceToNode(int patch_id, Foam::fvPatchField<double> const & field);
 };
 }
+
