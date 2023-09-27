@@ -26,7 +26,3 @@ repos:
     hooks:
       - id: remove-crlf
       - id: forbid-tabs
-  - repo: https://github.com/hadolint/hadolint.git
-    rev: v2.12.0
-    hooks:
-      - id: hadolint
