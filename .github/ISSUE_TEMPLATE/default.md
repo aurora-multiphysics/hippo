@@ -1,3 +1,12 @@
+---
+name: Default
+about: An issue for a feature, enhancement, or maintenance
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 ## Description
 
 <!-- Describe the task, e.g., refactoring, adding a new feature, etc. -->
