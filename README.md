@@ -93,6 +93,12 @@ Run the hooks manually:
 pre-commit run --all
 ```
 
+To bypass the pre-commit checks, use the `--no-verify` (or `-n`) flag:
+
+```console
+git commit --no-verify
+```
+
 ## NOTES
 
 This work in progress so far hippo can:
