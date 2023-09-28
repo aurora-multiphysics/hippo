@@ -27,20 +27,22 @@ jobs:
     - name: Build
       shell: bash
       run: |
+        # Copy the OpenFOAM configuration into the home directory. GitHub
+        # overrides the home directory set in the docker image.
         mkdir -p ~/.OpenFOAM
         cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
 
+        # Initialise OpenFOAM
         . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
 
-        echo "FOAM_INST_DIR: ${FOAM_INST_DIR}"
-        echo "WM_PROJECT_INST_DIR: ${WM_PROJECT_INST_DIR}"
-        echo "WM_PROJECT_DIR: ${WM_PROJECT_DIR}"
-
+        # Build hippo
         make
     - name: Test
       shell: bash
       run: |
+        # Initialise OpenFOAM
         . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
+
         # Fully expect this to fail as it requires 8 cores, but the GitHub
         # runners only have 2...
         ./run_tests
