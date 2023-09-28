@@ -26,13 +26,9 @@ jobs:
         pre-commit run --all
     - name: Build
       run: |
-        ls
-        echo "User: $(whoami)"
-        echo "Home: ${HOME}"
-        echo "~: $(cd ~ && pwd)"
         mkdir -p ~/.OpenFOAM
         cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
-        source /opt/openfoam/OpenFOAM-10/etc/bashrc
+        . /opt/openfoam/OpenFOAM-10/etc/bashrc
         make
     - name: Test
       run: |
