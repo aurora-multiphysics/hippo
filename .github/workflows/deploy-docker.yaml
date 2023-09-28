@@ -28,4 +28,4 @@ jobs:
         with:
           push: true
           file: ./docker/Dockerfile
-          tags: quay.io/hsaunders1904/hippo:${{ github.event.inputs.version }}
+          tags: quay.io/hsaunders1904/hippo:${{ github.event.inputs.tag }}
