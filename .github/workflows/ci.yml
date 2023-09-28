@@ -27,17 +27,24 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        ls
-        ls "${HOME}"
         echo "User: $(whoami)"
         echo "Home: ${HOME}"
         echo "~: $(cd ~ && pwd)"
+
         mkdir -p ~/.OpenFOAM
+        ls -A "${HOME}"
+
         cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
+        echo "cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh - OK"
+        ls -A "${HOME}"
+
+        echo "ls -l /opt/openfoam/OpenFOAM-10/etc/bashrc: $(ls -l /opt/openfoam/OpenFOAM-10/etc/bashrc)"
         . /opt/openfoam/OpenFOAM-10/etc/bashrc
+
         echo "FOAM_INST_DIR: ${FOAM_INST_DIR}"
         echo "WM_PROJECT_INST_DIR: ${WM_PROJECT_INST_DIR}"
         echo "WM_PROJECT_DIR: ${WM_PROJECT_DIR}"
+
         make
     - name: Test
       run: |
