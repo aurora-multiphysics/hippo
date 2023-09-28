@@ -12,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: quay.io/hsaunders1904/hippo:latest
-      options: --user root
-      env:
-        HOME: /root
 
     steps:
     - uses: actions/checkout@v3
@@ -28,6 +25,7 @@ jobs:
         pre-commit install
         pre-commit run --all
     - name: Build
+      shell: bash
       run: |
         ls
         ls "${HOME}"
