@@ -30,7 +30,6 @@ jobs:
         mkdir -p ~/.OpenFOAM
         cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
 
-        # This is just exiting with this message: 'Error: Process completed with exit code 1'
         . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
 
         echo "FOAM_INST_DIR: ${FOAM_INST_DIR}"
@@ -39,7 +38,9 @@ jobs:
 
         make
     - name: Test
+      shell: bash
       run: |
+        . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
         # Fully expect this to fail as it requires 8 cores, but the GitHub
         # runners only have 2...
         ./run_tests
