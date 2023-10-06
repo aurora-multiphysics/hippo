@@ -12,10 +12,13 @@ Note that you will need to install OpenFOAM's requirements separately.
 You can do this by running:
 
     apt install \\
+        bison \\
         flex \\
+        libptscotch-dev \\
         libqt5opengl5-dev \\
         libqt5x11extras5-dev \\
         libxt-dev \\
+        make \\
         mpich \\
         paraview \\
         paraview-dev \\
@@ -79,7 +82,7 @@ wget -O - http://dl.openfoam.org/third-party/10 | tar xvz
 mv "ThirdParty-10-version-10" "${THIRDPARTY_DIR}"
 (
     cd "${THIRDPARTY_DIR}" \
-    && echo ./Allwmake
+    && ./Allwmake
 )
 
 # Refresh OpenFOAM paths
