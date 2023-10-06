@@ -14,9 +14,13 @@ repos:
         args: [--unsafe]
       - id: detect-private-key
       - id: end-of-file-fixer
+        exclude_types:
+          - "diff"
       - id: mixed-line-ending
       - id: no-commit-to-branch
       - id: trailing-whitespace
+        exclude_types:
+          - "diff"
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4
     hooks:
