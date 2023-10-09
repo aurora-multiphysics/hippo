@@ -19,7 +19,6 @@ You can do this by running:
         libqt5x11extras5-dev \\
         libxt-dev \\
         make \\
-        mpich \\
         paraview \\
         paraview-dev \\
         qtbase5-dev \\
