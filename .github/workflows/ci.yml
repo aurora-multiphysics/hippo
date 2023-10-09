@@ -40,9 +40,5 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        # Initialise OpenFOAM
         . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
-
-        # Fully expect this to fail as it requires 8 cores, but the GitHub
-        # runners only have 2...
         ./run_tests
