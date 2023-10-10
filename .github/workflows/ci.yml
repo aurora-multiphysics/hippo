@@ -1,0 +1,44 @@
+# Lint, build, and test hippo on a push to main or a pull request
+
+name: hippo-ci
+permissions: read-all
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/hsaunders1904/hippo:latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Quality Checks
+      run: |
+        # As we're running in our own container, we're not the same user as is
+        # used by 'actions/checkout', so git operations fail.
+        # https://github.com/actions/checkout/issues/766
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        pip install pre-commit
+        pre-commit install
+        pre-commit run --all
+    - name: Build
+      shell: bash
+      run: |
+        # Copy the OpenFOAM configuration into the home directory. GitHub
+        # overrides the home directory set in the docker image.
+        mkdir -p ~/.OpenFOAM
+        cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
+
+        # Initialise OpenFOAM
+        . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
+
+        # Build hippo
+        make
+    - name: Test
+      shell: bash
+      run: |
+        . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
+        ./run_tests

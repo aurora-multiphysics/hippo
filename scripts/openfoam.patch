@@ -1,24 +1,3 @@
-diff --git a/etc/bashrc b/etc/bashrc
-index 663993951..258b8fcbb 100644
---- a/etc/bashrc
-+++ b/etc/bashrc
-@@ -81,12 +81,14 @@ export WM_LABEL_SIZE=32
-
- #- Optimised, debug, profiling:
- #    WM_COMPILE_OPTION = Opt | Debug | Prof
--export WM_COMPILE_OPTION=Opt
-+export WM_COMPILE_OPTION=Debug
-
- #- MPI implementation:
- #    WM_MPLIB = SYSTEMOPENMPI | OPENMPI | SYSTEMMPI | MPICH | MPICH-GM | HPMPI
- #               | MPI | FJMPI | QSMPI | SGIMPI | INTELMPI
--export WM_MPLIB=SYSTEMOPENMPI
-+#export WM_MPLIB=SYSTEMOPENMPI
-+export WM_MPLIB=SYSTEMMPI
-+
-
- #- Operating System:
- #    WM_OSTYPE = POSIX | ???
 diff --git a/src/OpenFOAM/db/IOstreams/Pstreams/UPstream.H b/src/OpenFOAM/db/IOstreams/Pstreams/UPstream.H
 index 3bc4fa20a..e560ba081 100644
 --- a/src/OpenFOAM/db/IOstreams/Pstreams/UPstream.H
