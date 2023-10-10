@@ -11,7 +11,7 @@
 []
 [Variables]
 [FOO]
-initial_conditions
+initial_condition = 10.0
 []
 []
 [Problem]
