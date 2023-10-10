@@ -17,6 +17,15 @@ COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 
+ENV MOOSE_DIR=/opt/moose
+ENV MPI_ROOT=/usr/local
+ENV MPI_ARCH_INC="-I/usr/local/include"
+ENV MPI_ARCH_LIBS="-L/usr/local/lib -lmpi"
+ENV CC=/usr/local/bin/mpicc
+ENV CXX=/usr/local/bin/mpicxx
+ENV F77=/usr/local/bin/mpif77
+ENV F90=/usr/local/bin/mpif90
+
 RUN DEBIAN_FRONTEND=noninteractive \
     # Install OpenFOAM build dependencies
     apt-get update && \
@@ -49,5 +58,4 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && \
     rm -rf /var/lib/apt/lists/*
 
-ENV MOOSE_DIR=/opt/moose
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-10/etc/bashrc && \"$@\"", "-s"]

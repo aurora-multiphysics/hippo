@@ -277,7 +277,7 @@ index f0553baee..95a67396d 100644
 @@ -42,6 +42,15 @@ bool Foam::UPstream::init(int& argc, char**& argv, const bool needsThread)
      return false;
  }
- 
+
 +bool Foam::UPstream::init(void *, bool needsThread) {
 +    FatalErrorInFunction
 +        << "Trying to use the dummy Pstream library." << nl
@@ -287,11 +287,11 @@ index f0553baee..95a67396d 100644
 +    return false;
 +}
 +
- 
+
  void Foam::UPstream::exit(int errnum)
  {
 diff --git a/src/Pstream/mpi/UPstream.C b/src/Pstream/mpi/UPstream.C
-index 03433b398..d0821ae8c 100644
+index 03433b398..dc9e39c0b 100644
 --- a/src/Pstream/mpi/UPstream.C
 +++ b/src/Pstream/mpi/UPstream.C
 @@ -50,6 +50,7 @@ License
@@ -405,14 +405,16 @@ index 03433b398..d0821ae8c 100644
 
 
  bool Foam::UPstream::init(int& argc, char**& argv, const bool needsThread)
-@@ -185,7 +282,9 @@ void Foam::UPstream::exit(int errnum)
+@@ -185,8 +282,10 @@ void Foam::UPstream::exit(int errnum)
 
      if (errnum == 0)
      {
 -        MPI_Finalize();
+-        ::exit(errnum);
 +        if (!_external_mpi) {
 +            MPI_Finalize();
++            ::exit(errnum);
 +        }
-         ::exit(errnum);
      }
      else
+     {
