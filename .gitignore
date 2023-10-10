@@ -2,6 +2,7 @@
 
 # Created by 'scripts/install-openfoam.sh'
 external/*
+hippo.yaml
 
 # MOOSE ignores:
 .libs
