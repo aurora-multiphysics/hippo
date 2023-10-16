@@ -1,0 +1,8 @@
+[Tests]
+  [test]
+    [run]
+      type=RunCommand
+      command = './run.sh ../../../../hippo-opt'
+    []
+  []
+[]
