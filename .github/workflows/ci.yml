@@ -23,7 +23,7 @@ jobs:
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
         pip install pre-commit
         pre-commit install
-        pre-commit run --all
+        SKIP=no-commit-to-branch pre-commit run --all
     - name: Build
       shell: bash
       run: |
