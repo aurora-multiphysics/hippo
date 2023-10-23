@@ -7,3 +7,5 @@
 *.buoyantFoam
 *.createGraphs
 *.postProcess.*
+
+!reference_mesh.e
