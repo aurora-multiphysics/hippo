@@ -8,7 +8,8 @@ ADDITIONAL_LIBS := -L$(FOAM_LIB_DIR) \
     -lfiniteVolume \
     -lfvModels \
     -lfvConstraints \
-    -lmeshTools
+    -lmeshTools \
+    $(ADDITIONAL_LIBS)
 
 ADDITIONAL_INCLUDES := -I$(FOAM_INCLUDE_ROOT)/finiteVolume/lnInclude \
     -I$(FOAM_INCLUDE_ROOT)/conversion/lnInclude \
@@ -20,7 +21,8 @@ ADDITIONAL_INCLUDES := -I$(FOAM_INCLUDE_ROOT)/finiteVolume/lnInclude \
     -I$(FOAM_INCLUDE_ROOT)/MomentumTransportModels/compressible/lnInclude \
     -I$(FOAM_INCLUDE_ROOT)/physicalProperties/lnInclude \
     -I$(FOAM_INCLUDE_ROOT)/thermophysicalModels/basic/lnInclude \
-    -I$(FOAM_INCLUDE_ROOT)/OSspecific/POSIX/lnInclude
+    -I$(FOAM_INCLUDE_ROOT)/OSspecific/POSIX/lnInclude \
+    $(ADDITIONAL_INCLUDES)
 
 
 ADDITIONAL_CPPFLAGS += $(shell echo -D$(WM_ARCH) \
