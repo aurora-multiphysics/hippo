@@ -26,4 +26,4 @@ if ! command -v "${EXODIFF}" > /dev/null 2>&1; then
     exit 1
 fi
 
-"${EXODIFF}" "${RUN_OUT}" "${REFERENCE_MESH}"
+"${EXODIFF}" -map "${RUN_OUT}" "${REFERENCE_MESH}"
