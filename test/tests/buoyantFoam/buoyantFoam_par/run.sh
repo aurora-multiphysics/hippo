@@ -3,9 +3,8 @@
 # You need OpenFOAM's bin on the system path to run this
 (
     cd buoyantCavity && \
-    rm log.blockMesh log.buoyantFoam log.createGraphs log.postProcess.sample && \
+    ./Allclean && \
     blockMesh && \
-    decomposePar -force && \
-    ./Allrun
+    decomposePar -force
 )
 mpirun -n 4 $1 -i run.i
