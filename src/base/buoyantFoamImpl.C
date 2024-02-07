@@ -614,7 +614,6 @@ public:
     }
 
     rho = thermo.rho();
-
     runtime.write();
 
     Info << "ExecutionTime = " << runtime.elapsedCpuTime() << " s"
@@ -626,16 +625,27 @@ public:
   size_t
   append_patch_temperature(int patch_id, std::vector<double> & foamT, FoamInterface * interface)
   {
+    static int call_count = 0;
     auto & T = thermo.T().boundaryField()[patch_id];
     auto nodal_T = interface->interpolateFaceToNode(patch_id, T);
-    // auto foamT = nodeT();
-    for (auto const temp : nodal_T)
-    {
-      foamT.push_back(temp);
-    }
+    auto points = interface->getPatch(patch_id).faceCentres();
     return nodal_T.size();
   }
-  // auto next_step(Foam::Time & runtime) { return pimple.run(runtime); }
+
+  /* Append the face temperatures onto the vector */
+  size_t append_patch_face_temperatures(int patch_id,
+                                        std::vector<double> & foamT,
+                                        FoamInterface * interface)
+  {
+    auto & T = thermo.T().boundaryField()[patch_id];
+    size_t count{0};
+    for (auto x : T)
+    {
+      foamT.push_back(x);
+      ++count;
+    }
+    return count;
+  }
 };
 
 buoyantFoamApp::~buoyantFoamApp() = default;
@@ -659,5 +669,11 @@ size_t
 buoyantFoamApp::append_patchT(int patch_id, std::vector<double> & foamT)
 {
   return _impl->append_patch_temperature(patch_id, foamT, _interface);
+}
+
+size_t
+buoyantFoamApp::append_patch_face_T(int patch_id, std::vector<double> & foamT)
+{
+  return _impl->append_patch_face_temperatures(patch_id, foamT, _interface);
 }
 }

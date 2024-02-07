@@ -29,6 +29,7 @@ public:
   bool isSerial() const { return _serial; }
   int getGid(int local, int patch_id) const;
   libMesh::Node * getNodePtr(int local, int patch_id) const;
+  libMesh::Elem * getElemPtr(int local) const;
 
 protected:
   std::vector<std::string> _foam_patch;

@@ -55,6 +55,11 @@ BuoyantFoamProblem::addExternalVariables()
 
   addAuxVariable("MooseVariable", "foamT", params);
   _T_number = _aux->getFieldVariable<Real>(0, "foamT").number();
+
+  params.set<MooseEnum>("family") = "MONOMIAL";
+  params.set<MooseEnum>("order") = "CONSTANT";
+  addAuxVariable("MooseVariable", "foamT_face", params);
+  _face_T = _aux->getFieldVariable<Real>(0, "foamT_face").number();
 }
 
 void
@@ -75,31 +80,57 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     std::vector<Real> foamT;
     foamT.reserve(mesh.nNodes());
 
+    std::vector<Real> foam_vol_t;
+    // foamVolT.reserve(mesh.nCells());
+
     auto subdomains = mesh.getSubdomainList();
-    // First we get all the temperature data for every sobdomain
+    // First we get all the temperature data for every subdomain
     std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
+    std::vector<size_t> patch_counts_vol(subdomains.size() + 1, 0);
     {
       int i = 0;
       for (auto const & subdom : subdomains)
       {
-        patch_counts[i++] = _app.append_patchT(subdom, foamT);
+        patch_counts[i] = _app.append_patchT(subdom, foamT);
+        patch_counts_vol[i++] = _app.append_patch_face_T(subdom, foam_vol_t);
       }
     }
     std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
+    std::exclusive_scan(
+        patch_counts_vol.begin(), patch_counts_vol.end(), patch_counts_vol.begin(), 0);
+
+    // Find the rank offsets into the MOOSE mesh's element array
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    auto n_elems = patch_counts_vol.back();
+    auto num_communicators = _aux->comm().size();
+    std::vector<std::size_t> rank_offsets(num_communicators, 0);
+    MPI_Allgather(&n_elems, 1, MPIU_SIZE_T, rank_offsets.data(), 1, MPIU_SIZE_T, MPI_COMM_WORLD);
+    std::exclusive_scan(rank_offsets.begin(), rank_offsets.end(), rank_offsets.begin(), 0);
+
     for (int i = 0; i < subdomains.size(); ++i)
     {
       auto subdomain = subdomains[i]; // should be the same as patch_id
       auto offset = patch_counts[i];
+
+      // Set the nodal temperatures on the MOOSE mesh
       for (int node = offset; node < patch_counts[i + 1]; ++node)
       {
-
         auto node_ptr = mesh.getNodePtr(node - offset, subdomain);
         assert(node_ptr);
         auto dof = node_ptr->dof_number(_aux->number(), _T_number, 0);
         _aux->solution().set(dof, foamT[node]);
       }
-    }
 
+      // Set the face temperatures on the MOOSE mesh
+      for (int elem = patch_counts_vol[i]; elem < patch_counts_vol[i + 1]; ++elem)
+      {
+        auto elem_ptr = mesh.getElemPtr(elem + rank_offsets.at(rank));
+        assert(elem_ptr);
+        auto dof = elem_ptr->dof_number(_aux->number(), _face_T, 0);
+        _aux->solution().set(dof, foam_vol_t[elem]);
+      }
+    }
     _aux->solution().close();
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)

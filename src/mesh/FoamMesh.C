@@ -117,6 +117,12 @@ FoamMesh::getNodePtr(int local, int patch_id) const
   return _mesh->node_ptr(gid);
 }
 
+libMesh::Elem *
+FoamMesh::getElemPtr(int rank_local) const
+{
+  return _mesh->elem_ptr(rank_local);
+}
+
 // Local Variables:
 // mode: c++
 // End:
