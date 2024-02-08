@@ -11,5 +11,3 @@
 
 # Files for displaying OpenFOAM meshes in paraview
 **/buoyantCavity/*.foam
-
-!reference_mesh.e

@@ -1,17 +1,12 @@
 [Tests]
   [test]
     [run]
-      type=RunCommand
+      type=Exodiff
+      exodiff = 'run_out.e'
       command = './run.sh ../../../../hippo-opt'
       group='buoyantFoam'
       tags='parallel'
-    []
-    [verify]
-      type=RunCommand
-      command = '../scripts/check.sh run_out.e ../reference_mesh.e'
-      prereq=test/run
-      group='buoyantFoam'
-      tags='parallel'
+      rel_err = 5e-3
     []
   []
 []
