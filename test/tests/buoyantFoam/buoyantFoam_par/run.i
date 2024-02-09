@@ -6,13 +6,13 @@
 []
 [AuxVariables]
   [T]
-  initial_condition = 1.0
+    initial_condition = 1.0
   []
 []
 [Variables]
-[FOO]
-initial_conditions
-[]
+  [FOO]
+    initial_condition = 10.0
+  []
 []
 [Problem]
   type=BuoyantFoamProblem

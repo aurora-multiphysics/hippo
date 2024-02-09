@@ -4,7 +4,7 @@ Moose app that wraps OpenFOAM buoyantFoam solver.
 
 ## Install/Build
 
-NOTE: Only tested with mpich and gcc
+Note: Only tested with GCC.
 
 ### OpenFOAM
 
@@ -14,13 +14,15 @@ OpenFOAM-10, apply the patch, and build it.
 
 First install the build dependencies:
 
-```console
+```bash
 apt install \
+    bison \
     flex \
+    libptscotch-dev \
     libqt5opengl5-dev \
     libqt5x11extras5-dev \
     libxt-dev \
-    mpich \
+    make \
     paraview \
     paraview-dev \
     qtbase5-dev \
@@ -28,9 +30,9 @@ apt install \
     qttools5-dev-tools
 ```
 
-Then run the script (use flag `-h` for help):
+Then run the script (use flag `-h` for help, this will take ~1 hour):
 
-```console
+```bash
 bash ./scripts/install-openfoam.sh
 ```
 
@@ -46,12 +48,11 @@ Follow instructions
 [here](https://mooseframework.inl.gov/getting_started/installation/gcc_install_moose.html)
 to build MOOSE.
 
-
 ### Environment
 
 Set (recommend [direnv](https://direnv.net/) for this)
 
-```
+```bash
 MOOSE_DIR=/path/to/moose/dir
 MPI_ROOT=/path/to/mpich/root
 MPI_ARCH_INC="-I/path/to/mpi/includes"
@@ -63,13 +64,13 @@ source /path/to/OpenFOAM/etc/bashrc
 
 Once the dependencies are built, then (in theory) you should be able to `make` in the root directory:
 
-```console
+```bash
 make
 ```
 
 Or, for a debug build:
 
-```console
+```bash
 METHOD=dbg make
 ```
 
@@ -84,31 +85,33 @@ Some code quality checks are set up with
 
 Install the pre-commit hooks to run on each new commit:
 
-```console
+```bash
 pre-commit install
 ```
 
 Run the hooks manually:
 
-```console
+```bash
 pre-commit run --all
 ```
 
 To bypass the pre-commit checks, use the `--no-verify` (or `-n`) flag:
 
-```console
+```bash
 git commit --no-verify
 ```
 
-## NOTES
+## Notes
 
-This work in progress so far hippo can:
- - Create a moose mesh from the boundary of an openfoam mesh
- - Can run an buoyantFOAM case via moose
- - Transfer temperature from faces of openfoam mesh to nodes of Moose mesh
+This is a work in progress.
+So far hippo can:
 
-NOTE: When running in parallel add `--keep-cout` to the command line because OpenFOAM will crash if
-a process fails to write to stdout out
+- Create a moose mesh from the boundary of an openfoam mesh
+- Can run an buoyantFOAM case via moose
+- Transfer temperature from faces of openfoam mesh to nodes of Moose mesh
+
+> *Note: When running in parallel add `--keep-cout` to the command line
+> because OpenFOAM will crash if a process fails to write to stdout*
 
 "Fork hippo" to create a new MOOSE-based application.
 

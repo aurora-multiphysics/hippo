@@ -1,0 +1,11 @@
+[Tests]
+  [test]
+    [run]
+      type=Exodiff
+      exodiff = 'run_out.e'
+      command = './run.sh ../../../../hippo-opt'
+      group='buoyantFoam'
+      tags='serial'
+    []
+  []
+[]

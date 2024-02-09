@@ -25,7 +25,7 @@ hippoApp::~hippoApp() {}
 void
 hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 {
-  ModulesApp::registerAll(f, af, syntax);
+  ModulesApp::registerAllObjects<hippoApp>(f, af, syntax);
   Registry::registerObjectsTo(f, {"hippoApp"});
   Registry::registerActionsTo(af, {"hippoApp"});
 

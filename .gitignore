@@ -2,7 +2,12 @@
 
 # Created by 'scripts/install-openfoam.sh'
 external/*
+
+# Created when building app
 hippo.yaml
+
+# Created when building unit tests
+unit/hippo-unit.yaml
 
 # MOOSE ignores:
 .libs
