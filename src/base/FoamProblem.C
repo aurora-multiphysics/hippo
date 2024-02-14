@@ -40,7 +40,7 @@ BuoyantFoamProblem::validParams()
 }
 
 BuoyantFoamProblem::BuoyantFoamProblem(InputParameters const & params)
-  : FoamProblem(params), _app(_interface), _T_number(100000000)
+  : FoamProblem(params), _app(_interface)
 // TODO: Assuming the temp var is "T" should pass the name in
 {
 }
@@ -48,14 +48,7 @@ BuoyantFoamProblem::BuoyantFoamProblem(InputParameters const & params)
 void
 BuoyantFoamProblem::addExternalVariables()
 {
-  // Plagerised from cardinal NekRSProblemBase.C
   InputParameters params = _factory.getValidParams("MooseVariable");
-  params.set<MooseEnum>("family") = "LAGRANGE";
-  params.set<MooseEnum>("order") = "FIRST";
-
-  addAuxVariable("MooseVariable", "foamT", params);
-  _T_number = _aux->getFieldVariable<Real>(0, "foamT").number();
-
   params.set<MooseEnum>("family") = "MONOMIAL";
   params.set<MooseEnum>("order") = "CONSTANT";
   addAuxVariable("MooseVariable", "foamT_face", params);
@@ -85,17 +78,14 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
 
     auto subdomains = mesh.getSubdomainList();
     // First we get all the temperature data for every subdomain
-    std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
     std::vector<size_t> patch_counts_vol(subdomains.size() + 1, 0);
     {
       int i = 0;
       for (auto const & subdom : subdomains)
       {
-        patch_counts[i] = _app.append_patchT(subdom, foamT);
         patch_counts_vol[i++] = _app.append_patch_face_T(subdom, foam_vol_t);
       }
     }
-    std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
     std::exclusive_scan(
         patch_counts_vol.begin(), patch_counts_vol.end(), patch_counts_vol.begin(), 0);
 
@@ -110,18 +100,6 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
 
     for (int i = 0; i < subdomains.size(); ++i)
     {
-      auto subdomain = subdomains[i]; // should be the same as patch_id
-      auto offset = patch_counts[i];
-
-      // Set the nodal temperatures on the MOOSE mesh
-      for (int node = offset; node < patch_counts[i + 1]; ++node)
-      {
-        auto node_ptr = mesh.getNodePtr(node - offset, subdomain);
-        assert(node_ptr);
-        auto dof = node_ptr->dof_number(_aux->number(), _T_number, 0);
-        _aux->solution().set(dof, foamT[node]);
-      }
-
       // Set the face temperatures on the MOOSE mesh
       for (int elem = patch_counts_vol[i]; elem < patch_counts_vol[i + 1]; ++elem)
       {

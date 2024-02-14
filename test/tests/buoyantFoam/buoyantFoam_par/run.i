@@ -1,7 +1,7 @@
 [Mesh]
   type = FoamMesh
   foam_args = '-case buoyantCavity -parallel'
-  foam_patch = 'frontAndBack topAndBottom'
+  foam_patch = 'topAndBottom frontAndBack'
   dim=2
 []
 [AuxVariables]

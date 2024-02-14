@@ -621,17 +621,6 @@ public:
     return true;
   }
 
-  /* Append the interpolated nodal temperatures onto the vector */
-  size_t
-  append_patch_temperature(int patch_id, std::vector<double> & foamT, FoamInterface * interface)
-  {
-    static int call_count = 0;
-    auto & T = thermo.T().boundaryField()[patch_id];
-    auto nodal_T = interface->interpolateFaceToNode(patch_id, T);
-    auto points = interface->getPatch(patch_id).faceCentres();
-    return nodal_T.size();
-  }
-
   /* Append the face temperatures onto the vector */
   size_t append_patch_face_temperatures(int patch_id,
                                         std::vector<double> & foamT,
@@ -651,11 +640,8 @@ public:
 buoyantFoamApp::~buoyantFoamApp() = default;
 buoyantFoamApp::buoyantFoamApp(FoamInterface * interface)
   : _interface(interface),
-    _impl(new buoyantFoamImpl(
-        // std::make_unique<buoyantFoamImpl*>(
-        _interface->getArglist(),
-        _interface->getRuntime(),
-        _interface->getMesh()))
+    _impl(std::make_unique<buoyantFoamImpl>(
+        _interface->getArglist(), _interface->getRuntime(), _interface->getMesh()))
 {
 }
 
@@ -663,12 +649,6 @@ bool
 buoyantFoamApp::run()
 {
   return _impl->run(_interface->getRuntime(), _interface->getMesh());
-}
-
-size_t
-buoyantFoamApp::append_patchT(int patch_id, std::vector<double> & foamT)
-{
-  return _impl->append_patch_temperature(patch_id, foamT, _interface);
 }
 
 size_t

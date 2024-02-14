@@ -45,8 +45,7 @@ public:
 
 protected:
   Hippo::buoyantFoamApp _app;
-  unsigned _T_number;
-  unsigned _face_T;
+  unsigned _face_T{0};
 };
 
 // Local Variables:
