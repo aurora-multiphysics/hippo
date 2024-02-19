@@ -3,6 +3,23 @@
 #include "FoamMesh.h"
 #include "AuxiliarySystem.h"
 
+namespace
+{
+/// Find the offset into a patch's element array for each rank.
+/// Gather the number of elements each rank is responsible for, and accumulate
+/// them to get the offset for each rank into the overall element array.
+std::vector<size_t>
+find_mpi_rank_offsets(const size_t n_elems, const MPI_Comm communicator)
+{
+  int comm_size;
+  MPI_Comm_size(communicator, &comm_size);
+  std::vector<std::size_t> rank_offsets(comm_size, 0);
+  MPI_Allgather(&n_elems, 1, MPIU_SIZE_T, rank_offsets.data(), 1, MPIU_SIZE_T, communicator);
+  std::exclusive_scan(rank_offsets.begin(), rank_offsets.end(), rank_offsets.begin(), 0);
+  return rank_offsets;
+}
+}
+
 registerMooseObject("hippoApp", FoamProblem);
 
 InputParameters
@@ -65,45 +82,35 @@ void
 BuoyantFoamProblem::syncSolutions(Direction dir)
 {
   auto & mesh = static_cast<FoamMesh &>(this->mesh());
-  auto serial = mesh.isSerial();
 
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
-
-    std::vector<Real> foamT;
-    foamT.reserve(mesh.nNodes());
-
+    // Vector to hold the temperature on the elements in every subdomain
+    // Not sure if we can pre-allocate this - we need the number of elements
+    // in the subdomain owned by the current rank. We count this in a loop
+    // later.
     std::vector<Real> foam_vol_t;
-    // foamVolT.reserve(mesh.nCells());
 
     auto subdomains = mesh.getSubdomainList();
-    // First we get all the temperature data for every subdomain
-    std::vector<size_t> patch_counts_vol(subdomains.size() + 1, 0);
+    // The number of elements in each subdomain of the mesh
+    // Allocate an extra element as we'll accumulate these counts later
+    std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
+    for (auto i = 0U; i < subdomains.size(); ++i)
     {
-      int i = 0;
-      for (auto const & subdom : subdomains)
-      {
-        patch_counts_vol[i++] = _app.append_patch_face_T(subdom, foam_vol_t);
-      }
+      patch_counts[i] = _app.append_patch_face_T(subdomains[i], foam_vol_t);
     }
-    std::exclusive_scan(
-        patch_counts_vol.begin(), patch_counts_vol.end(), patch_counts_vol.begin(), 0);
+    std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
 
-    // Find the rank offsets into the MOOSE mesh's element array
+    // The offsets for each rank into the MOOSE mesh's elements
+    auto rank_offsets = find_mpi_rank_offsets(patch_counts.back(), MPI_COMM_WORLD);
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    auto n_elems = patch_counts_vol.back();
-    auto num_communicators = _aux->comm().size();
-    std::vector<std::size_t> rank_offsets(num_communicators, 0);
-    MPI_Allgather(&n_elems, 1, MPIU_SIZE_T, rank_offsets.data(), 1, MPIU_SIZE_T, MPI_COMM_WORLD);
-    std::exclusive_scan(rank_offsets.begin(), rank_offsets.end(), rank_offsets.begin(), 0);
-
     for (int i = 0; i < subdomains.size(); ++i)
     {
       // Set the face temperatures on the MOOSE mesh
-      for (int elem = patch_counts_vol[i]; elem < patch_counts_vol[i + 1]; ++elem)
+      for (int elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
       {
-        auto elem_ptr = mesh.getElemPtr(elem + rank_offsets.at(rank));
+        auto elem_ptr = mesh.getElemPtr(elem + rank_offsets[rank]);
         assert(elem_ptr);
         auto dof = elem_ptr->dof_number(_aux->number(), _face_T, 0);
         _aux->solution().set(dof, foam_vol_t[elem]);
