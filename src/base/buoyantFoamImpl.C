@@ -627,13 +627,11 @@ public:
                                         FoamInterface * interface)
   {
     auto & T = thermo.T().boundaryField()[patch_id];
-    size_t count{0};
     for (auto x : T)
     {
       foamT.push_back(x);
-      ++count;
     }
-    return count;
+    return T.size();
   }
 };
 
