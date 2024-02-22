@@ -127,6 +127,9 @@ struct PatchInfo
   std::vector<int32_t> count;
   std::vector<int32_t> point_id;
   std::vector<int32_t> subdomain_count;
+  // The number of elements the current rank has in its domain.
+  // These do not necessarily belong to the same patch.
+  size_t rank_element_count{0};
   std::map<int32_t, std::vector<int32_t>> local2global;
 };
 
@@ -147,6 +150,7 @@ get_local_face_info(T const & mesh_to_global_map,
     auto nfaces =
         append_local_faces(local2global, local_face, patch_info.count, patch_info.point_id);
     patch_info.subdomain_count.push_back(nfaces);
+    patch_info.rank_element_count += nfaces;
     // TODO: need to check this is right
     patch_info.local2global[id] = std::move(local2global);
   }
@@ -248,14 +252,23 @@ MeshInterface::set_up_parallel()
   auto face_info = get_local_face_info<Foam::labelIOList>(*_loc2glob, _interface, _patch_id);
   gather_unique_points(local_point);
   gather_faces(face_info.count, face_info.point_id);
+
+  // Gather the indices of the start of each patch in each rank.
+  // Concatenate them and scan.
   auto global_subdom_count = gather_and_scan_vector<int32_t>(face_info.subdomain_count, *_comm);
+
   int mpi_size;
   MPI_Comm_size(*_comm, &mpi_size);
   assert(global_subdom_count.size() - 1 == _patch_name.size() * mpi_size);
   assert(global_subdom_count.back() == this->nface());
-  // TODO: check this is doing the right thing
-  _patch_local2global = std::move(face_info.local2global);
   calc_subdom_and_rank_arrays(std::move(global_subdom_count), _patch_name.size(), mpi_size);
+
+  // Gather the indices of the start of the element index for each rank.
+  // Note that this will be the same as 'global_subdom_count' if there is only
+  // one patch in each rank's decomposition domain.
+  rank_element_offset = mpi_scan<size_t>(face_info.rank_element_count, *_comm);
+
+  _patch_local2global = std::move(face_info.local2global);
 }
 
 MeshInterface::MeshInterface(std::vector<std::string> const & patch_name,

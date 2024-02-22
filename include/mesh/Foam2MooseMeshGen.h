@@ -85,6 +85,8 @@ public:
   int get_gid(int32_t local, int32_t patch_id) const;
   int get_moose_id(int32_t global_id);
 
+  size_t rank_element_offset;
+
 private:
   std::vector<std::string> _patch_name;
   // patch ids

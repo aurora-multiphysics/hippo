@@ -57,7 +57,7 @@ void
 FoamMesh::buildMesh()
 {
   auto comm = _communicator.get();
-  _fmesh =
+  auto _fmesh =
       std::make_unique<Hippo::MeshInterface>(_foam_patch, _interface, (_serial) ? nullptr : &comm);
 
   // TODO: Can reserve elements if _mesh->reserve_elements(#el)
@@ -94,6 +94,8 @@ FoamMesh::buildMesh()
     _subdomain_list.push_back(id);
   }
 
+  rank_element_offset = _fmesh->rank_element_offset;
+
   // Need to be able to identify a moose node with a openFoam node
   _mesh->allow_renumbering(false);
   //_mesh->skip_partitioning(true);
@@ -103,19 +105,6 @@ FoamMesh::buildMesh()
 }
 // This needs to be here because of the incomplete type (MeshInterface) in the class
 FoamMesh::~FoamMesh() { _interface->dropInstance(); };
-
-int
-FoamMesh::getGid(int local, int patch_id) const
-{
-  return _fmesh->get_gid(local, patch_id);
-}
-
-libMesh::Node *
-FoamMesh::getNodePtr(int local, int patch_id) const
-{
-  auto gid = _fmesh->get_gid(local, patch_id);
-  return _mesh->node_ptr(gid);
-}
 
 libMesh::Elem *
 FoamMesh::getElemPtr(int rank_local) const

@@ -44,6 +44,8 @@ public:
   T * end() { return _ptr.get() + _size; }
   T const * begin() const { return _ptr.get(); }
   T const * end() const { return _ptr.get() + _size; }
+
+  std::vector<T> to_std_vector() const { return std::vector<T>(begin(), end()); }
 };
 
 template <typename T>

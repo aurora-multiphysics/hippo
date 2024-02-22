@@ -86,6 +86,22 @@ gather_and_scan_vector(std::vector<T> & vec, MPI_Comm & comm)
   result[result.size() - 1] = global_total;
   return result;
 }
+
+template <typename T>
+T
+mpi_scan(T & value, MPI_Comm & comm)
+{
+  T out;
+  MPI_Exscan(&value, &out, 1, get_mpi_type<T>(), MPI_SUM, comm);
+  int mpi_rank;
+  MPI_Comm_rank(comm, &mpi_rank);
+  if (mpi_rank == 0)
+  {
+    return 0;
+  }
+  return out;
+}
+
 }
 // Local Variables:
 // mode: c++
