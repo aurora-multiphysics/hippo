@@ -13,21 +13,21 @@ class FoamProblem : public ExternalProblem
 public:
   FoamProblem(InputParameters const & params);
   static InputParameters validParams();
-  virtual void externalSolve();
-  virtual void syncSolutions(Direction dir) {}
-  virtual bool converged() { return true; }
-  virtual void addExternalVariables(){};
+  virtual void externalSolve() override;
+  virtual void syncSolutions(Direction /* dir */) override {}
+  virtual bool converged() override { return true; }
+  virtual void addExternalVariables() override{};
   // Want to be able to share the object from here so we don't
   // have to pass the args around and problem is available in
   // other objects
   Hippo::FoamInterface * shareInterface() { return _interface; }
 
+  using ExternalProblem::mesh;
   virtual FoamMesh const & mesh() const override { return *_foam_mesh; }
   virtual FoamMesh & mesh() override { return *_foam_mesh; }
 
 protected:
   FoamMesh * _foam_mesh = nullptr;
-
   Hippo::FoamInterface * _interface = nullptr;
 };
 

@@ -622,9 +622,7 @@ public:
   }
 
   /* Append the face temperatures onto the vector */
-  size_t append_patch_face_temperatures(int patch_id,
-                                        std::vector<double> & foamT,
-                                        FoamInterface * interface)
+  size_t append_patch_face_temperatures(int patch_id, std::vector<double> & foamT)
   {
     auto & T = thermo.T().boundaryField()[patch_id];
     for (auto x : T)
@@ -652,6 +650,6 @@ buoyantFoamApp::run()
 size_t
 buoyantFoamApp::append_patch_face_T(int patch_id, std::vector<double> & foamT)
 {
-  return _impl->append_patch_face_temperatures(patch_id, foamT, _interface);
+  return _impl->append_patch_face_temperatures(patch_id, foamT);
 }
 }

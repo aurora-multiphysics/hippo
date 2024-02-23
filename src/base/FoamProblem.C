@@ -9,10 +9,6 @@ InputParameters
 FoamProblem::validParams()
 {
   auto params = ExternalProblem::validParams();
-  // std::vector<std::string> empty_vec;
-  // params.addParam<std::vector<std::string>>(
-  //    "foam_args", empty_vec, "List of arguments to be passed to openFoam solver");
-  // TODO: needs to be a vector
   return params;
 }
 
@@ -86,10 +82,10 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    for (int i = 0U; i < subdomains.size(); ++i)
+    for (auto i = 0U; i < subdomains.size(); ++i)
     {
       // Set the face temperatures on the MOOSE mesh
-      for (int elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+      for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
       {
         auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
         assert(elem_ptr);
