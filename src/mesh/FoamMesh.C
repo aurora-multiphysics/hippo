@@ -57,27 +57,27 @@ void
 FoamMesh::buildMesh()
 {
   auto comm = _communicator.get();
-  auto _fmesh =
-      std::make_unique<Hippo::MeshInterface>(_foam_patch, _interface, (_serial) ? nullptr : &comm);
+  auto mesh_adapter = std::make_unique<Hippo::Foam2MooseMeshAdapter>(
+      _foam_patch, _interface, (_serial) ? nullptr : &comm);
 
   // TODO: Can reserve elements if _mesh->reserve_elements(#el)
   // TODO: Can also reserve nodes _mesh->reserve_nodes(#nodes?)
-  for (int32_t pt = 0; pt < _fmesh->npoint(); ++pt)
+  for (int32_t pt = 0; pt < mesh_adapter->npoint(); ++pt)
   {
-    auto foam_point = _fmesh->point(pt);
+    auto foam_point = mesh_adapter->point(pt);
     _mesh->add_point(foam_point.get_point(), pt);
   }
 
-  for (int32_t fc = 0; fc < _fmesh->nface(); ++fc)
+  for (int32_t fc = 0; fc < mesh_adapter->nface(); ++fc)
   {
-    auto face = _fmesh->face(fc);
+    auto face = mesh_adapter->face(fc);
     assert(face.size() == 4 && "Only support quads currently");
     auto elem = _mesh->add_elem(Elem::build_with_id(QUAD4, fc));
 
     int count = 0;
     for (auto point = face.begin(); point < face.end(); ++point)
     {
-      auto moose_pt = _fmesh->get_moose_id(*point);
+      auto moose_pt = mesh_adapter->get_moose_id(*point);
       elem->set_node(count++) = _mesh->node_ptr(moose_pt);
     }
     // TODO: need to look again at the subdomain_id so it matches the foam patch_id?
@@ -89,12 +89,12 @@ FoamMesh::buildMesh()
   // we set up the subdomains index to mirror the openfoam names
   for (auto const & patch_name : _foam_patch)
   {
-    auto id = _fmesh->get_patch_id(patch_name);
+    auto id = mesh_adapter->get_patch_id(patch_name);
     this->setSubdomainName(id, patch_name);
     _subdomain_list.push_back(id);
   }
 
-  rank_element_offset = _fmesh->rank_element_offset;
+  rank_element_offset = mesh_adapter->rank_element_offset;
 
   // Need to be able to identify a moose node with a openFoam node
   _mesh->allow_renumbering(false);

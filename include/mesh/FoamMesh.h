@@ -5,7 +5,7 @@
 
 namespace Hippo
 {
-class MeshInterface;
+class Foam2MooseMeshAdapter;
 }
 namespace Foam
 {
