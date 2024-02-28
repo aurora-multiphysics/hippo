@@ -9,10 +9,6 @@ InputParameters
 FoamProblem::validParams()
 {
   auto params = ExternalProblem::validParams();
-  // std::vector<std::string> empty_vec;
-  // params.addParam<std::vector<std::string>>(
-  //    "foam_args", empty_vec, "List of arguments to be passed to openFoam solver");
-  // TODO: needs to be a vector
   return params;
 }
 
@@ -40,7 +36,7 @@ BuoyantFoamProblem::validParams()
 }
 
 BuoyantFoamProblem::BuoyantFoamProblem(InputParameters const & params)
-  : FoamProblem(params), _app(_interface), _T_number(100000000)
+  : FoamProblem(params), _app(_interface)
 // TODO: Assuming the temp var is "T" should pass the name in
 {
 }
@@ -48,13 +44,11 @@ BuoyantFoamProblem::BuoyantFoamProblem(InputParameters const & params)
 void
 BuoyantFoamProblem::addExternalVariables()
 {
-  // Plagerised from cardinal NekRSProblemBase.C
   InputParameters params = _factory.getValidParams("MooseVariable");
-  params.set<MooseEnum>("family") = "LAGRANGE";
-  params.set<MooseEnum>("order") = "FIRST";
-
-  addAuxVariable("MooseVariable", "foamT", params);
-  _T_number = _aux->getFieldVariable<Real>(0, "foamT").number();
+  params.set<MooseEnum>("family") = "MONOMIAL";
+  params.set<MooseEnum>("order") = "CONSTANT";
+  addAuxVariable("MooseVariable", "foamT_face", params);
+  _face_T = _aux->getFieldVariable<Real>(0, "foamT_face").number();
 }
 
 void
@@ -67,39 +61,38 @@ void
 BuoyantFoamProblem::syncSolutions(Direction dir)
 {
   auto & mesh = static_cast<FoamMesh &>(this->mesh());
-  auto serial = mesh.isSerial();
 
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
-
-    std::vector<Real> foamT;
-    foamT.reserve(mesh.nNodes());
+    // Vector to hold the temperature on the elements in every subdomain
+    // Not sure if we can pre-allocate this - we need the number of elements
+    // in the subdomain owned by the current rank. We count this in a loop
+    // later.
+    std::vector<Real> foam_vol_t;
 
     auto subdomains = mesh.getSubdomainList();
-    // First we get all the temperature data for every sobdomain
+    // The number of elements in each subdomain of the mesh
+    // Allocate an extra element as we'll accumulate these counts later
     std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
+    for (auto i = 0U; i < subdomains.size(); ++i)
     {
-      int i = 0;
-      for (auto const & subdom : subdomains)
-      {
-        patch_counts[i++] = _app.append_patchT(subdom, foamT);
-      }
+      patch_counts[i] = _app.append_patch_face_T(subdomains[i], foam_vol_t);
     }
     std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
-    for (int i = 0; i < subdomains.size(); ++i)
-    {
-      auto subdomain = subdomains[i]; // should be the same as patch_id
-      auto offset = patch_counts[i];
-      for (int node = offset; node < patch_counts[i + 1]; ++node)
-      {
 
-        auto node_ptr = mesh.getNodePtr(node - offset, subdomain);
-        assert(node_ptr);
-        auto dof = node_ptr->dof_number(_aux->number(), _T_number, 0);
-        _aux->solution().set(dof, foamT[node]);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    for (auto i = 0U; i < subdomains.size(); ++i)
+    {
+      // Set the face temperatures on the MOOSE mesh
+      for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+      {
+        auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
+        assert(elem_ptr);
+        auto dof = elem_ptr->dof_number(_aux->number(), _face_T, 0);
+        _aux->solution().set(dof, foam_vol_t[elem]);
       }
     }
-
     _aux->solution().close();
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)

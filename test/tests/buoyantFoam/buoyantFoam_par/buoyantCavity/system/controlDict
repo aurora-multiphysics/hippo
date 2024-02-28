@@ -29,11 +29,11 @@ writeControl    timeStep;
 
 writeInterval   1;
 
-purgeWrite      3;
+purgeWrite      20;
 
 writeFormat     ascii;
 
-writePrecision  6;
+writePrecision  15;
 
 writeCompression off;
 

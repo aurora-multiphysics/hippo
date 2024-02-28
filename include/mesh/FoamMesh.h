@@ -5,7 +5,7 @@
 
 namespace Hippo
 {
-class MeshInterface;
+class Foam2MooseMeshAdapter;
 }
 namespace Foam
 {
@@ -27,15 +27,20 @@ public:
   Hippo::FoamInterface * getFoamInterface() { return _interface; }
   std::vector<int> & getSubdomainList();
   bool isSerial() const { return _serial; }
-  int getGid(int local, int patch_id) const;
-  libMesh::Node * getNodePtr(int local, int patch_id) const;
+  libMesh::Elem * getElemPtr(int local) const;
+
+  std::vector<int32_t> n_faces{0};
+  // The index offset into the MOOSE element array, for the current rank.
+  // This can be used with `getElemPtr` like so:
+  //     getElemPtr(rank_offset + i)
+  // to get the i-th element owned by the current rank from the mesh.
+  size_t rank_element_offset{0};
 
 protected:
   std::vector<std::string> _foam_patch;
   std::vector<int32_t> _patch_id;
   Hippo::FoamInterface * _interface;
   std::vector<int> _subdomain_list;
-  std::unique_ptr<Hippo::MeshInterface> _fmesh;
   bool _serial = true;
 };
 // Local Variables:

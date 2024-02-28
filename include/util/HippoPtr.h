@@ -14,25 +14,25 @@ template <typename T>
 class HippoPtr
 {
   std::unique_ptr<T[]> _ptr = nullptr;
-  int32_t _size = 0;
+  size_t _size = 0;
 
 public:
-  HippoPtr(int32_t new_size) : _ptr(new T[new_size]), _size(new_size) {}
+  HippoPtr(size_t new_size) : _ptr(new T[new_size]), _size(new_size) {}
   HippoPtr(std::vector<T> const & vec) : HippoPtr(vec.size())
   {
     std::copy(vec.begin(), vec.end(), _ptr.get());
   }
   HippoPtr() = default;
 
-  int32_t size() const { return _size; }
+  size_t size() const { return _size; }
 
-  T & operator[](int32_t i)
+  T & operator[](size_t i)
   {
     assert(i < _size && i >= 0);
     return _ptr[i];
   }
 
-  T const & operator[](int32_t i) const
+  T const & operator[](size_t i) const
   {
     assert(i < _size && i >= 0);
     return _ptr[i];
@@ -44,6 +44,8 @@ public:
   T * end() { return _ptr.get() + _size; }
   T const * begin() const { return _ptr.get(); }
   T const * end() const { return _ptr.get() + _size; }
+
+  std::vector<T> to_std_vector() const { return std::vector<T>(begin(), end()); }
 };
 
 template <typename T>

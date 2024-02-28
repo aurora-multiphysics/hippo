@@ -127,6 +127,9 @@ struct PatchInfo
   std::vector<int32_t> count;
   std::vector<int32_t> point_id;
   std::vector<int32_t> subdomain_count;
+  // The number of elements the current rank has in its domain.
+  // These do not necessarily belong to the same patch.
+  size_t rank_element_count{0};
   std::map<int32_t, std::vector<int32_t>> local2global;
 };
 
@@ -147,6 +150,7 @@ get_local_face_info(T const & mesh_to_global_map,
     auto nfaces =
         append_local_faces(local2global, local_face, patch_info.count, patch_info.point_id);
     patch_info.subdomain_count.push_back(nfaces);
+    patch_info.rank_element_count += nfaces;
     // TODO: need to check this is right
     patch_info.local2global[id] = std::move(local2global);
   }
@@ -170,15 +174,15 @@ get_local_global_map(FoamInterface * interface)
 }
 
 void
-MeshInterface::gather_faces(std::vector<int32_t> & local_face_count,
-                            std::vector<int32_t> & local_face_point_id)
+Foam2MooseMeshAdapter::gather_faces(std::vector<int32_t> & local_face_count,
+                                    std::vector<int32_t> & local_face_point_id)
 {
   _face_point_id = gather_vector(local_face_point_id, *_comm);
   _face_offset = gather_and_scan_vector<int32_t>(local_face_count, *_comm);
 }
 
 void
-MeshInterface::gather_unique_points(std::vector<FoamPoint> & local_point)
+Foam2MooseMeshAdapter::gather_unique_points(std::vector<FoamPoint> & local_point)
 {
   _point = gather_vector<FoamPoint>(local_point, *_comm);
 }
@@ -188,9 +192,9 @@ MeshInterface::gather_unique_points(std::vector<FoamPoint> & local_point)
 //  -> we can use that to create the rank array too
 
 void
-MeshInterface::calc_subdom_and_rank_arrays(HippoPtr<int32_t> subdom_count,
-                                           int32_t nsubdom,
-                                           int32_t mpi_size)
+Foam2MooseMeshAdapter::calc_subdom_and_rank_arrays(HippoPtr<int32_t> subdom_count,
+                                                   int32_t nsubdom,
+                                                   int32_t mpi_size)
 {
   auto nface = subdom_count.back();
   _face_subdom = HippoPtr<int32_t>(nface);
@@ -215,7 +219,7 @@ MeshInterface::calc_subdom_and_rank_arrays(HippoPtr<int32_t> subdom_count,
 }
 
 void
-MeshInterface::set_up_serial()
+Foam2MooseMeshAdapter::set_up_serial()
 {
   // This is suboptimal (computationally and codeistically)
   // but serial is not the common case so havn't optimised
@@ -229,8 +233,8 @@ MeshInterface::set_up_serial()
   _face_point_id = copy_vec_to_pointer(face_info.point_id);
   auto subdom_count = scan_vec_to_pointer(face_info.subdomain_count);
   // Save the local2global map for each patch, only need this locally (for now)
-  // so don't need prep for MPI or anythin
-  assert(subdom_count.size() - 1 == _patch_name.size());
+  // so don't need prep for MPI or anything
+  assert(subdom_count.size() == _patch_name.size());
   assert(subdom_count.back() == this->nface());
   // TODO: check this is doing the right thing
   _patch_local2global = std::move(face_info.local2global);
@@ -239,7 +243,7 @@ MeshInterface::set_up_serial()
 }
 
 void
-MeshInterface::set_up_parallel()
+Foam2MooseMeshAdapter::set_up_parallel()
 {
   _interface->calcGlobalData();
   _loc2glob = get_local_global_map(_interface);
@@ -248,19 +252,28 @@ MeshInterface::set_up_parallel()
   auto face_info = get_local_face_info<Foam::labelIOList>(*_loc2glob, _interface, _patch_id);
   gather_unique_points(local_point);
   gather_faces(face_info.count, face_info.point_id);
+
+  // Gather the indices of the start of each patch in each rank.
+  // Concatenate them and scan.
   auto global_subdom_count = gather_and_scan_vector<int32_t>(face_info.subdomain_count, *_comm);
+
   int mpi_size;
   MPI_Comm_size(*_comm, &mpi_size);
-  assert(global_subdom_count.size() - 1 == _patch_name.size() * mpi_size);
+  assert(global_subdom_count.size() - 1 == _patch_name.size() * static_cast<size_t>(mpi_size));
   assert(global_subdom_count.back() == this->nface());
-  // TODO: check this is doing the right thing
-  _patch_local2global = std::move(face_info.local2global);
   calc_subdom_and_rank_arrays(std::move(global_subdom_count), _patch_name.size(), mpi_size);
+
+  // Gather the indices of the start of the element index for each rank.
+  // Note that this will be the same as 'global_subdom_count' if there is only
+  // one patch in each rank's decomposition domain.
+  rank_element_offset = mpi_scan<size_t>(face_info.rank_element_count, *_comm);
+
+  _patch_local2global = std::move(face_info.local2global);
 }
 
-MeshInterface::MeshInterface(std::vector<std::string> const & patch_name,
-                             FoamInterface * foam_interface,
-                             MPI_Comm * comm)
+Foam2MooseMeshAdapter::Foam2MooseMeshAdapter(std::vector<std::string> const & patch_name,
+                                             FoamInterface * foam_interface,
+                                             MPI_Comm * comm)
   : _patch_name(patch_name), _interface(foam_interface), _comm(comm)
 {
   _patch_id.reserve(_patch_name.size());
@@ -293,29 +306,29 @@ MeshInterface::MeshInterface(std::vector<std::string> const & patch_name,
   }
 }
 
-MeshInterface::~MeshInterface() = default;
+Foam2MooseMeshAdapter::~Foam2MooseMeshAdapter() = default;
 
 int32_t
-MeshInterface::npoint()
+Foam2MooseMeshAdapter::npoint()
 {
   return _point.size();
 }
 
 int32_t
-MeshInterface::nface()
+Foam2MooseMeshAdapter::nface()
 {
   return _face_offset.size() - 1;
 }
 
 FoamPoint const &
-MeshInterface::point(int32_t i)
+Foam2MooseMeshAdapter::point(int32_t i)
 {
   assert(i >= 0 && i < _point.size());
   return _point[i];
 }
 
 FoamFace
-MeshInterface::face(int32_t i)
+Foam2MooseMeshAdapter::face(int32_t i)
 {
   assert(i >= 0 && i < _face_offset.size());
   return FoamFace(_face_point_id.begin() + _face_offset[i],
@@ -325,13 +338,13 @@ MeshInterface::face(int32_t i)
 }
 
 int
-MeshInterface::get_patch_id(std::string const & name)
+Foam2MooseMeshAdapter::get_patch_id(std::string const & name)
 {
   return _interface->getPatchID(name);
 }
 
 int
-MeshInterface::get_gid(int32_t local, int32_t patch_id) const
+Foam2MooseMeshAdapter::get_gid(int32_t local, int32_t patch_id) const
 {
   auto const & patch_map = _patch_local2global.find(patch_id);
   assert(patch_map != _patch_local2global.end());
@@ -339,7 +352,7 @@ MeshInterface::get_gid(int32_t local, int32_t patch_id) const
 }
 
 int
-MeshInterface::get_moose_id(int32_t global_id)
+Foam2MooseMeshAdapter::get_moose_id(int32_t global_id)
 {
   return _global2moose[global_id];
 }

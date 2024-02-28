@@ -63,20 +63,17 @@ public:
   int32_t subdomain_id() const { return _subdomain_id; }
 };
 
-/*
- * The intention was that the MeshInterface class wuold only exist as the Moose mesh
- * was created but as things got more complex it now lives on. Not all of it is needed
- * and should be refactored so only the memebers that need to persist do.
+/**
+ * Class to help convert an OpenFOAM mesh to a MOOSE one.
  */
-
-class MeshInterface
+class Foam2MooseMeshAdapter
 {
 public:
-  MeshInterface(std::vector<std::string> const & patch_name,
-                FoamInterface * interface,
-                MPI_Comm * comm = nullptr);
-  MeshInterface() = default;
-  ~MeshInterface();
+  Foam2MooseMeshAdapter(std::vector<std::string> const & patch_name,
+                        FoamInterface * interface,
+                        MPI_Comm * comm = nullptr);
+  Foam2MooseMeshAdapter() = default;
+  ~Foam2MooseMeshAdapter();
   std::int32_t npoint();
   std::int32_t nface();
   FoamPoint const & point(int32_t i);
@@ -84,6 +81,8 @@ public:
   int get_patch_id(std::string const & patch_name);
   int get_gid(int32_t local, int32_t patch_id) const;
   int get_moose_id(int32_t global_id);
+
+  size_t rank_element_offset{0};
 
 private:
   std::vector<std::string> _patch_name;
