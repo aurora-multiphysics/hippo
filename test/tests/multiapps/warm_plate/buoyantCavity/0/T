@@ -47,7 +47,7 @@ boundaryField
     int_bottom
     {
         type            fixedValue;
-        value           uniform 300;
+        value           uniform 500;
     }
     int_front
     {

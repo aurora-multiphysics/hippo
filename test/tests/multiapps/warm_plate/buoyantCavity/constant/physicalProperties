@@ -9,43 +9,39 @@ FoamFile
 {
     format      ascii;
     class       dictionary;
-    object      controlDict;
+    location    "constant";
+    object      physicalProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     buoyantFoam;
-
-startFrom       startTime;
-
-startTime       0;
-
-stopAt          endTime;
-
-endTime         5;
-
-deltaT          0.05;
-
-writeControl    timeStep;
-
-writeInterval   1;
-
-// purgeWrite      100;
-
-writeFormat     ascii;
-
-writePrecision  15;
-
-writeCompression off;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable true;
-
-functions
+thermoType
 {
-#includeFunc wallHeatFlux
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          hConst;
+    equationOfState perfectGas;
+    specie          specie;
+    energy          sensibleEnthalpy;
 }
+
+mixture
+{
+    specie
+    {
+        molWeight       28.96;
+    }
+    thermodynamics
+    {
+        Cp              1004.4;
+        Hf              0;
+    }
+    transport
+    {
+        mu              1.831e-05;
+        Pr              0.705;
+    }
+}
+
 
 // ************************************************************************* //

@@ -10,11 +10,11 @@ FoamFile
     format      ascii;
     class       volScalarField;
     location    "0";
-    object      alphat;
+    object      wallHeatFlux;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [1 -1 -1 0 0 0 0];
+dimensions      [1 0 -3 0 0 0 0];
 
 internalField   uniform 0;
 
@@ -22,86 +22,72 @@ boundaryField
 {
     left_back
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     left_bottom
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     left_left
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     left_front
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     left_top
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     int_back
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     int_bottom
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     int_front
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     int_top
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     right_back
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     right_bottom
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     right_front
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     right_right
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
     right_top
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
+        type            calculated;
         value           uniform 0;
     }
 }

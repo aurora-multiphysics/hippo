@@ -34,10 +34,10 @@ namespace Hippo
 // Against my better judgment I am creating a singleton
 // to do the basic initialization of the foam problem
 // I am sure there is a better way to do this
-// but I need to initialize it before I canstruct the
+// but I need to initialize it before I construct the
 // mesh but I may have more than one mesh(is this true?) so can't
 // just have it there
-// Forward declare the implimentation
+// Forward declare the implementation
 struct EnvImpl;
 class FoamInterface
 {
@@ -69,8 +69,12 @@ public:
   Foam::labelList const & uniquePoints();
   Foam::autoPtr<Foam::globalIndex> const & globalIndex();
   Foam::globalIndex const & globalPointNumbering();
+  Foam::fvPatchField<double> const & getWallHeatFlux(const std::string & patch_name);
+  Foam::fvPatchField<double> const & getWallHeatFlux(Foam::label patch_id);
+  // Foam::volScalarField::Boundary const & getWallHeatFlux();
   Foam::Time & getRuntime();
   Foam::argList & getArglist();
   Foam::fvMesh & getMesh();
+  void write();
 };
 }

@@ -1,0 +1,10 @@
+wallHeatFlux1
+{
+  // Mandatory entries (unmodifiable)
+  type wallHeatFlux;
+  libs (fieldFunctionObjects);
+
+  // Optional entries (runtime modifiable)
+  patches (fluid_bottom);
+  qr qr;
+}

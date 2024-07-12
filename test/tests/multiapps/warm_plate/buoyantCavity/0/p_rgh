@@ -1745,7 +1745,7 @@ boundaryField
     {
         type            fixedFluxPressure;
         gradient        uniform 0;
-        value           uniform 2.84742140035087;
+        value           uniform 1.70845284021925;
     }
     int_front
     {

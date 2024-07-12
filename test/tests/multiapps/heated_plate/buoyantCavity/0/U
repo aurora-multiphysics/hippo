@@ -16,35 +16,63 @@ FoamFile
 
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform (0 0 0);
+internalField   uniform (-0.1 0 0);
 
 boundaryField
 {
-    fluid_back
+    left_back
     {
         type            noSlip;
     }
-
-    fluid_bottom
+    left_bottom
     {
         type            noSlip;
     }
-
-    fluid_left
+    left_left
     {
         type            noSlip;
     }
-
-    fluid_front
+    left_front
     {
         type            noSlip;
     }
-    fluid_right
+    left_top
     {
         type            noSlip;
     }
-
-    fluid_top
+    int_back
+    {
+        type            noSlip;
+    }
+    int_bottom
+    {
+        type            noSlip;
+    }
+    int_front
+    {
+        type            noSlip;
+    }
+    int_top
+    {
+        type            noSlip;
+    }
+    right_back
+    {
+        type            noSlip;
+    }
+    right_bottom
+    {
+        type            noSlip;
+    }
+    right_front
+    {
+        type            noSlip;
+    }
+    right_right
+    {
+        type            noSlip;
+    }
+    right_top
     {
         type            noSlip;
     }

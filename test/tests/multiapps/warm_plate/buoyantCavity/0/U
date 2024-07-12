@@ -8,74 +8,73 @@
 FoamFile
 {
     format      ascii;
-    class       volScalarField;
+    class       volVectorField;
     location    "0";
-    object      T;
+    object      U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform 300;
+internalField   uniform (0 0 0);
 
 boundaryField
 {
     left_back
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     left_bottom
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     left_left
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     left_front
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     left_top
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     int_back
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     int_bottom
     {
-        type            fixedValue;
-        value           uniform 300;
+        type            noSlip;
     }
     int_front
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     int_top
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     right_back
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     right_bottom
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     right_front
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     right_right
     {
-        type            zeroGradient;
+        type            noSlip;
     }
     right_top
     {
-        type            zeroGradient;
+        type            noSlip;
     }
 }
 

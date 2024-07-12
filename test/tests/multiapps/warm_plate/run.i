@@ -59,7 +59,7 @@
     [temp]
         family = LAGRANGE
         order = FIRST
-        initial_condition = 300
+        initial_condition = 500
     []
 []
 
@@ -83,12 +83,6 @@
 []
 
 [BCs]
-    [fixed_temp]
-        type = DirichletBC
-        variable = temp
-        boundary = solid_bottom
-        value = 310
-    []
     [fluid_interface]
         type = CoupledVarNeumannBC
         variable = temp
@@ -106,15 +100,15 @@
     [thermal-conduction]
         type = ADHeatConductionMaterial
         specific_heat = 420
-        thermal_conductivity = 25
+        thermal_conductivity = 50
     []
 []
 
 [Executioner]
     type = Transient
     start_time = 0
-    end_time = 5
-    dt = 0.05
+    end_time = 1
+    dt = 0.01
 
     solve_type = 'PJFNK'
 
