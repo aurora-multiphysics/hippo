@@ -2,8 +2,8 @@
     [solid]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 20
-        ny = 5
+        nx = 100
+        ny = 25
         nz = 1
         xmin = 0.5
         xmax = 1.5
@@ -45,7 +45,7 @@
     [temp]
         family = LAGRANGE
         order = FIRST
-        initial_condition = 500
+        initial_condition = 350
     []
 []
 

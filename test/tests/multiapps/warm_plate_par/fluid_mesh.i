@@ -3,8 +3,8 @@
     [left]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
-        ny = 15
+        nx = 50
+        ny = 75
         nz = 1
         xmin = 0.0
         xmax = 0.5
@@ -19,8 +19,8 @@
     [fluid_interface]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 20
-        ny = 15
+        nx = 100
+        ny = 75
         nz = 1
         xmin = 0.5
         xmax = 1.5
@@ -35,8 +35,8 @@
     [right]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 40
-        ny = 15
+        nx = 200
+        ny = 75
         nz = 1
         xmin = 1.5
         xmax = 3.5

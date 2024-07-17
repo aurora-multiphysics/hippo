@@ -20,99 +20,99 @@ FoamFile
     {
         type            wall;
         physicalType    patch;
-        nFaces          150;
-        startFace       2015;
+        nFaces          3750;
+        startFace       52075;
     }
     left_bottom
     {
         type            wall;
         physicalType    patch;
-        nFaces          10;
-        startFace       2165;
+        nFaces          50;
+        startFace       55825;
     }
     left_left
     {
         type            wall;
         physicalType    patch;
-        nFaces          15;
-        startFace       2175;
+        nFaces          75;
+        startFace       55875;
     }
     left_front
     {
         type            wall;
         physicalType    patch;
-        nFaces          150;
-        startFace       2190;
+        nFaces          3750;
+        startFace       55950;
     }
     left_top
     {
         type            wall;
         physicalType    patch;
-        nFaces          10;
-        startFace       2340;
+        nFaces          50;
+        startFace       59700;
     }
     int_back
     {
         type            wall;
         physicalType    patch;
-        nFaces          300;
-        startFace       2350;
+        nFaces          7500;
+        startFace       59750;
     }
     int_bottom
     {
         type            wall;
         physicalType    patch;
-        nFaces          20;
-        startFace       2650;
+        nFaces          100;
+        startFace       67250;
     }
     int_front
     {
         type            wall;
         physicalType    patch;
-        nFaces          300;
-        startFace       2670;
+        nFaces          7500;
+        startFace       67350;
     }
     int_top
     {
         type            wall;
         physicalType    patch;
-        nFaces          20;
-        startFace       2970;
+        nFaces          100;
+        startFace       74850;
     }
     right_back
     {
         type            wall;
         physicalType    patch;
-        nFaces          600;
-        startFace       2990;
+        nFaces          15000;
+        startFace       74950;
     }
     right_bottom
     {
         type            wall;
         physicalType    patch;
-        nFaces          40;
-        startFace       3590;
+        nFaces          200;
+        startFace       89950;
     }
     right_front
     {
         type            wall;
         physicalType    patch;
-        nFaces          600;
-        startFace       3630;
+        nFaces          15000;
+        startFace       90150;
     }
     right_right
     {
         type            wall;
         physicalType    patch;
-        nFaces          15;
-        startFace       4230;
+        nFaces          75;
+        startFace       105150;
     }
     right_top
     {
         type            wall;
         physicalType    patch;
-        nFaces          40;
-        startFace       4245;
+        nFaces          200;
+        startFace       105225;
     }
 )
 

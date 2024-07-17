@@ -53,7 +53,7 @@ boundaryField
     int_bottom
     {
         type            calculated;
-        value           uniform 0.696616856356591;
+        value           uniform 0.995166937652272;
     }
     int_front
     {

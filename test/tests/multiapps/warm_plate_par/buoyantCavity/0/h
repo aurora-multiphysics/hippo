@@ -59,7 +59,7 @@ boundaryField
     int_bottom
     {
         type            fixedEnergy;
-        value           uniform 202738.14;
+        value           uniform 52078.14;
     }
     int_front
     {

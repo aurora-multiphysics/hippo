@@ -1,0 +1,148 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+  version 2.0;
+  format ascii;
+  class dictionary;
+  object createPatchDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+pointSync false;
+
+patches(
+    {
+      name left_back;
+      constructFrom patches;
+      patches(patch0);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name left_bottom;
+      constructFrom patches;
+      patches(patch1);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name left_left;
+      constructFrom patches;
+      patches(patch2);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name left_front;
+      constructFrom patches;
+      patches(patch3);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name left_top;
+      constructFrom patches;
+      patches(patch4);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name int_back;
+      constructFrom patches;
+      patches(patch5);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name int_bottom;
+      constructFrom patches;
+      patches(patch6);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name int_front;
+      constructFrom patches;
+      patches(patch7);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name int_top;
+      constructFrom patches;
+      patches(patch8);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name right_back;
+      constructFrom patches;
+      patches(patch9);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name right_bottom;
+      constructFrom patches;
+      patches(patch10);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name right_front;
+      constructFrom patches;
+      patches(patch11);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name right_right;
+      constructFrom patches;
+      patches(patch12);
+      patchInfo
+      {
+        type wall;
+      }
+    },
+    {
+      name right_top;
+      constructFrom patches;
+      patches(patch13);
+      patchInfo
+      {
+        type wall;
+      }
+    }
+);
+
+// ************************************************************************* //
