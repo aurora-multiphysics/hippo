@@ -1,0 +1,96 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      epsilon;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -3 0 0 0 0];
+
+internalField   uniform 4e-06;
+
+boundaryField
+{
+    left_back
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    left_bottom
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    left_left
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    left_front
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    left_top
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    int_back
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    int_bottom
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    int_front
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    int_top
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    right_back
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    right_bottom
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    right_front
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    right_right
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+    right_top
+    {
+        type            epsilonWallFunction;
+        value           uniform 4e-06;
+    }
+}
+
+
+// ************************************************************************* //

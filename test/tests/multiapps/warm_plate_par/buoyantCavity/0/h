@@ -1,0 +1,109 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      h;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 1858.14000000002;
+
+boundaryField
+{
+    left_back
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    left_bottom
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    left_left
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    left_front
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    left_top
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    int_back
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    int_bottom
+    {
+        type            fixedEnergy;
+        value           uniform 202738.14;
+    }
+    int_front
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    int_top
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    right_back
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    right_bottom
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    right_front
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    right_right
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+    right_top
+    {
+        type            gradientEnergy;
+        gradient        uniform 0;
+        value           uniform 1858.14000000002;
+    }
+}
+
+
+// ************************************************************************* //

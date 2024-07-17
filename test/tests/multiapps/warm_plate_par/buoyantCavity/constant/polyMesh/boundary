@@ -1,0 +1,119 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       polyBoundaryMesh;
+    location    "constant/polyMesh";
+    object      boundary;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+14
+(
+    left_back
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          150;
+        startFace       2015;
+    }
+    left_bottom
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          10;
+        startFace       2165;
+    }
+    left_left
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          15;
+        startFace       2175;
+    }
+    left_front
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          150;
+        startFace       2190;
+    }
+    left_top
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          10;
+        startFace       2340;
+    }
+    int_back
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          300;
+        startFace       2350;
+    }
+    int_bottom
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          20;
+        startFace       2650;
+    }
+    int_front
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          300;
+        startFace       2670;
+    }
+    int_top
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          20;
+        startFace       2970;
+    }
+    right_back
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          600;
+        startFace       2990;
+    }
+    right_bottom
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          40;
+        startFace       3590;
+    }
+    right_front
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          600;
+        startFace       3630;
+    }
+    right_right
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          15;
+        startFace       4230;
+    }
+    right_top
+    {
+        type            wall;
+        physicalType    patch;
+        nFaces          40;
+        startFace       4245;
+    }
+)
+
+// ************************************************************************* //

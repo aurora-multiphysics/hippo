@@ -1,0 +1,124 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      omega;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform 0.12;
+
+boundaryField
+{
+    left_back
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    left_bottom
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    left_left
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    left_front
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    left_top
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    int_back
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    int_bottom
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    int_front
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    int_top
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    right_back
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    right_bottom
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    right_front
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    right_right
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+    right_top
+    {
+        beta1           0.075;
+        blended         0;
+        type            omegaWallFunction;
+        value           uniform 0.12;
+    }
+}
+
+
+// ************************************************************************* //

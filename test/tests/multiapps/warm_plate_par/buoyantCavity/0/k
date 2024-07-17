@@ -1,0 +1,96 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      k;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0.000375;
+
+boundaryField
+{
+    left_back
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    left_bottom
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    left_left
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    left_front
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    left_top
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    int_back
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    int_bottom
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    int_front
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    int_top
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    right_back
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    right_bottom
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    right_front
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    right_right
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+    right_top
+    {
+        type            kqRWallFunction;
+        value           uniform 0.000375;
+    }
+}
+
+
+// ************************************************************************* //
