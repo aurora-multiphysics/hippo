@@ -83,27 +83,14 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     printf("subdomains.size(): %lu\n", subdomains.size());
     for (auto i = 0U; i < subdomains.size(); ++i)
     {
-      // patch_counts[i] = _app.append_patch_face_T(subdomains[i], foam_vol_t);
-
-      /** TODO:
-       * PreCICE uses:
-       *   boundaryField()[patchID].snGrad() * -kappa
-       * for the heat flux, where kappa = effective conductivity.
-       *
-       * Is this different to wallHeatFlux?
-       */
-
-      auto & whf = _interface->getWallHeatFlux(subdomains[i]);
-      printf("whf = ");
-      for (const auto v : whf)
+      auto n_added = _interface->getWallHeatFlux(foam_vol_t, subdomains[i]);
+      printf("foam_vol_t=[");
+      for (auto v : foam_vol_t)
       {
-        foam_vol_t.emplace_back(v);
-        printf("  %f ", v);
+        printf("%f ", v);
       }
-      printf("\n");
-      patch_counts[i] = whf.size();
-      // auto patch_boundary = hf[i];
-      // std::copy(hf[i])
+      printf("]\n");
+      patch_counts[i] = n_added;
     }
     std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
 

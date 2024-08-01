@@ -5,6 +5,7 @@
 #include "fvCFD_moose.h"
 #include "objectRegistry.H"
 #include "word.H"
+#include <cstdio>
 
 namespace Hippo
 {
@@ -127,6 +128,35 @@ FoamInterface::write()
   _impl->getMesh().write();
 }
 
+std::size_t
+FoamInterface::getWallHeatFlux(std::vector<double> & fill_vector, const Foam::label patch_id)
+{
+  static const Foam::word WALL_HEAT_FLUX = "wallHeatFlux";
+
+  auto & impl = getImpl();
+
+  Foam::functionObjects::wallHeatFlux wall_flux(
+      WALL_HEAT_FLUX, impl->getRuntime(), impl->_runtime.controlDict());
+  wall_flux.execute();
+
+  auto patch = impl->getPatch(patch_id);
+  auto wall_heat_flux = impl->_mesh.lookupObject<Foam::volScalarField>(WALL_HEAT_FLUX);
+  auto & hf_bf = wall_heat_flux.boundaryField();
+  printf("hf_bf.size()=%d\n", hf_bf.size());
+  printf("hf_bf[patch.index()].size()=%d\n", hf_bf[patch.index()].size());
+  printf("hf_bf=[ ");
+  // TODO(hsaunders1904): Copying here is unfortunate. However, I get 0s in some elements if I just
+  //  return the `Foam::fvPatchField<double>&` from this function. I'm not sure about the scope of
+  //  the objects returned by 'lookupObject', maybe it gets deallocated?
+  for (const auto v : hf_bf[patch.index()])
+  {
+    printf("%f ", v);
+    fill_vector.emplace_back(v);
+  }
+  printf("]\n");
+  return hf_bf[patch.index()].size();
+}
+
 Foam::fvPatchField<double> const &
 FoamInterface::getWallHeatFlux(const Foam::label patch_id)
 {
@@ -156,6 +186,14 @@ FoamInterface::getWallHeatFlux(const Foam::label patch_id)
   auto patch = impl->getPatch(patch_id);
   auto wall_heat_flux = impl->_mesh.lookupObject<Foam::volScalarField>(WALL_HEAT_FLUX);
   auto & hf_bf = wall_heat_flux.boundaryField();
+  printf("hf_bf.size()=%d\n", hf_bf.size());
+  printf("hf_bf[patch.index()].size()=%d\n", hf_bf[patch.index()].size());
+  printf("hf_bf=[ ");
+  for (const auto v : hf_bf[patch.index()])
+  {
+    printf("%f ", v);
+  }
+  printf("]\n");
   return hf_bf[patch.index()];
 }
 
@@ -188,6 +226,15 @@ FoamInterface::getWallHeatFlux(const std::string & patch_name)
   auto patch = impl->getPatch(patch_name);
   auto wall_heat_flux = impl->_mesh.lookupObject<Foam::volScalarField>(WALL_HEAT_FLUX);
   auto & hf_bf = wall_heat_flux.boundaryField();
+  // printf("hf_bf.size()=%d\n", hf_bf.size());
+  // printf("hf_bf[patch.index()].size()=%d\n", hf_bf[patch.index()].size());
+  // printf("hf_bf=[ ");
+  // for (const auto v : hf_bf[patch.index()])
+  // {
+  //   printf("%f ", v);
+  // }
+  // printf("]\n");
+
   return hf_bf[patch.index()];
 }
 

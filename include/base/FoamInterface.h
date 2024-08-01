@@ -70,6 +70,7 @@ public:
   Foam::autoPtr<Foam::globalIndex> const & globalIndex();
   Foam::globalIndex const & globalPointNumbering();
   Foam::fvPatchField<double> const & getWallHeatFlux(const std::string & patch_name);
+  std::size_t getWallHeatFlux(std::vector<double> & fill_vector, Foam::label patch_id);
   Foam::fvPatchField<double> const & getWallHeatFlux(Foam::label patch_id);
   // Foam::volScalarField::Boundary const & getWallHeatFlux();
   Foam::Time & getRuntime();
