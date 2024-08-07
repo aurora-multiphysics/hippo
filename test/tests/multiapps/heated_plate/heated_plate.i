@@ -2,15 +2,15 @@
     [solid]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 20
-        ny = 5
+        nx = 32
+        ny = 16
         nz = 1
-        xmin = 0.5
-        xmax = 1.5
-        ymin = 0
-        ymax = 0.25
+        xmin = 0
+        xmax = 1
+        ymin = -0.25
+        ymax = 0
         zmin = 0
-        zmax = 0.5
+        zmax = 0.4
         elem_type = HEX8
         boundary_name_prefix = solid
     []
@@ -20,7 +20,7 @@
     [hippo]
         type = TransientMultiApp
         app_type = hippoApp
-        execute_on = timestep_begin
+        execute_on = timestep_end
         input_files = 'fluid.i'
     []
 []
@@ -34,20 +34,6 @@
     []
 
     [T_to_fluid]
-        # How do we do this transfer?
-        # I guess we need a variable that holds the boundary values that we'll
-        # copy to the MOOSE mesh?
-
-        # This case is 'nice' in that the whole 'solid_top' boundary is
-        # incident on the fluid domain. What happens if part of the boundary is
-        # not incident on the fluid domain?
-        # Maybe the 'transfer' will deal with this for us?
-
-        # Also, how do we deal with having multiple solid/fluid domains?
-        # I guess we can just define a transfer for every solid/fluid boundary.
-
-        # Enabling this transfer (or the nearest node one) are causing a
-        # libMesh access error... joy
         type = MultiAppGeometricInterpolationTransfer
         source_variable = temp
         to_multi_app = hippo
@@ -106,15 +92,15 @@
     [thermal-conduction]
         type = ADHeatConductionMaterial
         specific_heat = 420
-        thermal_conductivity = 25
+        thermal_conductivity = 100
     []
 []
 
 [Executioner]
     type = Transient
     start_time = 0
-    end_time = 5
-    dt = 0.05
+    end_time = 1
+    dt = 0.01
 
     solve_type = 'PJFNK'
 

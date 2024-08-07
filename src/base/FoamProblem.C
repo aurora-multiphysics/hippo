@@ -74,7 +74,7 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     // Not sure if we can pre-allocate this - we need the number of elements
     // in the subdomain owned by the current rank. We count this in a loop
     // later.
-    std::vector<Real> foam_vol_t;
+    std::vector<Real> foam_wall_heat_flux;
 
     auto subdomains = mesh.getSubdomainList();
     // The number of elements in each subdomain of the mesh
@@ -83,9 +83,9 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     printf("subdomains.size(): %lu\n", subdomains.size());
     for (auto i = 0U; i < subdomains.size(); ++i)
     {
-      auto n_added = _interface->getWallHeatFlux(foam_vol_t, subdomains[i]);
-      printf("foam_vol_t=[");
-      for (auto v : foam_vol_t)
+      auto n_added = _interface->getWallHeatFlux(foam_wall_heat_flux, subdomains[i]);
+      printf("setting heat flux values on MOOSE mesh: [");
+      for (auto v : foam_wall_heat_flux)
       {
         printf("%f ", v);
       }
@@ -104,10 +104,10 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
         auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
         assert(elem_ptr);
         auto dof = elem_ptr->dof_number(var.sys().number(), _face_T, 0);
-        // var.sys().solution().set(dof, foam_vol_t[elem]);
+        // var.sys().solution().set(dof, foam_wall_heat_flux[elem]);
 
         // TODO: does the above need to be negative, such that the flux is reversed? I.e.:
-        var.sys().solution().set(dof, -foam_vol_t[elem]);
+        var.sys().solution().set(dof, -foam_wall_heat_flux[elem]);
       }
     }
     var.sys().solution().close();
@@ -144,6 +144,12 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
         std::copy(buf.begin(), buf.end(), std::back_inserter(moose_T));
       }
       // Copy the values from the MOOSE temperature vector into OpenFOAM's
+      printf("setting values on OpenFOAM patch: [ ", i);
+      for (const auto v : moose_T)
+      {
+        printf("%f ", v);
+      }
+      printf("]\n");
       _app.set_patch_face_t(subdomains[i], moose_T);
       moose_T.clear();
     }
