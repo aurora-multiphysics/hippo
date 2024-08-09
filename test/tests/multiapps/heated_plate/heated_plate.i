@@ -26,18 +26,27 @@
 []
 
 [Transfers]
-    [T_from_fluid]
+    [heat_flux_from_fluid]
         type = MultiAppGeometricInterpolationTransfer
-        source_variable = T
+        source_variable = wall_heat_flux
         from_multi_app = hippo
-        variable = fluid_T
+        variable = fluid_wall_heat_flux
     []
 
-    [T_to_fluid]
+    [temperature_to_fluid]
         type = MultiAppGeometricInterpolationTransfer
         source_variable = temp
         to_multi_app = hippo
-        variable = T
+        variable = wall_temperature
+    []
+[]
+
+[BCs]
+    [fluid_interface]
+        type = CoupledVarNeumannBC
+        variable = temp
+        boundary = solid_top
+        v = fluid_wall_heat_flux
     []
 []
 
@@ -50,7 +59,7 @@
 []
 
 [AuxVariables]
-    [fluid_T]
+    [fluid_wall_heat_flux]
         family = LAGRANGE
         order = FIRST
         initial_condition = 300
@@ -75,19 +84,13 @@
         boundary = solid_bottom
         value = 310
     []
-    [fluid_interface]
-        type = CoupledVarNeumannBC
-        variable = temp
-        boundary = solid_top
-        v = fluid_T
-    []
 []
 
 [Materials]
     [thermal-density]
         type = ADGenericConstantMaterial
         prop_names = 'density'
-        prop_values = 0.2381
+        prop_values = 2.2381
     []
     [thermal-conduction]
         type = ADHeatConductionMaterial
@@ -99,15 +102,13 @@
 [Executioner]
     type = Transient
     start_time = 0
-    end_time = 1
-    dt = 0.01
+    end_time = 5
+    dt = 0.05
 
     solve_type = 'PJFNK'
-
-    # petsc_options = '-snes_ksp_ew'
+    petsc_options = '-snes_ksp_ew'
     petsc_options_iname = '-pc_type -pc_hypre_type'
     petsc_options_value = 'hypre boomeramg'
-    l_tol = 1e-6
     nl_abs_tol = 1e-9
     nl_rel_tol = 1e-8
 []
