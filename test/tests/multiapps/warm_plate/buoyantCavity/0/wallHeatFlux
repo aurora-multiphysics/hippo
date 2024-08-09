@@ -22,8 +22,7 @@ boundaryField
 {
     left_back
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
     }
     left_bottom
     {
@@ -37,8 +36,7 @@ boundaryField
     }
     left_front
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
     }
     left_top
     {
@@ -47,8 +45,7 @@ boundaryField
     }
     int_back
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
     }
     int_bottom
     {
@@ -56,33 +53,32 @@ boundaryField
         value           nonuniform List<scalar>
 20
 (
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935816
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
-313.034006935814
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610987
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
+109861.098610986
 )
 ;
     }
     int_front
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
     }
     int_top
     {
@@ -91,8 +87,7 @@ boundaryField
     }
     right_back
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
     }
     right_bottom
     {
@@ -101,8 +96,7 @@ boundaryField
     }
     right_front
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
     }
     right_right
     {

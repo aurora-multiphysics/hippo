@@ -26,32 +26,18 @@
 []
 
 [Transfers]
-    [T_from_fluid]
+    [heat_flux_from_fluid]
         type = MultiAppGeometricInterpolationTransfer
-        source_variable = T
+        source_variable = whf
         from_multi_app = hippo
-        variable = fluid_T
+        variable = fluid_heat_flux
     []
 
-    [T_to_fluid]
-        # How do we do this transfer?
-        # I guess we need a variable that holds the boundary values that we'll
-        # copy to the MOOSE mesh?
-
-        # This case is 'nice' in that the whole 'solid_top' boundary is
-        # incident on the fluid domain. What happens if part of the boundary is
-        # not incident on the fluid domain?
-        # Maybe the 'transfer' will deal with this for us?
-
-        # Also, how do we deal with having multiple solid/fluid domains?
-        # I guess we can just define a transfer for every solid/fluid boundary.
-
-        # Enabling this transfer (or the nearest node one) are causing a
-        # libMesh access error... joy
+    [wall_temperature_to_fluid]
         type = MultiAppGeometricInterpolationTransfer
         source_variable = temp
         to_multi_app = hippo
-        variable = T
+        variable = wt
     []
 []
 
@@ -64,10 +50,10 @@
 []
 
 [AuxVariables]
-    [fluid_T]
+    [fluid_heat_flux]
         family = LAGRANGE
         order = FIRST
-        initial_condition = 300
+        initial_condition = 0
     []
 []
 
@@ -87,7 +73,7 @@
         type = CoupledVarNeumannBC
         variable = temp
         boundary = solid_top
-        v = fluid_T
+        v = fluid_heat_flux
     []
 []
 
@@ -100,7 +86,7 @@
     [thermal-conduction]
         type = ADHeatConductionMaterial
         specific_heat = 420
-        thermal_conductivity = 50
+        thermal_conductivity = 100
     []
 []
 
@@ -111,8 +97,7 @@
     dt = 0.01
 
     solve_type = 'PJFNK'
-
-    # petsc_options = '-snes_ksp_ew'
+    petsc_options = '-snes_ksp_ew'
     petsc_options_iname = '-pc_type -pc_hypre_type'
     petsc_options_value = 'hypre boomeramg'
     l_tol = 1e-6

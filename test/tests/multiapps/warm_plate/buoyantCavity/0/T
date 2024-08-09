@@ -22,7 +22,7 @@ boundaryField
 {
     left_back
     {
-        type            zeroGradient;
+        type            empty;
     }
     left_bottom
     {
@@ -30,11 +30,12 @@ boundaryField
     }
     left_left
     {
-        type            zeroGradient;
+        type            fixedValue;
+        value           uniform 300;
     }
     left_front
     {
-        type            zeroGradient;
+        type            empty;
     }
     left_top
     {
@@ -42,7 +43,7 @@ boundaryField
     }
     int_back
     {
-        type            zeroGradient;
+        type            empty;
     }
     int_bottom
     {
@@ -51,7 +52,7 @@ boundaryField
     }
     int_front
     {
-        type            zeroGradient;
+        type            empty;
     }
     int_top
     {
@@ -59,7 +60,7 @@ boundaryField
     }
     right_back
     {
-        type            zeroGradient;
+        type            empty;
     }
     right_bottom
     {
@@ -67,7 +68,7 @@ boundaryField
     }
     right_front
     {
-        type            zeroGradient;
+        type            empty;
     }
     right_right
     {

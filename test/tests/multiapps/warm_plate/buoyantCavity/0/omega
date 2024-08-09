@@ -22,10 +22,7 @@ boundaryField
 {
     left_back
     {
-        beta1           0.075;
-        blended         0;
-        type            omegaWallFunction;
-        value           uniform 0.12;
+        type            empty;
     }
     left_bottom
     {
@@ -43,10 +40,7 @@ boundaryField
     }
     left_front
     {
-        beta1           0.075;
-        blended         0;
-        type            omegaWallFunction;
-        value           uniform 0.12;
+        type            empty;
     }
     left_top
     {
@@ -57,10 +51,7 @@ boundaryField
     }
     int_back
     {
-        beta1           0.075;
-        blended         0;
-        type            omegaWallFunction;
-        value           uniform 0.12;
+        type            empty;
     }
     int_bottom
     {
@@ -71,10 +62,7 @@ boundaryField
     }
     int_front
     {
-        beta1           0.075;
-        blended         0;
-        type            omegaWallFunction;
-        value           uniform 0.12;
+        type            empty;
     }
     int_top
     {
@@ -85,10 +73,7 @@ boundaryField
     }
     right_back
     {
-        beta1           0.075;
-        blended         0;
-        type            omegaWallFunction;
-        value           uniform 0.12;
+        type            empty;
     }
     right_bottom
     {
@@ -99,10 +84,7 @@ boundaryField
     }
     right_front
     {
-        beta1           0.075;
-        blended         0;
-        type            omegaWallFunction;
-        value           uniform 0.12;
+        type            empty;
     }
     right_right
     {

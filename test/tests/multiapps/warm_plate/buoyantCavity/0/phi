@@ -2041,8 +2041,8 @@ boundaryField
 {
     left_back
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
+        value           nonuniform List<scalar> 0();
     }
     left_bottom
     {
@@ -2056,8 +2056,8 @@ boundaryField
     }
     left_front
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
+        value           nonuniform List<scalar> 0();
     }
     left_top
     {
@@ -2066,8 +2066,8 @@ boundaryField
     }
     int_back
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
+        value           nonuniform List<scalar> 0();
     }
     int_bottom
     {
@@ -2076,8 +2076,8 @@ boundaryField
     }
     int_front
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
+        value           nonuniform List<scalar> 0();
     }
     int_top
     {
@@ -2086,8 +2086,8 @@ boundaryField
     }
     right_back
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
+        value           nonuniform List<scalar> 0();
     }
     right_bottom
     {
@@ -2096,8 +2096,8 @@ boundaryField
     }
     right_front
     {
-        type            calculated;
-        value           uniform 0;
+        type            empty;
+        value           nonuniform List<scalar> 0();
     }
     right_right
     {

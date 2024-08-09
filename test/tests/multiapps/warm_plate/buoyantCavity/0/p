@@ -22,8 +22,7 @@ boundaryField
 {
     left_back
     {
-        type            calculated;
-        value           uniform 100000;
+        type            empty;
     }
     left_bottom
     {
@@ -37,8 +36,7 @@ boundaryField
     }
     left_front
     {
-        type            calculated;
-        value           uniform 100000;
+        type            empty;
     }
     left_top
     {
@@ -47,8 +45,7 @@ boundaryField
     }
     int_back
     {
-        type            calculated;
-        value           uniform 100000;
+        type            empty;
     }
     int_bottom
     {
@@ -57,8 +54,7 @@ boundaryField
     }
     int_front
     {
-        type            calculated;
-        value           uniform 100000;
+        type            empty;
     }
     int_top
     {
@@ -67,8 +63,7 @@ boundaryField
     }
     right_back
     {
-        type            calculated;
-        value           uniform 100000;
+        type            empty;
     }
     right_bottom
     {
@@ -77,8 +72,7 @@ boundaryField
     }
     right_front
     {
-        type            calculated;
-        value           uniform 100000;
+        type            empty;
     }
     right_right
     {

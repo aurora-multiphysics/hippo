@@ -14,7 +14,12 @@
 []
 
 [AuxVariables]
-  [T]
+  [whf]
+    family = MONOMIAL
+    order = CONSTANT
+    initial_condition = 0
+  []
+  [wt]
     family = MONOMIAL
     order = CONSTANT
     initial_condition = 300
@@ -23,17 +28,15 @@
 
 [Problem]
   type=BuoyantFoamProblem
-  output_variable = T
+  wall_heat_flux = whf
+  wall_temperature = wt
 []
 
 [Executioner]
   type = Transient
   start_time = 0
   end_time = 1
-  dt = 0.1
-  solve_type = 'PJFNK'
-  petsc_options_iname = '-pc_type -pc_hypre_type'
-  petsc_options_value = 'hypre boomeramg'
+  dt = 0.01
   [./TimeStepper]
     type = FoamTimeStepper
   [../]

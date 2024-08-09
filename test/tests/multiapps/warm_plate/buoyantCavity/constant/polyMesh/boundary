@@ -18,7 +18,7 @@ FoamFile
 (
     left_back
     {
-        type            wall;
+        type            empty;
         physicalType    patch;
         nFaces          150;
         startFace       2015;
@@ -39,7 +39,7 @@ FoamFile
     }
     left_front
     {
-        type            wall;
+        type            empty;
         physicalType    patch;
         nFaces          150;
         startFace       2190;
@@ -53,7 +53,7 @@ FoamFile
     }
     int_back
     {
-        type            wall;
+        type            empty;
         physicalType    patch;
         nFaces          300;
         startFace       2350;
@@ -67,7 +67,7 @@ FoamFile
     }
     int_front
     {
-        type            wall;
+        type            empty;
         physicalType    patch;
         nFaces          300;
         startFace       2670;
@@ -81,7 +81,7 @@ FoamFile
     }
     right_back
     {
-        type            wall;
+        type            empty;
         physicalType    patch;
         nFaces          600;
         startFace       2990;
@@ -95,7 +95,7 @@ FoamFile
     }
     right_front
     {
-        type            wall;
+        type            empty;
         physicalType    patch;
         nFaces          600;
         startFace       3630;
