@@ -15,8 +15,10 @@ FoamProblem::validParams()
 {
   auto params = ExternalProblem::validParams();
   params.addRequiredParam<std::string>(
-      FoamProblem::OUTPUT_VARIABLE_NAME,
-      "The name of the variable to write the OpenFOAM boundary temperature into.");
+      FoamProblem::WALL_TEMP_VAR, "The name of the variable to write the wall temperature into.");
+  params.addRequiredParam<std::string>(
+      FoamProblem::WALL_HEAT_FLUX_VAR,
+      "The name of the variable to write the wall heat flux into.");
   return params;
 }
 
@@ -64,12 +66,13 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
 {
   auto & mesh = this->mesh();
 
-  const auto out_var_id = parameters().get<std::string>(FoamProblem::OUTPUT_VARIABLE_NAME);
-  auto & var = getVariable(0, out_var_id);
-  _face_T = var.number();
-
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
+    const auto wall_heat_flux_var_id =
+        parameters().get<std::string>(FoamProblem::WALL_HEAT_FLUX_VAR);
+    auto & wall_heat_flux_var = getVariable(0, wall_heat_flux_var_id);
+    _wall_heat_flux = wall_heat_flux_var.number();
+
     // Vector to hold the temperature on the elements in every subdomain
     // Not sure if we can pre-allocate this - we need the number of elements
     // in the subdomain owned by the current rank. We count this in a loop
@@ -84,12 +87,6 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     for (auto i = 0U; i < subdomains.size(); ++i)
     {
       auto n_added = _interface->getWallHeatFlux(foam_wall_heat_flux, subdomains[i]);
-      printf("setting heat flux values on MOOSE mesh: [");
-      for (auto v : foam_wall_heat_flux)
-      {
-        printf("%f ", v);
-      }
-      printf("]\n");
       patch_counts[i] = n_added;
     }
     std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
@@ -99,21 +96,28 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     for (auto i = 0U; i < subdomains.size(); ++i)
     {
       // Set the face temperatures on the MOOSE mesh
+      printf("setting heat flux values on MOOSE mesh: [ ");
       for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
       {
         auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
         assert(elem_ptr);
-        auto dof = elem_ptr->dof_number(var.sys().number(), _face_T, 0);
-        // var.sys().solution().set(dof, foam_wall_heat_flux[elem]);
+        auto dof = elem_ptr->dof_number(wall_heat_flux_var.sys().number(), _wall_heat_flux, 0);
 
-        // TODO: does the above need to be negative, such that the flux is reversed? I.e.:
-        var.sys().solution().set(dof, -foam_wall_heat_flux[elem]);
+        // Flip the heat flux since we want it as viewed from the other side of the boundary.
+        auto hf_value = -foam_wall_heat_flux[elem];
+        printf("%f ", hf_value);
+        wall_heat_flux_var.sys().solution().set(dof, hf_value);
       }
+      printf("]\n");
     }
-    var.sys().solution().close();
+    wall_heat_flux_var.sys().solution().close();
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
   {
+    const auto wall_temperature_var_id = parameters().get<std::string>(FoamProblem::WALL_TEMP_VAR);
+    auto & wall_temperature_var = getVariable(0, wall_temperature_var_id);
+    _wall_temperature = wall_temperature_var.number();
+
     auto subdomains = mesh.getSubdomainList();
     // The number of elements in each subdomain of the mesh
     // Allocate an extra element as we'll accumulate these counts later
@@ -137,14 +141,14 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
         auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
         assert(elem_ptr);
         // Find the dof number of the element
-        auto dof = elem_ptr->dof_number(var.number(), _face_T, 0);
+        auto dof = elem_ptr->dof_number(wall_temperature_var.number(), _wall_temperature, 0);
 
         // Insert the element's temperature into the MOOSE temperature vector
-        var.sys().solution().get({dof}, buf);
+        wall_temperature_var.sys().solution().get({dof}, buf);
         std::copy(buf.begin(), buf.end(), std::back_inserter(moose_T));
       }
       // Copy the values from the MOOSE temperature vector into OpenFOAM's
-      printf("setting values on OpenFOAM patch: [ ", i);
+      printf("setting values on OpenFOAM patch: [ ");
       for (const auto v : moose_T)
       {
         printf("%f ", v);
@@ -154,6 +158,7 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
       moose_T.clear();
     }
     _interface->write();
+    wall_temperature_var.sys().solution().close();
   }
 }
 
