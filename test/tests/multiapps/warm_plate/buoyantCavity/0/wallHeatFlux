@@ -50,7 +50,7 @@ boundaryField
     int_bottom
     {
         type            calculated;
-        value           nonuniform List<scalar>
+        value           nonuniform List<scalar> 
 20
 (
 109861.098610986

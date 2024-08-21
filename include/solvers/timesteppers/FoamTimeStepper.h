@@ -16,6 +16,8 @@ public:
   virtual Real computeDT();
   virtual void init();
 
+  void preStep() override { _interface->setDT(_dt); }
+
 protected:
   Hippo::FoamInterface * _interface;
 };

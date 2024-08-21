@@ -16,7 +16,7 @@ FoamFile
 
 dimensions      [1 -1 -2 0 0 0 0];
 
-internalField   nonuniform List<scalar>
+internalField   nonuniform List<scalar> 
 1050
 (
 3.03724759543547
@@ -1088,7 +1088,7 @@ boundaryField
     {
         type            fixedFluxPressure;
         gradient        uniform 0;
-        value           nonuniform List<scalar>
+        value           nonuniform List<scalar> 
 15
 (
 3.03724759543547

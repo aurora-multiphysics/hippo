@@ -1,9 +1,12 @@
 #pragma once
-#include <vector>
-#include <string>
-#include <memory>
-#include <iostream>
+
 #include <mpi.h>
+
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 /*
  * In theory the class through which all calls to the OpenFOAM "environment" are made
@@ -30,6 +33,12 @@ class Field;
 
 namespace Hippo
 {
+
+namespace fs = std::filesystem;
+
+struct FoamCheckpoint
+{
+};
 
 // Against my better judgment I am creating a singleton
 // to do the basic initialization of the foam problem
@@ -69,13 +78,16 @@ public:
   Foam::labelList const & uniquePoints();
   Foam::autoPtr<Foam::globalIndex> const & globalIndex();
   Foam::globalIndex const & globalPointNumbering();
-  Foam::fvPatchField<double> const & getWallHeatFlux(const std::string & patch_name);
+  // Foam::fvPatchField<double> const & getWallHeatFlux(const std::string & patch_name);
   std::size_t getWallHeatFlux(std::vector<double> & fill_vector, Foam::label patch_id);
-  Foam::fvPatchField<double> const & getWallHeatFlux(Foam::label patch_id);
+  // Foam::fvPatchField<double> const & getWallHeatFlux(Foam::label patch_id);
   // Foam::volScalarField::Boundary const & getWallHeatFlux();
   Foam::Time & getRuntime();
   Foam::argList & getArglist();
   Foam::fvMesh & getMesh();
+  fs::path currentTimePath() const;
   void write();
+  void readTime(const std::string & path);
+  // void write(std::ostream & os);
 };
 }

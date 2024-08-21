@@ -8,6 +8,8 @@
 #include "functionObjects/field/wallHeatFlux/wallHeatFlux.H"
 #include "objectRegistry.H"
 
+#include <algorithm>
+
 registerMooseObject("hippoApp", FoamProblem);
 
 InputParameters

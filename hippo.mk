@@ -33,7 +33,8 @@ ADDITIONAL_CPPFLAGS += $(shell echo -D$(WM_ARCH) \
                                     -DWM_LABEL_SIZE=$(WM_LABEL_SIZE)\
                                     -DWM_$(WM_PRECISION_OPTION) \
                                     -DNoRepository -ftemplate-depth-100 \
-                                    -Xlinker --add-needed -Xlinker --no-as-needed -fuse-ld=bfd )
+                                    -Xlinker --add-needed -Xlinker --no-as-needed -fuse-ld=bfd \
+                                    -std=c++17 )
 
 
 

@@ -105,6 +105,8 @@
     end_time = 5
     dt = 0.05
 
+    fixed_point_max_its = 5
+
     solve_type = 'PJFNK'
     petsc_options = '-snes_ksp_ew'
     petsc_options_iname = '-pc_type -pc_hypre_type'
