@@ -4,24 +4,36 @@
   foam_patch = 'topAndBottom frontAndBack'
   dim=2
 []
-[AuxVariables]
-  [T]
-    initial_condition = 1.0
+
+[Variables]
+  [Dummy]
+    initial_condition = 3.14
   []
 []
-[Variables]
-  [foamT_face]
+
+[AuxVariables]
+  [T]
+    initial_condition = 111
     family = MONOMIAL
     order = CONSTANT
   []
-  # Note that this test crashes if [FOO] is declared first...
-  [FOO]
-    initial_condition = 10.0
+  [foam_T]
+    initial_condition = 999
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [foam_hf]
+    initial_condition = -999
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
+
 [Problem]
   type=BuoyantFoamProblem
-  output_variable = foamT_face
+  temp = T
+  foam_temp = foam_T
+  foam_heat_flux = foam_hf
 []
 
 [Executioner]
@@ -33,10 +45,10 @@
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'
 
-  [./TimeStepper]
+  [TimeStepper]
     type = FoamTimeStepper
-  [../]
-[../]
+  []
+[]
 
 [Outputs]
   exodus = true
