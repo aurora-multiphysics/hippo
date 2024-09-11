@@ -1,14 +1,10 @@
 #include <fvCFD_moose.h>
 #include "fluidThermo.H"
-#include "compressibleMomentumTransportModels.H"
 #include "fluidThermophysicalTransportModel.H"
 #include "pimpleControl.H"
 #include "pressureReference.H"
 #include "hydrostaticInitialisation.H"
 #include "CorrectPhi.H"
-#include "localEulerDdtScheme.H"
-#include "fvcSmooth.H"
-#include "PrimitivePatchInterpolation.H"
 
 /*
  * Code in here is directly copied from  buoyantFoam.C in openFOAM
@@ -645,16 +641,6 @@ public:
     auto & patch = thermo.T().boundaryFieldRef()[patch_id];
     assert(moose_T.size() == static_cast<size_t>(patch.size()));
     std::copy(moose_T.begin(), moose_T.end(), patch.begin());
-    // printf("setting patch face temp: %f\n", moose_T.at(0));
-
-    // printf("patch_id: %d\n", patch_id);
-    // printf("patch.size(): %d\n", patch.size());
-    // printf("assigned values: \n");
-    // for (auto v : patch)
-    // {
-    //   printf("%f ", v);
-    // }
-    // printf("\n");
   }
 };
 

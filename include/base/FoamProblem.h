@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ExternalProblem.h"
-#include "Transient.h"
 #include "FoamMesh.h"
 #include "FoamInterface.h"
+#include "MooseTypes.h"
 #include "buoyantFoamApp.h"
 
 /* Base class for FoamProblems */
@@ -26,8 +26,6 @@ public:
   virtual FoamMesh const & mesh() const override { return *_foam_mesh; }
   virtual FoamMesh & mesh() override { return *_foam_mesh; }
 
-  static constexpr auto OUTPUT_VARIABLE_NAME = "output_variable";
-
   // /**
   //  * Backs up the application to the folder \p folder_base
   //  *
@@ -44,7 +42,6 @@ public:
 protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamInterface * _interface = nullptr;
-  unsigned _face_T{0};
 };
 
 /* Specific class to run buoyantFoam problems */

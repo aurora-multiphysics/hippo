@@ -2,7 +2,6 @@
 #include "FoamMesh.h"
 #include "FoamInterface.h"
 #include "Foam2MooseMeshGen.h"
-#include "libmesh/face_quad4.h"
 
 registerMooseObject("hippoApp", FoamMesh);
 
