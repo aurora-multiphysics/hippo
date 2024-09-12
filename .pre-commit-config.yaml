@@ -21,6 +21,11 @@ repos:
       - id: trailing-whitespace
         exclude_types:
           - "diff"
+        # Some committed OpenFOAM mesh files are re-written during tests with
+        # trailing whitespace. Which means that Git classes them as modified
+        # after the tests are run. Prevent this noise by not trimming the
+        # whitespace in the first place.
+        exclude: "(.*/gold/.*)|(.*/[0-9]+/.*)"
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4
     hooks:

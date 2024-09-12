@@ -1,0 +1,22 @@
+[Tests]
+  [test]
+    [same_foam_t_and_hf_variable]
+      type = RunException
+      input = same_foam_t_and_hf_variable.i
+      group = 'input_errors'
+      expect_err = "cannot refer to the same variable: "
+    []
+    [order_of_foam_t_is_not_constant]
+      type = RunException
+      input = order_of_foam_t_is_not_constant.i
+      group = 'input_errors'
+      expect_err = "order = CONSTANT"
+    []
+    [order_of_t_is_not_constant]
+      type = RunException
+      input = order_of_t_is_not_constant.i
+      group = 'input_errors'
+      expect_err = "order = CONSTANT"
+    []
+  []
+[]
