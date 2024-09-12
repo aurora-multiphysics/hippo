@@ -1,0 +1,13 @@
+[Tests]
+  [temperature_set_on_openfoam_boundary]
+    [run]
+      type = RunApp
+      input = 'run.i'
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = temperature_set_on_openfoam_boundary/run
+    []
+  []
+[]

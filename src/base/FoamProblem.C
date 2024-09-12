@@ -189,12 +189,11 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
     std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
 
     // Retrieve the values from MOOSE
-    std::vector<double> moose_T;
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     for (auto i = 0U; i < subdomains.size(); ++i)
     {
-      std::vector<double> buf;
+      std::vector<double> moose_T;
       // Set the face temperatures on the OpenFOAM mesh
       for (size_t elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
       {
@@ -204,12 +203,11 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
         auto dof = elem_ptr->dof_number(t_var.sys().number(), t_var.number(), 0);
 
         // Insert the element's temperature into the MOOSE temperature vector
-        t_var.sys().solution().get({dof}, buf);
-        std::copy(buf.begin(), buf.end(), std::back_inserter(moose_T));
+        auto t_value = t_var.sys().solution()(dof);
+        moose_T.emplace_back(t_value);
       }
       // Copy the values from the MOOSE temperature vector into OpenFOAM's
       _app.set_patch_face_t(subdomains[i], moose_T);
-      moose_T.clear();
     }
     _interface->write();
   }
