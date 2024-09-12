@@ -16,32 +16,29 @@ FoamFile
 
 dimensions      [1 -1 -2 0 0 0 0];
 
-internalField   uniform 1e5;
+internalField   uniform 100000;
 
 boundaryField
 {
-    frontAndBack
-    {
-        type            calculated;
-        value           $internalField;
-    }
-
     topAndBottom
     {
         type            calculated;
-        value           $internalField;
+        value           uniform 100000;
     }
-
+    frontAndBack
+    {
+        type            calculated;
+        value           uniform 100000;
+    }
     hot
     {
         type            calculated;
-        value           $internalField;
+        value           uniform 100000;
     }
-
     cold
     {
         type            calculated;
-        value           $internalField;
+        value           uniform 100000;
     }
 }
 

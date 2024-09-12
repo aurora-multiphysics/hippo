@@ -20,13 +20,13 @@ internalField   uniform 0;
 
 boundaryField
 {
-    frontAndBack
+    topAndBottom
     {
         type            compressible::alphatWallFunction;
         Prt             0.85;
         value           uniform 0;
     }
-    topAndBottom
+    frontAndBack
     {
         type            compressible::alphatWallFunction;
         Prt             0.85;
