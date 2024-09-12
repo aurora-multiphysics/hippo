@@ -1,10 +1,12 @@
 #pragma once
-#include <map>
-#include <unordered_map>
 
 #include "FoamInterface.h"
-#include "libmesh/point.h"
 #include "HippoPtr.h"
+
+#include <libmesh/point.h>
+
+#include <map>
+#include <unordered_map>
 
 namespace Foam
 {
@@ -50,13 +52,13 @@ public:
   {
   }
 
-  int32_t const & operator[](int32_t const i) const
+  int32_t const & operator[](uint32_t const i) const
   {
-    assert(i >= 0 && _start + i < _end);
+    assert(_start + i < _end);
     return _start[i];
   }
 
-  int32_t size() const { return _end - _start; }
+  uint32_t size() const { return _end - _start; }
   int32_t const * begin() { return _start; }
   int32_t const * end() { return _end; }
   int32_t rank() const { return _rank; }
@@ -76,8 +78,8 @@ public:
   ~Foam2MooseMeshAdapter();
   std::int32_t npoint();
   std::int32_t nface();
-  FoamPoint const & point(int32_t i);
-  FoamFace face(int32_t i);
+  FoamPoint const & point(uint32_t i);
+  FoamFace face(uint32_t i);
   int get_patch_id(std::string const & patch_name);
   int get_gid(int32_t local, int32_t patch_id) const;
   int get_moose_id(int32_t global_id);

@@ -8,37 +8,37 @@
 FoamFile
 {
     format      ascii;
-    class       volScalarField;
+    class       surfaceScalarField;
     location    "0";
-    object      k;
+    object      phi;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 2 -2 0 0 0 0];
+dimensions      [1 0 -1 0 0 0 0];
 
-internalField   uniform 0.000375;
+internalField   uniform 0;
 
 boundaryField
 {
     topAndBottom
     {
-        type            kqRWallFunction;
-        value           uniform 0.000375;
+        type            calculated;
+        value           uniform 0;
     }
     frontAndBack
     {
-        type            kqRWallFunction;
-        value           uniform 0.000375;
+        type            calculated;
+        value           uniform 0;
     }
     hot
     {
-        type            kqRWallFunction;
-        value           uniform 0.000375;
+        type            calculated;
+        value           uniform 0;
     }
     cold
     {
-        type            kqRWallFunction;
-        value           uniform 0.000375;
+        type            calculated;
+        value           uniform 0;
     }
 }
 

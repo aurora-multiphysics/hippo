@@ -1,14 +1,10 @@
 #include <fvCFD_moose.h>
 #include "fluidThermo.H"
-#include "compressibleMomentumTransportModels.H"
 #include "fluidThermophysicalTransportModel.H"
 #include "pimpleControl.H"
 #include "pressureReference.H"
 #include "hydrostaticInitialisation.H"
 #include "CorrectPhi.H"
-#include "localEulerDdtScheme.H"
-#include "fvcSmooth.H"
-#include "PrimitivePatchInterpolation.H"
 
 /*
  * Code in here is directly copied from  buoyantFoam.C in openFOAM
@@ -631,6 +627,21 @@ public:
     }
     return T.size();
   }
+
+  /* Get the number of faces in the given boundary patch. */
+  size_t patch_size(int patch_id)
+  {
+    // TODO(hsaunders1904): there must be a way of getting the number of
+    // without looking into the boundary field of the temperature.
+    return thermo.T().boundaryField()[patch_id].size();
+  }
+
+  void set_patch_face_temperatures(int patch_id, const std::vector<double> & moose_T)
+  {
+    auto & patch = thermo.T().boundaryFieldRef()[patch_id];
+    assert(moose_T.size() == static_cast<size_t>(patch.size()));
+    std::copy(moose_T.begin(), moose_T.end(), patch.begin());
+  }
 };
 
 buoyantFoamApp::~buoyantFoamApp() = default;
@@ -652,4 +663,17 @@ buoyantFoamApp::append_patch_face_T(int patch_id, std::vector<double> & foamT)
 {
   return _impl->append_patch_face_temperatures(patch_id, foamT);
 }
+
+size_t
+buoyantFoamApp::patch_size(int patch_id)
+{
+  return _impl->patch_size(patch_id);
+}
+
+void
+buoyantFoamApp::set_patch_face_t(int patch_id, const std::vector<double> & moose_T)
+{
+  _impl->set_patch_face_temperatures(patch_id, moose_T);
+}
+
 }

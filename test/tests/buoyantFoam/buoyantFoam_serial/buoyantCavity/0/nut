@@ -16,28 +16,40 @@ FoamFile
 
 dimensions      [0 2 -1 0 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform 0.003125;
 
 boundaryField
 {
-    frontAndBack
-    {
-        type            nutUWallFunction;
-        value           uniform 0;
-    }
     topAndBottom
     {
         type            nutUWallFunction;
+        Cmu             0.09;
+        kappa           0.41;
+        E               9.8;
+        value           uniform 0;
+    }
+    frontAndBack
+    {
+        type            nutUWallFunction;
+        Cmu             0.09;
+        kappa           0.41;
+        E               9.8;
         value           uniform 0;
     }
     hot
     {
         type            nutUWallFunction;
+        Cmu             0.09;
+        kappa           0.41;
+        E               9.8;
         value           uniform 0;
     }
     cold
     {
         type            nutUWallFunction;
+        Cmu             0.09;
+        kappa           0.41;
+        E               9.8;
         value           uniform 0;
     }
 }

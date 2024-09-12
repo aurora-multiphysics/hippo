@@ -20,23 +20,31 @@ internalField   uniform 0.12;
 
 boundaryField
 {
-    frontAndBack
+    topAndBottom
     {
+        beta1           0.075;
+        blended         0;
         type            omegaWallFunction;
         value           uniform 0.12;
     }
-    topAndBottom
+    frontAndBack
     {
+        beta1           0.075;
+        blended         0;
         type            omegaWallFunction;
         value           uniform 0.12;
     }
     hot
     {
+        beta1           0.075;
+        blended         0;
         type            omegaWallFunction;
         value           uniform 0.12;
     }
     cold
     {
+        beta1           0.075;
+        blended         0;
         type            omegaWallFunction;
         value           uniform 0.12;
     }

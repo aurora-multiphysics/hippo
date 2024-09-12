@@ -1,8 +1,8 @@
 #pragma once
 
-#include "TimeStepper.h"
-#include "FoamProblem.h"
 #include "FoamInterface.h"
+
+#include <TimeStepper.h>
 
 /* Simple class that calls the interface to get/set timestep parameters */
 

@@ -2,7 +2,6 @@
 #include "FoamMesh.h"
 #include "FoamInterface.h"
 #include "Foam2MooseMeshGen.h"
-#include "libmesh/face_quad4.h"
 
 registerMooseObject("hippoApp", FoamMesh);
 
@@ -98,9 +97,9 @@ FoamMesh::buildMesh()
 
   // Need to be able to identify a moose node with a openFoam node
   _mesh->allow_renumbering(false);
-  //_mesh->skip_partitioning(true);
-  //_mesh->recalculate_n_partitions();
-  // libMesh::Partitionaer::set_node_processor_ids(*_mesh);
+  _mesh->skip_partitioning(true);
+  _mesh->recalculate_n_partitions();
+  libMesh::Partitioner::set_node_processor_ids(*_mesh);
   _mesh->prepare_for_use();
 }
 // This needs to be here because of the incomplete type (MeshInterface) in the class
