@@ -1,8 +1,9 @@
 #include "hippoApp.h"
-#include "Moose.h"
-#include "AppFactory.h"
-#include "ModulesApp.h"
-#include "MooseSyntax.h"
+
+#include <Moose.h>
+#include <AppFactory.h>
+#include <ModulesApp.h>
+#include <MooseSyntax.h>
 
 InputParameters
 hippoApp::validParams()
