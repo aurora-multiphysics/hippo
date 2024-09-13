@@ -2,7 +2,7 @@
   [temperature_set_on_openfoam_boundary_in_parallel]
     [run]
       type = RunCommand
-      command = '(cd buoyantCavity && decomposePar) && ./run.sh ../../../../hippo-opt'
+      command = '(cd buoyantCavity && decomposePar -force) && ./run.sh ../../../../hippo-opt'
     []
     [verify]
       type = PythonUnitTest
