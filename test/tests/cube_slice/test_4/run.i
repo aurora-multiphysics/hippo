@@ -8,9 +8,15 @@
   [T]
   initial_condition = 1.0
   []
+  [hf]
+  initial_condition = 1.0
+  []
 []
 [Problem]
   type=FoamProblem
+  temp = T
+  foam_temp = T
+  foam_heat_flux = hf
 []
 [Executioner]
   type = Transient

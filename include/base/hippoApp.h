@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "MooseApp.h"
+#include <MooseApp.h>
 
 class hippoApp : public MooseApp
 {

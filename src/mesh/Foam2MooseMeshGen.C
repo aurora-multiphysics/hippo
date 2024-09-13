@@ -232,9 +232,6 @@ Foam2MooseMeshAdapter::set_up_serial()
   _face_offset = scan_vec_to_pointer(face_info.count);
   _face_point_id = copy_vec_to_pointer(face_info.point_id);
   auto subdom_count = scan_vec_to_pointer(face_info.subdomain_count);
-  // Save the local2global map for each patch, only need this locally (for now)
-  // so don't need prep for MPI or anything
-  assert(subdom_count.size() == _patch_name.size());
   assert(subdom_count.back() == this->nface());
   // TODO: check this is doing the right thing
   _patch_local2global = std::move(face_info.local2global);
@@ -321,16 +318,16 @@ Foam2MooseMeshAdapter::nface()
 }
 
 FoamPoint const &
-Foam2MooseMeshAdapter::point(int32_t i)
+Foam2MooseMeshAdapter::point(uint32_t i)
 {
-  assert(i >= 0 && i < _point.size());
+  assert(i < _point.size());
   return _point[i];
 }
 
 FoamFace
-Foam2MooseMeshAdapter::face(int32_t i)
+Foam2MooseMeshAdapter::face(uint32_t i)
 {
-  assert(i >= 0 && i < _face_offset.size());
+  assert(i < _face_offset.size());
   return FoamFace(_face_point_id.begin() + _face_offset[i],
                   _face_point_id.begin() + _face_offset[i + 1],
                   _face_subdom[i],

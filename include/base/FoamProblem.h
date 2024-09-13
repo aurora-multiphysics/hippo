@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ExternalProblem.h"
-#include "Transient.h"
 #include "FoamMesh.h"
 #include "FoamInterface.h"
 #include "buoyantFoamApp.h"
+
+#include <ExternalProblem.h>
+#include <MooseTypes.h>
 
 /* Base class for FoamProblems */
 
@@ -45,7 +46,6 @@ public:
 
 protected:
   Hippo::buoyantFoamApp _app;
-  unsigned _face_T{0};
 };
 
 // Local Variables:

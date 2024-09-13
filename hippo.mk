@@ -9,9 +9,12 @@ ADDITIONAL_LIBS := -L$(FOAM_LIB_DIR) \
     -lfvModels \
     -lfvConstraints \
     -lmeshTools \
+    -lfieldFunctionObjects \
     $(ADDITIONAL_LIBS)
 
-ADDITIONAL_INCLUDES := -isystem $(FOAM_INCLUDE_ROOT)/finiteVolume/lnInclude \
+ADDITIONAL_INCLUDES := \
+    -isystem $(FOAM_INCLUDE_ROOT) \
+    -isystem $(FOAM_INCLUDE_ROOT)/finiteVolume/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/conversion/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/meshTools/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/OpenFOAM/lnInclude \

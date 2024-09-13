@@ -1,7 +1,11 @@
-#include "ArgsUtil.h"
-#include "FoamInterface.h"
 #include "FoamInterfaceImpl.h"
-#include "fvCFD_moose.h"
+#include "FoamInterface.h"
+#include "ArgsUtil.h"
+
+#include <word.H>
+#include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
+
+#include <cstdio>
 
 namespace Hippo
 {
@@ -21,6 +25,7 @@ FoamInterface::getInstance(std::vector<std::string> const & foam_args, MPI_Comm 
   static FoamInterface instance(foam_args, comm);
   return &instance;
 }
+
 void
 FoamInterface::dropInstance()
 {
@@ -32,16 +37,19 @@ FoamInterface::getDT()
 {
   return _impl->getDT();
 }
+
 void
 FoamInterface::setDT(double dt)
 {
   _impl->setDT(dt);
 }
+
 double
 FoamInterface::getBeginT()
 {
   return _impl->getBeginT();
 }
+
 double
 FoamInterface::getEndT()
 {
@@ -77,6 +85,7 @@ FoamInterface::pointToGlobal()
 {
   return _impl->_pointToGlobal;
 }
+
 Foam::labelList const &
 FoamInterface::uniquePoints()
 {
@@ -100,6 +109,7 @@ FoamInterface::getMesh()
 {
   return _impl->_mesh;
 }
+
 Foam::Time &
 FoamInterface::getRuntime()
 {
@@ -112,9 +122,45 @@ FoamInterface::getArglist()
   return _impl->_args.args;
 }
 
-Foam::Field<double>
-FoamInterface::interpolateFaceToNode(int patch_id, Foam::fvPatchField<double> const & field)
+void
+FoamInterface::write()
 {
-  return _impl->interpolateFaceToNode(patch_id, field);
+  _impl->getMesh().write();
+}
+
+std::size_t
+FoamInterface::getWallHeatFlux(std::vector<double> & fill_vector, const Foam::label patch_id)
+{
+  static const Foam::word WALL_HEAT_FLUX = "wallHeatFlux";
+
+  auto & impl = getImpl();
+
+  // TODO:
+  //  Need to work out if it's necessary to recalculate this every time.
+  //  We need to recalculate for every time step, so it doesn't work to check the mesh for
+  //  registered objects and only recalculate in those cases - we just end up with the values
+  //  from the first time step.
+  //  One option is to return the boundary field and let the caller index the patch. This API would
+  //  allow us to only calculate the flux on a specific boundary, though. If I can work out how to
+  //  do that.
+
+  // We may be able to constrain the patches that the flux is calculated for, by defining
+  // a Foam::dictionary that defines a `wordlist` of patch names.
+  // https://www.openfoam.com/documentation/guides/latest/doc/guide-fos-field-wallHeatFlux.html#sec-fos-field-wallHeatFlux-usage
+  // E.g.:
+  //   auto dict = impl->_runtime.controlDict();
+  //   dict["functions"]["wallHeatFlux"].push_back("fluid_bottom");
+  Foam::functionObjects::wallHeatFlux wall_flux(
+      WALL_HEAT_FLUX, impl->getRuntime(), impl->_runtime.controlDict());
+  wall_flux.execute();
+
+  auto patch = impl->getPatch(patch_id);
+  auto wall_heat_flux = impl->_mesh.lookupObject<Foam::volScalarField>(WALL_HEAT_FLUX);
+  auto & hf_bf = wall_heat_flux.boundaryField();
+  for (const auto v : hf_bf[patch.index()])
+  {
+    fill_vector.emplace_back(v);
+  }
+  return hf_bf[patch.index()].size();
 }
 }

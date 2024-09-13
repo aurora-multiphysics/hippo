@@ -1,8 +1,11 @@
 #pragma once
+
+#include "HippoPtr.h"
+
+#include <mpi.h>
+
 #include <memory>
 #include <vector>
-#include <mpi.h>
-#include "HippoPtr.h"
 /*
  * Some utility template functions that are useful for gathering mesh
  * info to construct a Moose mesh

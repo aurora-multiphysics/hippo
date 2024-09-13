@@ -1,9 +1,10 @@
 #pragma once
+
+#include <mpi.h>
+
 #include <vector>
 #include <string>
 #include <memory>
-#include <iostream>
-#include <mpi.h>
 
 /*
  * In theory the class through which all calls to the OpenFOAM "environment" are made
@@ -34,10 +35,10 @@ namespace Hippo
 // Against my better judgment I am creating a singleton
 // to do the basic initialization of the foam problem
 // I am sure there is a better way to do this
-// but I need to initialize it before I canstruct the
+// but I need to initialize it before I construct the
 // mesh but I may have more than one mesh(is this true?) so can't
 // just have it there
-// Forward declare the implimentation
+// Forward declare the implementation
 struct EnvImpl;
 class FoamInterface
 {
@@ -69,9 +70,12 @@ public:
   Foam::labelList const & uniquePoints();
   Foam::autoPtr<Foam::globalIndex> const & globalIndex();
   Foam::globalIndex const & globalPointNumbering();
+  Foam::fvPatchField<double> const & getWallHeatFlux(const std::string & patch_name);
+  std::size_t getWallHeatFlux(std::vector<double> & fill_vector, Foam::label patch_id);
+  Foam::fvPatchField<double> const & getWallHeatFlux(Foam::label patch_id);
   Foam::Time & getRuntime();
   Foam::argList & getArglist();
   Foam::fvMesh & getMesh();
-  Foam::Field<double> interpolateFaceToNode(int patch_id, Foam::fvPatchField<double> const & field);
+  void write();
 };
 }

@@ -78,6 +78,12 @@ METHOD=dbg make
 
 Some basic tests can be run with `./run_tests`.
 
+Note that you must have installed the `fluidfoam` Python package:
+
+```bash
+pip install "fluidfoam>=0.2.4"
+```
+
 ## Quality
 
 Some code quality checks are set up with

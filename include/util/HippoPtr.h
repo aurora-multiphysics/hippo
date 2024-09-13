@@ -1,10 +1,12 @@
 #pragma once
-#include <memory>
-#include <vector>
-#include <numeric>
+
 #include <cassert>
+#include <memory>
+#include <numeric>
+#include <vector>
+
 /*
-   A convenince structure to allocate a fixed array
+   A convenience structure to allocate a fixed array
    not using a vector mostly because I want to use this with
    mpi and vectors will be annoying as have to be initialised
 */
@@ -28,13 +30,13 @@ public:
 
   T & operator[](size_t i)
   {
-    assert(i < _size && i >= 0);
+    assert(i < _size);
     return _ptr[i];
   }
 
   T const & operator[](size_t i) const
   {
-    assert(i < _size && i >= 0);
+    assert(i < _size);
     return _ptr[i];
   }
 

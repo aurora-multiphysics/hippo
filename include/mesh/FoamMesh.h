@@ -1,7 +1,9 @@
 #pragma once
-#include <memory>
-#include "MooseMesh.h"
 #include "FoamInterface.h"
+
+#include <MooseMesh.h>
+
+#include <memory>
 
 namespace Hippo
 {
