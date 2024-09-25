@@ -2,9 +2,12 @@
 
 #include <mpi.h>
 
-#include <vector>
-#include <string>
+#include <filesystem>
 #include <memory>
+#include <string>
+#include <vector>
+
+namespace fs = std::filesystem;
 
 /*
  * In theory the class through which all calls to the OpenFOAM "environment" are made
@@ -78,6 +81,8 @@ public:
   Foam::Time & getRuntime();
   Foam::argList & getArglist();
   Foam::fvMesh & getMesh();
+  fs::path currentTimePath() const;
+  void readTime(const std::string & path);
   void write();
 };
 }

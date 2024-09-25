@@ -6,6 +6,7 @@
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include <filesystem>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
 
@@ -99,6 +100,29 @@ FoamProblem::FoamProblem(InputParameters const & params)
 void
 FoamProblem::externalSolve()
 {
+}
+
+void
+FoamProblem::saveState()
+{
+  _interface->write();
+  _backup_foam_timestep_dir = _interface->currentTimePath().string();
+  printf("saveState() -> %s", _backup_foam_timestep_dir.c_str());
+}
+
+void
+FoamProblem::loadState()
+{
+  if (_backup_foam_timestep_dir.empty())
+  {
+    mooseError("Cannot load OpenFOAM state: the backup state path is not set.");
+  }
+  if (!fs::is_directory(_backup_foam_timestep_dir))
+  {
+    mooseError("Cannot load OpenFOAM state: the backup state path does not exist.");
+  }
+  printf("loadState() -> %s", _backup_foam_timestep_dir.c_str());
+  _interface->readTime(_backup_foam_timestep_dir);
 }
 
 InputParameters

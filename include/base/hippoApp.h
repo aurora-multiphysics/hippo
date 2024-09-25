@@ -21,4 +21,7 @@ public:
 
   static void registerApps();
   static void registerAll(Factory & f, ActionFactory & af, Syntax & s);
+
+  void preBackup() override;
+  void postRestore(const bool /* for_restart */) override;
 };

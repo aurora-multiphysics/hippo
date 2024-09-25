@@ -134,6 +134,18 @@ FoamInterface::getArglist()
   return _impl->_args.args;
 }
 
+fs::path
+FoamInterface::currentTimePath() const
+{
+  return fs::path(_impl->_runtime.timePath());
+}
+
+void
+FoamInterface::readTime(const std::string & path)
+{
+  getRuntime().read();
+}
+
 void
 FoamInterface::write()
 {

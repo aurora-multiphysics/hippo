@@ -30,6 +30,16 @@ public:
   virtual FoamMesh const & mesh() const override { return *_foam_mesh; }
   virtual FoamMesh & mesh() override { return *_foam_mesh; }
 
+  /**
+   * Save the current state of the OpenFOAM solve.
+   */
+  void saveState();
+
+  /**
+   * Load the saved state of the OpenFOAM solve.
+   */
+  void loadState();
+
 protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamInterface * _interface = nullptr;
