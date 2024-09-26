@@ -39,6 +39,12 @@ FoamInterface::getDT()
 }
 
 void
+FoamInterface::setCurrentTime(double t)
+{
+  _impl->setCurrentTime(t);
+}
+
+void
 FoamInterface::setDT(double dt)
 {
   _impl->setDT(dt);
@@ -54,6 +60,12 @@ double
 FoamInterface::getEndT()
 {
   return _impl->getEndT();
+}
+
+void
+FoamInterface::setEndT(double t)
+{
+  _impl->setEndT(t);
 }
 
 Foam::polyPatch const &

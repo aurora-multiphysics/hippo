@@ -53,7 +53,9 @@ struct EnvImpl
   double getDT() { return _runtime.deltaT().value(); }
   void setDT(double dt) { _runtime.setDeltaTNoAdjust(dt); }
   double getBeginT() { return _runtime.beginTime().value(); }
+  void setCurrentTime(double t) { _runtime.setTime(t, _runtime.timeIndex()); }
   double getEndT() { return _runtime.endTime().value(); }
+  void setEndT(double t) { return _runtime.setEndTime(t); }
 
   Foam::polyPatch const & getPatch(std::string const & patch_name)
   {

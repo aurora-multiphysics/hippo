@@ -1,0 +1,30 @@
+[Tests]
+  [foam_timestepper_sets_foam_dt]
+    # This test checks that the OpenFOAM timesteps are set via the Executuioner
+    # in the MOOSE input file.
+    # Note that the OpenFOAM controlDict has a dt of 1 and an end time of 20.
+    # The MOOSE input file has a dt of 0.5 and end time of 3.
+
+    # TODO: test the start time can be set via MOOSE.
+    [setup]
+      type = RunCommand
+      command = 'cd buoyantCavity && ./Allclean && blockMesh'
+    []
+    [run]
+      type = RunApp
+      input = run.i
+      prereq = foam_timestepper_sets_foam_dt/setup
+    []
+    [verify]
+      type = RunCommand
+      command = '[ -d buoyantCavity/0.5 ] \
+                 && [ -d buoyantCavity/1 ] \
+                 && [ -d buoyantCavity/1.5 ] \
+                 && [ -d buoyantCavity/2 ] \
+                 && [ -d buoyantCavity/2.5 ] \
+                 && [ -d buoyantCavity/3 ] \
+                 && ! [ -d buoyantCavity/3.5 ]'
+      prereq = foam_timestepper_sets_foam_dt/run
+    []
+  []
+[]

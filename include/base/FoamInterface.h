@@ -61,7 +61,9 @@ public:
   double getDT();
   void setDT(double dt);
   double getBeginT();
+  void setCurrentTime(double t);
   double getEndT();
+  void setEndT(double t);
   Foam::polyPatch const & getPatch(std::string const & patch_name);
   Foam::polyPatch const & getPatch(int patch_id);
   int getPatchID(std::string const & patch_name);

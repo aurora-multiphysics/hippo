@@ -1,6 +1,6 @@
 [Mesh]
   type = FoamMesh
-  foam_args = '-case buoyantCavity -parallel'
+  foam_args = '-case buoyantCavity'
   foam_patch = 'topAndBottom frontAndBack'
   dim=2
 []
@@ -39,8 +39,8 @@
 [Executioner]
   type = Transient
   start_time = 0
-  end_time = 20
-  dt = 1
+  end_time = 3
+  dt = 0.5
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'
