@@ -33,7 +33,7 @@ FoamInterface::dropInstance()
 }
 
 double
-FoamInterface::getDT()
+FoamInterface::getTimeDelta()
 {
   return _impl->getDT();
 }
@@ -45,25 +45,25 @@ FoamInterface::setCurrentTime(double t)
 }
 
 void
-FoamInterface::setDT(double dt)
+FoamInterface::setTimeDelta(double dt)
 {
   _impl->setDT(dt);
 }
 
 double
-FoamInterface::getBeginT()
+FoamInterface::getBeginTime()
 {
   return _impl->getBeginT();
 }
 
 double
-FoamInterface::getEndT()
+FoamInterface::getEndTime()
 {
   return _impl->getEndT();
 }
 
 void
-FoamInterface::setEndT(double t)
+FoamInterface::setEndTime(double t)
 {
   _impl->setEndT(t);
 }

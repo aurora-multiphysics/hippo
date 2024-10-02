@@ -27,14 +27,14 @@ Real
 FoamTimeStepper::computeInitialDT()
 {
   auto dt = _executioner.parameters().get<double>("dt");
-  _interface->setDT(_dt);
+  _interface->setTimeDelta(_dt);
   return dt;
 }
 
 Real
 FoamTimeStepper::computeDT()
 {
-  _interface->setDT(_dt);
+  _interface->setTimeDelta(_dt);
   return _dt;
 }
 
@@ -43,6 +43,6 @@ FoamTimeStepper::init()
 {
   TimeStepper::init();
   _interface->setCurrentTime(_time);
-  _interface->setEndT(_end_time);
-  _interface->setDT(_dt);
+  _interface->setEndTime(_end_time);
+  _interface->setTimeDelta(_dt);
 }
