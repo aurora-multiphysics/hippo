@@ -2,7 +2,7 @@
   type = FoamMesh
   foam_args = '-case buoyantCavity'
   foam_patch = 'topAndBottom frontAndBack'
-  dim=2
+  dim = 2
 []
 
 [Variables]
@@ -38,8 +38,8 @@
 
 [Executioner]
   type = Transient
-  start_time = 0
-  end_time = 3
+  start_time = 1
+  end_time = 2.5
   dt = 0.5
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
