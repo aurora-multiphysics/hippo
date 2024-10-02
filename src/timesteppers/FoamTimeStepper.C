@@ -1,6 +1,5 @@
 #include "FoamTimeStepper.h"
 #include "FoamProblem.h"
-#include "FoamInterface.h"
 
 #include <TimeStepper.h>
 #include <Transient.h>
@@ -32,8 +31,6 @@ FoamTimeStepper::computeInitialDT()
   return dt;
 }
 
-// TODO: Need to work out how to
-// negotiate DT in picard iteration
 Real
 FoamTimeStepper::computeDT()
 {
@@ -49,7 +46,3 @@ FoamTimeStepper::init()
   _interface->setEndT(_end_time);
   _interface->setDT(_dt);
 }
-
-// Local Variables:
-// mode: c++
-// End:
