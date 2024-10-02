@@ -1,6 +1,8 @@
 #include "FoamTimeStepper.h"
 #include "FoamProblem.h"
-#include "FoamInterface.h"
+
+#include <TimeStepper.h>
+#include <Transient.h>
 
 registerMooseObject("hippoApp", FoamTimeStepper);
 
@@ -16,7 +18,7 @@ FoamTimeStepper::FoamTimeStepper(InputParameters const & params) : TimeStepper(p
   auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
   if (!problem)
   {
-    mooseError("FoamTimeStepper expects to be used with foamProblem");
+    mooseError("FoamTimeStepper expects to be used with FoamProblem");
   }
   _interface = problem->shareInterface();
 }
@@ -24,25 +26,23 @@ FoamTimeStepper::FoamTimeStepper(InputParameters const & params) : TimeStepper(p
 Real
 FoamTimeStepper::computeInitialDT()
 {
-  return _interface->getDT();
+  auto dt = _executioner.parameters().get<double>("dt");
+  _interface->setTimeDelta(_dt);
+  return dt;
 }
 
-// TODO: Need to work out how to
-// negotiate DT in picard iteration
 Real
 FoamTimeStepper::computeDT()
 {
-  return _interface->getDT();
+  _interface->setTimeDelta(_dt);
+  return _dt;
 }
 
 void
 FoamTimeStepper::init()
 {
   TimeStepper::init();
-  _time = _interface->getBeginT();
-  _end_time = _interface->getEndT();
+  _interface->setCurrentTime(_time);
+  _interface->setEndTime(_end_time);
+  _interface->setTimeDelta(_dt);
 }
-
-// Local Variables:
-// mode: c++
-// End:

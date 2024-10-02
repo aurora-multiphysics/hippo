@@ -58,10 +58,12 @@ public:
   // to hide all foaminess  inside this class
   std::unique_ptr<EnvImpl> & getImpl() { return _impl; }
 
-  double getDT();
-  void setDT(double dt);
-  double getBeginT();
-  double getEndT();
+  double getTimeDelta();
+  void setTimeDelta(double dt);
+  double getBeginTime();
+  void setCurrentTime(double t);
+  double getEndTime();
+  void setEndTime(double t);
   Foam::polyPatch const & getPatch(std::string const & patch_name);
   Foam::polyPatch const & getPatch(int patch_id);
   int getPatchID(std::string const & patch_name);
