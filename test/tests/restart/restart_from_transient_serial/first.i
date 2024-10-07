@@ -2,7 +2,7 @@
   type = FoamMesh
   foam_args = '-case buoyantCavity'
   foam_patch = 'topAndBottom frontAndBack'
-  dim=2
+  dim = 2
 []
 
 [Variables]
@@ -36,7 +36,6 @@
   temp = T
   foam_temp = foam_T
   foam_heat_flux = foam_hf
-  # restart_file_base = restart_from_transient_out_cp/LATEST
 []
 
 [Executioner]
@@ -54,10 +53,6 @@
 []
 
 [Outputs]
-  # [out]
-  #   type = Checkpoint
-  #   time_step_interval = 3
-  # []
   exodus = true
   checkpoint = true
 []

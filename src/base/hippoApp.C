@@ -7,9 +7,6 @@
 #include <MooseSyntax.h>
 
 #include <cstdlib>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 InputParameters
 hippoApp::validParams()
