@@ -1,0 +1,28 @@
+[Tests]
+  [flow_over_heated_plate]
+    [setup]
+      type = RunCommand
+      command = '(cd fluid-openfoam && ./Allclean && blockMesh && decomposePar -force)'
+    []
+    [run]
+      # TODO(hsaunders1904): convert this to an Exodus type test.
+      #  Use the 'time_step_interval' option to only output a few timesteps to
+      #  check against
+      type = RunApp
+      input = heated_plate.i
+      min_parallel = 4
+      max_parallel = 4
+      prereq = flow_over_heated_plate/setup
+    []
+    [reconstruct]
+      type = RunCommand
+      command = '(cd fluid-openfoam && reconstructPar)'
+      prereq = flow_over_heated_plate/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = flow_over_heated_plate/reconstruct
+    []
+  []
+[]
