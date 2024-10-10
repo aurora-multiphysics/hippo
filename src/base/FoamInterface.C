@@ -145,27 +145,17 @@ FoamInterface::getWallHeatFlux(std::vector<double> & fill_vector, const Foam::la
 {
   static const Foam::word WALL_HEAT_FLUX = "wallHeatFlux";
 
+  // Calculate the wall heat flux for the given patch.
   auto & impl = getImpl();
-
-  // TODO:
-  //  Need to work out if it's necessary to recalculate this every time.
-  //  We need to recalculate for every time step, so it doesn't work to check the mesh for
-  //  registered objects and only recalculate in those cases - we just end up with the values
-  //  from the first time step.
-  //  One option is to return the boundary field and let the caller index the patch. This API would
-  //  allow us to only calculate the flux on a specific boundary, though. If I can work out how to
-  //  do that.
-
-  // We may be able to constrain the patches that the flux is calculated for, by defining
-  // a Foam::dictionary that defines a `wordlist` of patch names.
-  // https://www.openfoam.com/documentation/guides/latest/doc/guide-fos-field-wallHeatFlux.html#sec-fos-field-wallHeatFlux-usage
-  // E.g.:
-  //   auto dict = impl->_runtime.controlDict();
-  //   dict["functions"]["wallHeatFlux"].push_back("fluid_bottom");
-  Foam::functionObjects::wallHeatFlux wall_flux(
-      WALL_HEAT_FLUX, impl->getRuntime(), impl->_runtime.controlDict());
+  auto dict = impl->_runtime.controlDict();
+  auto whf_dict = impl->_runtime.controlDict().lookupOrDefault(WALL_HEAT_FLUX, Foam::dictionary());
+  auto patch_name = getMesh().boundaryMesh()[patch_id].name();
+  whf_dict.set("patches", Foam::wordList({patch_name}));
+  whf_dict.set("writeToFile", false);
+  Foam::functionObjects::wallHeatFlux wall_flux(WALL_HEAT_FLUX, impl->getRuntime(), whf_dict);
   wall_flux.execute();
 
+  // Fetch the heat flux and copy it into the given vector.
   auto patch = impl->getPatch(patch_id);
   auto wall_heat_flux = impl->_mesh.lookupObject<Foam::volScalarField>(WALL_HEAT_FLUX);
   auto & hf_bf = wall_heat_flux.boundaryField();
