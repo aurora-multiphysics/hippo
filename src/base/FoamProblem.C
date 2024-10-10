@@ -1,20 +1,23 @@
 #include "FoamProblem.h"
 #include "FoamInterface.h"
 #include "FoamMesh.h"
-#include "AuxiliarySystem.h"
-#include "MooseError.h"
-#include "MooseTypes.h"
-#include "MooseVariableFieldBase.h"
-#include "libmesh/enum_order.h"
-#include "libmesh/fe_type.h"
+
+#include <AuxiliarySystem.h>
+#include <MooseError.h>
+#include <MooseTypes.h>
+#include <MooseVariableFieldBase.h>
+#include <libmesh/enum_order.h>
+#include <libmesh/fe_type.h>
 
 registerMooseObject("hippoApp", FoamProblem);
+registerMooseObject("hippoApp", BuoyantFoamProblem);
 
 namespace
 {
 constexpr auto PARAM_VAR_FOAM_HF = "foam_heat_flux";
 constexpr auto PARAM_VAR_FOAM_T = "foam_temp";
 constexpr auto PARAM_VAR_T = "temp";
+constexpr auto PARAM_VAR_HF = "heat_flux";
 
 bool
 is_constant_monomial(const MooseVariableFieldBase & var)
@@ -29,15 +32,16 @@ FoamProblem::validParams()
   auto params = ExternalProblem::validParams();
 
   // Parameters to set variables to read from/write to.
-  // Note that these can all point to the same variable to save memory.
+  // Note that these can be omitted or point to the same variable to save memory.
   params.addParam<std::string>(
       PARAM_VAR_FOAM_HF, "The name of the aux variable to write the OpenFOAM wall heat flux into.");
   params.addParam<std::string>(
       PARAM_VAR_FOAM_T,
       "The name of the aux variable to write the OpenFOAM boundary temperature into.");
   params.addParam<std::string>(
-      PARAM_VAR_T, "The name of the aux variable to read the boundary temperature from.");
-
+      PARAM_VAR_HF, "The name of the aux variable to set the OpenFOAM wall heat flux from.");
+  params.addParam<std::string>(
+      PARAM_VAR_T, "The name of the aux variable to set the OpenFOAM boundary temperature from.");
   return params;
 }
 
@@ -50,22 +54,37 @@ FoamProblem::FoamProblem(InputParameters const & params)
   assert(_interface);
 
   auto t_var_name = params.get<std::string>(PARAM_VAR_T);
-  if (t_var_name.empty())
+  auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
+  if (t_var_name.empty() && hf_var_name.empty())
   {
-    mooseError("Parameter '", PARAM_VAR_T, "' must be set.");
+    mooseWarning("Neither parameters '",
+                 PARAM_VAR_T,
+                 "' or '",
+                 PARAM_VAR_HF,
+                 "' are set. No quantities are being transferred to OpenFOAM.");
+  }
+  else if (t_var_name == hf_var_name)
+  {
+    mooseError("Parameters '",
+               PARAM_VAR_T,
+               "' and '",
+               PARAM_VAR_HF,
+               "' cannot refer to the same variable: '",
+               t_var_name,
+               "'.");
   }
 
   auto foam_t_var_name = params.get<std::string>(PARAM_VAR_FOAM_T);
   auto foam_hf_var_name = params.get<std::string>(PARAM_VAR_FOAM_HF);
   if (foam_t_var_name.empty() && foam_hf_var_name.empty())
   {
-    mooseError("At least one of the following parameters must be set: '",
-               PARAM_VAR_FOAM_T,
-               "', '",
-               PARAM_VAR_FOAM_HF,
-               "'.");
+    mooseWarning("Neither parameters '",
+                 PARAM_VAR_FOAM_T,
+                 "', or '",
+                 PARAM_VAR_FOAM_HF,
+                 "' are set. No quantities are being copied from OpenFOAM.");
   }
-  if (foam_t_var_name == foam_hf_var_name)
+  else if (foam_t_var_name == foam_hf_var_name)
   {
     mooseError("Parameters '",
                PARAM_VAR_FOAM_T,
@@ -81,8 +100,6 @@ void
 FoamProblem::externalSolve()
 {
 }
-
-registerMooseObject("hippoApp", BuoyantFoamProblem);
 
 InputParameters
 BuoyantFoamProblem::validParams()
@@ -110,109 +127,219 @@ BuoyantFoamProblem::externalSolve()
 void
 BuoyantFoamProblem::syncSolutions(Direction dir)
 {
-  auto & mesh = this->mesh();
-
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
-    auto foam_t_var_name = parameters().get<std::string>(PARAM_VAR_FOAM_T);
-    auto & foam_t_var = getVariable(0, foam_t_var_name);
-    auto foam_hf_var_name = parameters().get<std::string>(PARAM_VAR_FOAM_HF);
-    auto & foam_hf_var = getVariable(0, foam_hf_var_name);
-    if (!is_constant_monomial(foam_t_var) && !is_constant_monomial(foam_hf_var))
+    auto transfer_wall_temp = !parameters().get<std::string>(PARAM_VAR_FOAM_T).empty();
+    auto transfer_wall_heat_flux = !parameters().get<std::string>(PARAM_VAR_FOAM_HF).empty();
+    if (transfer_wall_temp)
     {
-      mooseError("variables to store temperature or heat flux must have:\n"
-                 "  family = MONOMIAL\n"
-                 "  order = CONSTANT\n");
-    }
-
-    // Vector to hold the temperature on the elements in every subdomain
-    // Not sure if we can pre-allocate this - we need the number of elements
-    // in the subdomain owned by the current rank. We count this in a loop
-    // later.
-    std::vector<Real> foam_t;
-    std::vector<Real> foam_hf;
-
-    auto subdomains = mesh.getSubdomainList();
-    // The number of elements in each subdomain of the mesh
-    // Allocate an extra element as we'll accumulate these counts later
-    std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
-    for (auto i = 0U; i < subdomains.size(); ++i)
-    {
-      auto n_added_t = _app.append_patch_face_T(subdomains[i], foam_t);
-      auto n_added_hf = _interface->getWallHeatFlux(foam_hf, subdomains[i]);
-      assert(n_added_t == n_added_hf);
-
-      patch_counts[i] = n_added_t;
-    }
-    std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
-
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    for (auto i = 0U; i < subdomains.size(); ++i)
-    {
-      // Set the face temperatures on the MOOSE mesh
-      for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+      if (transfer_wall_heat_flux)
       {
-        auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
-        assert(elem_ptr);
-
-        auto dof_t = elem_ptr->dof_number(foam_t_var.sys().number(), foam_t_var.number(), 0);
-        foam_t_var.sys().solution().set(dof_t, foam_t[elem]);
-
-        // Take negative of heat flux to change direction.
-        auto dof_hf = elem_ptr->dof_number(foam_hf_var.sys().number(), foam_hf_var.number(), 0);
-        foam_hf_var.sys().solution().set(dof_hf, -foam_hf[elem]);
+        syncFromOpenFoam<SyncVariables::Both>();
+      }
+      else
+      {
+        syncFromOpenFoam<SyncVariables::WallTemperature>();
       }
     }
-    foam_t_var.sys().solution().close();
+    else if (transfer_wall_heat_flux)
+    {
+      syncFromOpenFoam<SyncVariables::WallHeatFlux>();
+    }
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
   {
-    auto t_var_name = parameters().get<std::string>(PARAM_VAR_T);
-    auto & t_var = getVariable(0, t_var_name);
-    if (!is_constant_monomial(t_var))
+    auto transfer_wall_temp = !parameters().get<std::string>(PARAM_VAR_T).empty();
+    auto transfer_wall_heat_flux = !parameters().get<std::string>(PARAM_VAR_HF).empty();
+    if (transfer_wall_temp)
     {
-      mooseError("variables to store temperature or heat flux must have:\n"
-                 "  family = MONOMIAL\n"
-                 "  order = CONSTANT\n");
-    }
-
-    auto subdomains = mesh.getSubdomainList();
-    // The number of elements in each subdomain of the mesh
-    // Allocate an extra element as we'll accumulate these counts later
-    std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
-    for (auto i = 0U; i < subdomains.size(); ++i)
-    {
-      patch_counts[i] = _app.patch_size(subdomains[i]);
-    }
-    std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
-
-    // Retrieve the values from MOOSE
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    for (auto i = 0U; i < subdomains.size(); ++i)
-    {
-      std::vector<double> moose_T;
-      // Set the face temperatures on the OpenFOAM mesh
-      for (size_t elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+      if (transfer_wall_heat_flux)
       {
-        auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
-        assert(elem_ptr);
-        // Find the dof number of the element
-        auto dof = elem_ptr->dof_number(t_var.sys().number(), t_var.number(), 0);
-
-        // Insert the element's temperature into the MOOSE temperature vector
-        auto t_value = t_var.sys().solution()(dof);
-        moose_T.emplace_back(t_value);
+        syncToOpenFoam<SyncVariables::Both>();
       }
-      // Copy the values from the MOOSE temperature vector into OpenFOAM's
-      _app.set_patch_face_t(subdomains[i], moose_T);
+      else
+      {
+        syncToOpenFoam<SyncVariables::WallTemperature>();
+      }
     }
-    _interface->write();
+    else if (transfer_wall_heat_flux)
+    {
+      syncToOpenFoam<SyncVariables::WallHeatFlux>();
+    }
   }
 }
 
-// Local Variables:
-// mode: c++
-// End:
+template <BuoyantFoamProblem::SyncVariables sync_vars>
+void
+BuoyantFoamProblem::syncFromOpenFoam()
+{
+  constexpr bool transfer_wall_temp =
+      (sync_vars == SyncVariables::WallTemperature) || (sync_vars == SyncVariables::Both);
+  constexpr bool transfer_wall_heat_flux =
+      (sync_vars == SyncVariables::WallHeatFlux) || (sync_vars == SyncVariables::Both);
+
+  // Find the relevant MOOSE variables to transfer values into.
+  MooseVariableFieldBase * wall_temp_var;
+  if constexpr (transfer_wall_temp)
+  {
+    wall_temp_var = getConstantMonomialVariableFromParameters(PARAM_VAR_FOAM_T);
+  }
+  MooseVariableFieldBase * wall_heat_flux_var;
+  if constexpr (transfer_wall_heat_flux)
+  {
+    wall_heat_flux_var = getConstantMonomialVariableFromParameters(PARAM_VAR_FOAM_HF);
+  }
+
+  auto & mesh = this->mesh();
+  auto subdomains = mesh.getSubdomainList();
+  // Vectors to copy OpenFOAM quantities into.
+  std::vector<Real> wall_temp;
+  std::vector<Real> wall_heat_flux;
+
+  // The number of elements in each subdomain of the mesh
+  // Allocate an extra element as we'll accumulate these counts later
+  std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
+  for (auto i = 0U; i < subdomains.size(); ++i)
+  {
+    if constexpr (transfer_wall_temp)
+    {
+      auto n_added = _app.append_patch_face_T(subdomains[i], wall_temp);
+      patch_counts[i] = n_added;
+    }
+    if constexpr (transfer_wall_heat_flux)
+    {
+      auto n_added = _interface->getWallHeatFlux(wall_heat_flux, subdomains[i]);
+      patch_counts[i] = n_added;
+    }
+  }
+  std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
+
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  for (auto i = 0U; i < subdomains.size(); ++i)
+  {
+    // Set the face temperatures on the MOOSE mesh
+    for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+    {
+      auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
+      assert(elem_ptr);
+      if constexpr (transfer_wall_temp)
+      {
+        auto & sys = wall_temp_var->sys();
+        auto dof_t = elem_ptr->dof_number(sys.number(), wall_temp_var->number(), 0);
+        sys.solution().set(dof_t, wall_temp[elem]);
+      }
+      if constexpr (transfer_wall_heat_flux)
+      {
+        auto & sys = wall_heat_flux_var->sys();
+        auto dof_dt = elem_ptr->dof_number(sys.number(), wall_heat_flux_var->number(), 0);
+        sys.solution().set(dof_dt, wall_heat_flux[elem]);
+      }
+    }
+  }
+  if constexpr (transfer_wall_temp)
+  {
+    wall_temp_var->sys().solution().close();
+  }
+  if constexpr (transfer_wall_heat_flux)
+  {
+    wall_heat_flux_var->sys().solution().close();
+  }
+}
+
+template <BuoyantFoamProblem::SyncVariables sync_vars>
+void
+BuoyantFoamProblem::syncToOpenFoam()
+{
+  constexpr bool transfer_wall_temp =
+      (sync_vars == SyncVariables::WallTemperature) || (sync_vars == SyncVariables::Both);
+  constexpr bool transfer_wall_heat_flux =
+      (sync_vars == SyncVariables::WallHeatFlux) || (sync_vars == SyncVariables::Both);
+
+  // Vectors to copy MOOSE quantities into.
+  std::vector<Real> wall_temp;
+  std::vector<Real> wall_heat_flux;
+
+  // Find the relevant MOOSE variables to transfer values from.
+  MooseVariableFieldBase * wall_temp_var;
+  if constexpr (transfer_wall_temp)
+  {
+    wall_temp_var = getConstantMonomialVariableFromParameters(PARAM_VAR_T);
+  }
+  MooseVariableFieldBase * wall_heat_flux_var;
+  if constexpr (transfer_wall_heat_flux)
+  {
+    wall_heat_flux_var = getConstantMonomialVariableFromParameters(PARAM_VAR_HF);
+  }
+
+  auto & mesh = this->mesh();
+  auto subdomains = mesh.getSubdomainList();
+
+  // The number of elements in each subdomain of the mesh
+  // Allocate an extra element as we'll accumulate these counts later
+  std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
+  for (auto i = 0U; i < subdomains.size(); ++i)
+  {
+    patch_counts[i] = _app.patch_size(subdomains[i]);
+  }
+  std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
+
+  // Retrieve the values from MOOSE for each boundary we're transferring across.
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  for (auto i = 0U; i < subdomains.size(); ++i)
+  {
+    // Vectors to hold quantities copied from MOOSE mesh.
+    std::vector<double> moose_T;
+    std::vector<double> moose_hf;
+
+    // Set the face temperatures on the OpenFOAM mesh.
+    for (size_t elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+    {
+      auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
+      assert(elem_ptr);
+      if constexpr (transfer_wall_temp)
+      {
+        moose_T.emplace_back(variableValueAtElement(elem_ptr, wall_temp_var));
+      }
+      if constexpr (transfer_wall_heat_flux)
+      {
+        moose_hf.emplace_back(variableValueAtElement(elem_ptr, wall_heat_flux_var));
+      }
+    }
+    // Copy the values from the MOOSE temperature vector into OpenFOAM's
+    if constexpr (transfer_wall_temp)
+    {
+      _app.set_patch_face_t(subdomains[i], moose_T);
+    }
+    if constexpr (transfer_wall_heat_flux)
+    {
+      _app.set_patch_face_negative_heat_flux(subdomains[i], moose_hf);
+    }
+  }
+}
+
+Real
+BuoyantFoamProblem::variableValueAtElement(const libMesh::Elem * element,
+                                           MooseVariableFieldBase * variable)
+{
+  auto & sys = variable->sys();
+  auto dof = element->dof_number(sys.number(), variable->number(), 0);
+  return sys.solution()(dof);
+}
+
+MooseVariableFieldBase *
+BuoyantFoamProblem::getConstantMonomialVariableFromParameters(const std::string & parameter_name)
+{
+  auto variable_name = parameters().get<std::string>(parameter_name);
+  auto * var = &getVariable(0, variable_name);
+  if (!is_constant_monomial(*var))
+  {
+    mooseError("variable assigned to parameter '",
+               parameter_name,
+               "' must have:\n"
+               "  family = MONOMIAL\n"
+               "  order = CONSTANT\n");
+  }
+  return var;
+}

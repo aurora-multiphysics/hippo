@@ -4,8 +4,11 @@
 #include "FoamInterface.h"
 #include "buoyantFoamApp.h"
 
+#include <libmesh/elem.h>
 #include <ExternalProblem.h>
 #include <MooseTypes.h>
+#include <MooseVariableFieldBase.h>
+#include <SystemBase.h>
 
 /* Base class for FoamProblems */
 
@@ -30,6 +33,7 @@ public:
 protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamInterface * _interface = nullptr;
+  std::string _backup_foam_timestep_dir;
 };
 
 /* Specific class to run buoyantFoam problems */
@@ -45,9 +49,23 @@ public:
   virtual void addExternalVariables();
 
 protected:
+  // TODO(hsaunders1904): can we generalise `_app` so we don't need to implement the transfer
+  //  for each 'FoamProblem' we implement?
   Hippo::buoyantFoamApp _app;
-};
 
-// Local Variables:
-// mode: c++
-// End:
+private:
+  enum class SyncVariables
+  {
+    WallTemperature,
+    WallHeatFlux,
+    Both
+  };
+
+  template <SyncVariables sync_vars>
+  void syncFromOpenFoam();
+  template <SyncVariables sync_vars>
+  void syncToOpenFoam();
+  MooseVariableFieldBase *
+  getConstantMonomialVariableFromParameters(const std::string & variable_name);
+  Real variableValueAtElement(const libMesh::Elem * element, MooseVariableFieldBase * variable);
+};
