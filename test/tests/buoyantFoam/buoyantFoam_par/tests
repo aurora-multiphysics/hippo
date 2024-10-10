@@ -1,12 +1,16 @@
 [Tests]
-  [test]
+  [buoyantFoam_par]
+    [setup]
+      type = RunCommand
+      command = '(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force)'
+      should_execute = false
+    []
     [run]
-      type=Exodiff
+      type = Exodiff
+      input = 'run.i'
       exodiff = 'run_out.e'
-      command = './run.sh ../../../../hippo-opt'
-      group='buoyantFoam'
-      tags='parallel'
-      rel_err = 5e-3
+      min_parallel = 4
+      max_parallel = 4
     []
   []
 []
