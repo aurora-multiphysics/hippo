@@ -8,10 +8,11 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "hippoTestApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
+
+#include <MooseInit.h>
+#include <Moose.h>
+#include <MooseApp.h>
+#include <AppFactory.h>
 
 // Create a performance log
 PerfLog Moose::perf_log("hippo");
