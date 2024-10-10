@@ -1,7 +1,8 @@
-#include <memory>
 #include "FoamMesh.h"
 #include "FoamInterface.h"
 #include "Foam2MooseMeshGen.h"
+
+#include <memory>
 
 registerMooseObject("hippoApp", FoamMesh);
 

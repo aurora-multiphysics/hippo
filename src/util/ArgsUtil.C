@@ -1,4 +1,5 @@
 #include "ArgsUtil.h"
+
 cArgs::cArgs(std::string const & name) : data_{name}, offsets_{0} { data_.append(1, '\0'); }
 
 void
