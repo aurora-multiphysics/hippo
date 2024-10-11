@@ -1,0 +1,14 @@
+[Tests]
+    [constant_gradient_heat_flux_steady_state]
+        type = CSVDiff
+        input = constant_gradient_heat_flux_steady_state.i
+        csvdiff = 'constant_gradient_heat_flux_steady_state_csv_left_boundary_hf_0002.csv
+                   constant_gradient_heat_flux_steady_state_csv_right_boundary_hf_0002.csv'
+        ignore_columns = 'id'
+    []
+    [error_if_no_boundary_set]
+        type = RunException
+        input = error_if_no_boundary_set.i
+        expect_err = "missing required parameter 'AuxKernels/heat_flux_aux/boundary'"
+    []
+[]

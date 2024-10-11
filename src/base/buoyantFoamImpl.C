@@ -1,10 +1,11 @@
-#include <fvCFD_moose.h>
-#include "fluidThermo.H"
-#include "fluidThermophysicalTransportModel.H"
-#include "pimpleControl.H"
-#include "pressureReference.H"
-#include "hydrostaticInitialisation.H"
-#include "CorrectPhi.H"
+#include "fvCFD_moose.h"
+
+#include <fluidThermo.H>
+#include <fluidThermophysicalTransportModel.H>
+#include <pimpleControl.H>
+#include <pressureReference.H>
+#include <hydrostaticInitialisation.H>
+#include <CorrectPhi.H>
 
 /*
  * Code in here is directly copied from  buoyantFoam.C in openFOAM
@@ -642,6 +643,19 @@ public:
     assert(moose_T.size() == static_cast<size_t>(patch.size()));
     std::copy(moose_T.begin(), moose_T.end(), patch.begin());
   }
+
+  void set_patch_face_negative_heat_flux(int patch_id, const std::vector<double> & negative_hf)
+  {
+    scalarField & gradient_patch(
+        refCast<fixedGradientFvPatchScalarField>(thermo.T().boundaryFieldRef()[patch_id])
+            .gradient());
+    auto & thermal_conductivity = thermo.kappa().boundaryField()[patch_id];
+    assert(gradient_patch.size() == thermal_conductivity.size());
+    for (auto i = 0U; i < gradient_patch.size(); ++i)
+    {
+      gradient_patch[i] = negative_hf[i] / thermal_conductivity[i];
+    }
+  }
 };
 
 buoyantFoamApp::~buoyantFoamApp() = default;
@@ -674,6 +688,13 @@ void
 buoyantFoamApp::set_patch_face_t(int patch_id, const std::vector<double> & moose_T)
 {
   _impl->set_patch_face_temperatures(patch_id, moose_T);
+}
+
+void
+buoyantFoamApp::set_patch_face_negative_heat_flux(int patch_id,
+                                                  const std::vector<double> & negative_hf)
+{
+  _impl->set_patch_face_negative_heat_flux(patch_id, negative_hf);
 }
 
 }

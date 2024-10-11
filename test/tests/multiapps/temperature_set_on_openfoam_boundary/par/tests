@@ -1,0 +1,26 @@
+[Tests]
+  [temperature_set_on_openfoam_boundary_in_parallel]
+    [setup]
+      type = RunCommand
+      command = '(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force) \
+                 && (cd gold/buoyantCavity && blockMesh)'
+    []
+    [run]
+      type = RunApp
+      input = run.i
+      prereq = temperature_set_on_openfoam_boundary_in_parallel/setup
+      min_parallel = 4
+      max_parallel = 4
+    []
+    [reconstruct]
+      type = RunCommand
+      command = '(cd buoyantCavity && reconstructPar)'
+      prereq = temperature_set_on_openfoam_boundary_in_parallel/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = temperature_set_on_openfoam_boundary_in_parallel/reconstruct
+    []
+  []
+[]

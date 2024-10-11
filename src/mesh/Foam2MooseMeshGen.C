@@ -1,16 +1,18 @@
-#include "FoamInterface.h"
 #include "Foam2MooseMeshGen.h"
+#include "CommUtil.h"
+#include "FoamInterface.h"
 #include "fvCFD_moose.h"
-#include "PrimitivePatch.H"
-#include <numeric>
-#include <memory>
+#include "HippoPtr.h"
+
+#include <MooseError.h>
+#include <PrimitivePatch.H>
+
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
-#include <MooseError.h>
-#include "HippoPtr.h"
-#include "CommUtil.h"
+
 namespace Hippo
 {
 

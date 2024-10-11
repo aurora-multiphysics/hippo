@@ -1,0 +1,90 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox            |
+|  \\    /   O peration     | Version:  10                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+/* This file was generated to define a mesh with specific dimensions and cells */
+
+/*--------------------------------*- C++ -*----------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+convertToMeters 1.0;
+
+vertices
+(
+    (0    0.01 0)     // 0
+    (0.02 0.01 0)     // 1
+    (0.02 0.02 0)     // 2
+    (0    0.02 0)     // 3
+    (0    0.01 0.01)  // 4
+    (0.02 0.01 0.01)  // 5
+    (0.02 0.02 0.01)  // 6
+    (0    0.02 0.01)  // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (10 10 5) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    patch0  // Back patch
+    {
+        type wall;
+        faces
+        (
+            (0 1 2 3)
+        );
+    }
+    patch1  // Bottom patch
+    {
+        type wall;
+        faces
+        (
+            (0 1 4 5)
+        );
+    }
+    patch2  // Left patch
+    {
+        type wall;
+        faces
+        (
+            (0 3 4 7)
+        );
+    }
+    patch3  // Right patch
+    {
+        type wall;
+        faces
+        (
+            (1 2 5 6)
+        );
+    }
+    patch4  // Top patch
+    {
+        type wall;
+        faces
+        (
+            (2 3 6 7)
+        );
+    }
+    patch5  // Front patch
+    {
+        type wall;
+        faces
+        (
+            (4 5 6 7)
+        );
+    }
+);

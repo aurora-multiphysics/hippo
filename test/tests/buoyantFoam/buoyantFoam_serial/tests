@@ -1,11 +1,14 @@
 [Tests]
-  [test]
+  [buoyantFoam_serial]
+    [setup]
+      type = RunCommand
+      command = '(cd buoyantCavity && ./Allclean && blockMesh)'
+    []
     [run]
-      type=Exodiff
+      type = Exodiff
+      input = 'run.i'
       exodiff = 'run_out.e'
-      command = './run.sh ../../../../hippo-opt'
-      group='buoyantFoam'
-      tags='serial'
+      prereq = buoyantFoam_serial/setup
     []
   []
 []
