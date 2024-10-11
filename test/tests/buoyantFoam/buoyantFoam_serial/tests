@@ -3,12 +3,12 @@
     [setup]
       type = RunCommand
       command = '(cd buoyantCavity && ./Allclean && blockMesh)'
-      should_execute = false
     []
     [run]
       type = Exodiff
       input = 'run.i'
       exodiff = 'run_out.e'
+      prereq = buoyantFoam_serial/setup
     []
   []
 []

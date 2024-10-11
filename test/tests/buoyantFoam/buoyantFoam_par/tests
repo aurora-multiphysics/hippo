@@ -3,7 +3,6 @@
     [setup]
       type = RunCommand
       command = '(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force)'
-      should_execute = false
     []
     [run]
       type = Exodiff
@@ -11,6 +10,7 @@
       exodiff = 'run_out.e'
       min_parallel = 4
       max_parallel = 4
+      prereq = buoyantFoam_par/setup
     []
   []
 []
