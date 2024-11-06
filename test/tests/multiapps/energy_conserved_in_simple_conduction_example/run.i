@@ -1,3 +1,9 @@
+# TODO: Things to try:
+#  - Give the fluid and solid domains equal Cp.
+#  - Set acceleration due to gravity to 0 to eliminate GPE term.
+#  - Check definitions of specific heat in OpenFOAM and MOOSE docs.
+#    - Apparently the quantity can mean different things in different apps?
+
 [Mesh]
     [solid]
         type = GeneratedMeshGenerator
@@ -53,12 +59,12 @@
     [fluid_T]
         family = LAGRANGE
         order = FIRST
-        initial_condition = 300
+        initial_condition = 310
     []
     [heat_flux]
         family = MONOMIAL
         order = CONSTANT
-        initial_condition = 100
+        initial_condition = 0
     []
 []
 
@@ -100,7 +106,7 @@
     []
     [thermal-density]
         type = GenericConstantMaterial
-        prop_names = 'density'
+        prop_names = density
         prop_values = 200
     []
 []
@@ -108,8 +114,8 @@
 [Executioner]
     type = Transient
     start_time = 0
-    end_time = 100
-    dt = 1
+    end_time = 400
+    dt = 2
 
     solve_type = 'PJFNK'
     petsc_options = '-snes_ksp_ew'
@@ -119,6 +125,14 @@
     nl_rel_tol = 1e-8
 []
 
+[Postprocessors]
+    [temperature_integral]
+        type = ElementIntegralVariablePostprocessor
+        variable = temp
+    []
+[]
+
 [Outputs]
     exodus = true
+    csv = true
 []

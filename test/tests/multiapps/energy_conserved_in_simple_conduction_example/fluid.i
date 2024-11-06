@@ -17,7 +17,7 @@
   [fluid_wall_temp]
     family = MONOMIAL
     order = CONSTANT
-    initial_condition = 300
+    initial_condition = 310
   []
   [solid_heat_flux]
     family = MONOMIAL
@@ -35,8 +35,8 @@
 [Executioner]
   type = Transient
   start_time = 0
-  end_time = 200
-  dt = 1
+  end_time = 400
+  dt = 2
 
   [TimeSteppers]
     [foam]
