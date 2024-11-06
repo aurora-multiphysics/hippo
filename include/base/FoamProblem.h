@@ -67,5 +67,4 @@ private:
   void syncToOpenFoam();
   MooseVariableFieldBase *
   getConstantMonomialVariableFromParameters(const std::string & variable_name);
-  Real variableValueAtElement(const libMesh::Elem * element, MooseVariableFieldBase * variable);
 };
