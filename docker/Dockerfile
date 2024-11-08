@@ -58,5 +58,11 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && \
     rm -rf /var/lib/apt/lists/*
 RUN make -C ${MOOSE_DIR}/modules/heat_conduction -j
+# Python requirements for linting and testing
+RUN python -m pip install --upgrade pip && \
+    python -m pip install \
+        pre-commit \
+        "fluidfoam>=0.2.4" \
+        "deepdiff>=6.1.0"
 
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-10/etc/bashrc && \"$@\"", "-s"]
