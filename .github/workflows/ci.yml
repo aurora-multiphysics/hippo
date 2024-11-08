@@ -21,7 +21,6 @@ jobs:
         # used by 'actions/checkout', so git operations fail.
         # https://github.com/actions/checkout/issues/766
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        pip install pre-commit
         pre-commit install
         SKIP=no-commit-to-branch pre-commit run --all
     - name: Build
@@ -40,6 +39,5 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        python -m pip install "fluidfoam>=0.2.4"
         . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
         ./run_tests
