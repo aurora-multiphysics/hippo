@@ -14,7 +14,7 @@ jobs:
       image: quay.io/hsaunders1904/hippo:latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Quality Checks
       run: |
         # As we're running in our own container, we're not the same user as is
