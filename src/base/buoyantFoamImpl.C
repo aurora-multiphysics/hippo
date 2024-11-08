@@ -659,6 +659,7 @@ public:
 };
 
 buoyantFoamApp::~buoyantFoamApp() = default;
+
 buoyantFoamApp::buoyantFoamApp(FoamInterface * interface)
   : _interface(interface),
     _impl(std::make_unique<buoyantFoamImpl>(

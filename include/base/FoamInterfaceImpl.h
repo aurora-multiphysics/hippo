@@ -82,21 +82,6 @@ struct EnvImpl
     return _mesh.globalData().globalPointNumbering();
   }
 
-#if 0
-  auto
-  getPatchInterpolator(int patch_id)
-  {
-    return Foam::PrimitivePatchInterpolation(patch_id);
-  }
-
-  auto
-  getPatchInterpolator(std::string const & patch_name)
-  {
-    auto patch_id = getPatchID(patch_name)
-    return Foam::PrimitivePatchInterpolation(patch_id);
-  }
-#endif
-
   Foam::Time & getRuntime() { return _runtime; }
   Foam::argList & getArglist() { return _args.args; }
   Foam::fvMesh & getMesh() { return _mesh; }
