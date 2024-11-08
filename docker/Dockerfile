@@ -30,15 +30,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
     # Install OpenFOAM build dependencies
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        libqt5opengl5-dev=5.12.8+dfsg-0ubuntu2.1 \
-        libqt5x11extras5-dev=5.12.8-0ubuntu1 \
-        libxt-dev=1:1.1.5-1 \
-        paraview=5.7.0-4ubuntu9 \
-        paraview-dev=5.7.0-4ubuntu9 \
-        qtbase5-dev=5.12.8+dfsg-0ubuntu2.1 \
-        qttools5-dev=5.12.8-0ubuntu1 \
-        qttools5-dev-tools=5.12.8-0ubuntu1 \
-        wget=1.20.3-1ubuntu2 \
+        libqt5opengl5-dev \
+        libqt5x11extras5-dev \
+        libxt-dev \
+        paraview \
+        paraview-dev \
+        qtbase5-dev \
+        qttools5-dev \
+        qttools5-dev-tools \
+        wget \
     && \
     # Install OpenFOAM
     bash ./scripts/install-openfoam.sh -o /opt/openfoam -s && \
