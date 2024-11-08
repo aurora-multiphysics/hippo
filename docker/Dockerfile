@@ -57,5 +57,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
         wget \
     && \
     rm -rf /var/lib/apt/lists/*
+RUN make -C ${MOOSE_DIR}/modules/heat_conduction -j
 
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-10/etc/bashrc && \"$@\"", "-s"]
