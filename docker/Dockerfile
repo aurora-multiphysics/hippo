@@ -57,7 +57,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
         wget \
     && \
     rm -rf /var/lib/apt/lists/*
-RUN make -C ${MOOSE_DIR}/modules/heat_conduction -j
+RUN make -C ${MOOSE_DIR}/modules/heat_conduction
 # Python requirements for linting and testing
 RUN python -m pip install --upgrade pip && \
     python -m pip install \
