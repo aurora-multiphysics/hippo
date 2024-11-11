@@ -1,4 +1,5 @@
 # Hippo ignores:
+doc/html
 
 # Created by 'scripts/install-openfoam.sh'
 external/*

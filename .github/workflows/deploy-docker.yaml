@@ -20,12 +20,12 @@ jobs:
       - name: Log in to Quay.io
         uses: docker/login-action@v3
         with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_LOGIN_TOKEN }}
+          registry: quay.io/ukaea/hippo
+          username: ${{ secrets.QUAY_ID }}
+          password: ${{ secrets.QUAY_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           file: ./docker/Dockerfile
-          tags: quay.io/hsaunders1904/hippo:${{ github.event.inputs.tag }}
+          tags: quay.io/ukaea/hippo:${{ github.event.inputs.tag }}

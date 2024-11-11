@@ -24,6 +24,14 @@ is_constant_monomial(const MooseVariableFieldBase & var)
 {
   return var.order() == libMesh::Order::CONSTANT && var.feType().family == FEFamily::MONOMIAL;
 }
+
+Real
+variableValueAtElement(const libMesh::Elem * element, MooseVariableFieldBase * variable)
+{
+  auto & sys = variable->sys();
+  auto dof = element->dof_number(sys.number(), variable->number(), 0);
+  return sys.solution()(dof);
+}
 }
 
 InputParameters
@@ -317,15 +325,6 @@ BuoyantFoamProblem::syncToOpenFoam()
       _app.set_patch_face_negative_heat_flux(subdomains[i], moose_hf);
     }
   }
-}
-
-Real
-BuoyantFoamProblem::variableValueAtElement(const libMesh::Elem * element,
-                                           MooseVariableFieldBase * variable)
-{
-  auto & sys = variable->sys();
-  auto dof = element->dof_number(sys.number(), variable->number(), 0);
-  return sys.solution()(dof);
 }
 
 MooseVariableFieldBase *

@@ -15,6 +15,7 @@ Renderer:
 Extensions:
     MooseDocs.extensions.navigation:
         name: hippo
+        repo: https://github.com/aurora-multiphysics/hippo/
     MooseDocs.extensions.appsyntax:
         executable: ${ROOT_DIR}
         remove: !include ${MOOSE_DIR}/framework/doc/remove.yml
