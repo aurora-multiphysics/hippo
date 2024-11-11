@@ -35,7 +35,7 @@ jobs:
         . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
 
         # Build hippo
-        make
+        make -j
     - name: Test
       shell: bash
       run: |
