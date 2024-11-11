@@ -3,11 +3,11 @@
 #include "FoamInterface.h"
 #include "fvCFD_moose.h"
 
+#include <mpi.h>
 #include <PrimitivePatchInterpolation.H>
 
 #include <cassert>
 #include <map>
-#include <mpi.h>
 
 /*
  * Where the "generic" openFoam state lives mesh, runtime, args and decomposition info

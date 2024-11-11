@@ -10,13 +10,12 @@ InputParameters
 FoamMesh::validParams()
 {
   auto params = MooseMesh::validParams();
-  // make a vector at some point
   params.addRequiredParam<std::vector<std::string>>("foam_patch",
                                                     "Name of foam boundary patches to replicate");
 
   std::vector<std::string> empty_vec;
   params.addParam<std::vector<std::string>>(
-      "foam_args", empty_vec, "List of arguments to be passed to openFoam solver");
+      "foam_args", empty_vec, "List of arguments to be passed to OpenFoam solver");
   return params;
 }
 

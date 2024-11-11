@@ -41,8 +41,8 @@ public:
 protected:
   std::vector<std::string> _foam_patch;
   std::vector<int32_t> _patch_id;
-  Hippo::FoamInterface * _interface;
   std::vector<int> _subdomain_list;
+  Hippo::FoamInterface * _interface;
   bool _serial = true;
 };
 // Local Variables:
