@@ -40,6 +40,7 @@ namespace Hippo
 // just have it there
 // Forward declare the implementation
 struct EnvImpl;
+
 class FoamInterface
 {
 private:

@@ -1,8 +1,7 @@
 [Mesh]
     type = FoamMesh
-    foam_args = '-case fluid-openfoam'
+    case = 'fluid-openfoam'
     foam_patch = 'interface'
-    dim = 2
 []
 
 [Variables]

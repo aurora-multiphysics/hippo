@@ -10,13 +10,13 @@
 /*
  * Code in here is directly copied from  buoyantFoam.C in openFOAM
  * changes are that the #includes have been expanded out
- * and field variables etc. are memebers of this class
+ * and field variables etc. are members of this class
  * so we can persist data across timesteps
  */
 
 // This is a hack this macro is defined somewhere in moose and foam
 // I had to undef it in the fvCFD_moose.h macro
-// but I need to redefne it here
+// but I need to redefine it here
 // The foam one is not in scope
 #define NotImplemented
 #include "fvModels.H"

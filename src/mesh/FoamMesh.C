@@ -11,18 +11,15 @@ FoamMesh::validParams()
 {
   auto params = MooseMesh::validParams();
   params.addRequiredParam<std::vector<std::string>>("foam_patch",
-                                                    "Name of foam boundary patches to replicate");
-
-  std::vector<std::string> empty_vec;
-  params.addParam<std::vector<std::string>>(
-      "foam_args", empty_vec, "List of arguments to be passed to OpenFoam solver");
+                                                    "Name of foam boundary patches to replicate.");
+  params.addRequiredParam<std::string>("case", "The directory containing the OpenFOAM case.");
   return params;
 }
 
 FoamMesh::FoamMesh(InputParameters const & params)
   : MooseMesh(params),
     _foam_patch(getParam<std::vector<std::string>>("foam_patch")),
-    _interface(Hippo::FoamInterface::getInstance(getParam<std::vector<std::string>>("foam_args"),
+    _interface(Hippo::FoamInterface::getInstance({"-case", getParam<std::string>("case")},
                                                  _communicator.get()))
 {
   auto comm = _communicator.get();
@@ -57,7 +54,7 @@ FoamMesh::buildMesh()
 {
   auto comm = _communicator.get();
   auto mesh_adapter = std::make_unique<Hippo::Foam2MooseMeshAdapter>(
-      _foam_patch, _interface, (_serial) ? nullptr : &comm);
+      _foam_patch, _interface, _serial ? nullptr : &comm);
 
   // TODO: Can reserve elements if _mesh->reserve_elements(#el)
   // TODO: Can also reserve nodes _mesh->reserve_nodes(#nodes?)

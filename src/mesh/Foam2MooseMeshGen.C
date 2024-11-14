@@ -282,9 +282,13 @@ Foam2MooseMeshAdapter::Foam2MooseMeshAdapter(std::vector<std::string> const & pa
   }
 
   if (comm)
+  {
     this->set_up_parallel();
+  }
   else
+  {
     this->set_up_serial();
+  }
 
   // TODO: Move this - this is some annoying bookeeping I need to change the
   // patch ids in the local2global maps so that they point to the id in the moose mesh

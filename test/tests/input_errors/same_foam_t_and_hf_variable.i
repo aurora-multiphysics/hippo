@@ -1,8 +1,7 @@
 [Mesh]
   type = FoamMesh
-  foam_args = '-case ./foam_mesh'
+  case = './foam_mesh'
   foam_patch = 'topAndBottom frontAndBack'
-  dim=2
 []
 
 [AuxVariables]
