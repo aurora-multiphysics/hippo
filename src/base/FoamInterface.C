@@ -9,6 +9,27 @@
 
 namespace Hippo
 {
+
+namespace
+{
+
+constexpr auto FOAM_PARALLEL_FLAG = "-parallel";
+
+/** Check if OpenFOAM's parallel flag needs to be added to the CLI arguments.
+ *
+ * Return true if the given command line arguments do not contain the parallel flag and the MPI
+ * communicator's size is greater than 1.
+ */
+bool
+foamParallelFlagRequired(std::vector<std::string> const & foam_args, MPI_Comm const & comm)
+{
+  int comm_size{0};
+  MPI_Comm_size(comm, &comm_size);
+  return (comm_size > 1 &&
+          std::find(foam_args.begin(), foam_args.end(), FOAM_PARALLEL_FLAG) == foam_args.end());
+}
+}
+
 FoamInterface::FoamInterface(std::vector<std::string> const & foam_args, MPI_Comm const & comm)
 {
   auto cargs = cArgs("hippo");
@@ -16,6 +37,13 @@ FoamInterface::FoamInterface(std::vector<std::string> const & foam_args, MPI_Com
   {
     cargs.push_arg(a);
   }
+
+  // Automatically pass the '-parallel' argument to OpenFOAM if we have more than one MPI rank.
+  if (foamParallelFlagRequired(foam_args, comm))
+  {
+    cargs.push_arg(FOAM_PARALLEL_FLAG);
+  }
+
   _impl = std::make_unique<Hippo::EnvImpl>(cargs.get_argc(), cargs.get_argv().data(), comm);
 }
 

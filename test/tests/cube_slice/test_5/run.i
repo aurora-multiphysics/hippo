@@ -1,6 +1,6 @@
 [Mesh]
   type = FoamMesh
-  foam_args = '-case foaminput -parallel'
+  foam_args = '-case foaminput'
   foam_patch = ' Wall-0 Wall-2 Wall-4'
   dim=2
 []
