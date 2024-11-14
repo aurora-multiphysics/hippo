@@ -146,7 +146,7 @@
     type = Transient
     start_time = 0
     end_time = 1
-    dt = 0.01
+    dt = 0.025
 
     fixed_point_abs_tol = 1e-7
     fixed_point_rel_tol = 1e-8
