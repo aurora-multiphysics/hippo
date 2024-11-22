@@ -10,7 +10,7 @@
 # environment, but it does provide a stable place to build and run
 # hippo (for example in a CI pipeline).
 
-FROM idaholab/moose:aff4e7127b5492794595c14a49115b75bd159b31
+FROM idaholab/moose-dev:e930b1d
 
 WORKDIR "/opt/hippo"
 COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
@@ -18,51 +18,21 @@ COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 
 ENV MOOSE_DIR=/opt/moose
-ENV MPI_ROOT=/usr/local
-ENV MPI_ARCH_INC="-I/usr/local/include"
-ENV MPI_ARCH_LIBS="-L/usr/local/lib -lmpi"
-ENV CC=/usr/local/bin/mpicc
-ENV CXX=/usr/local/bin/mpicxx
-ENV F77=/usr/local/bin/mpif77
-ENV F90=/usr/local/bin/mpif90
+ENV MPI_ROOT=/opt/mpich
+ENV MPI_ARCH_INC="-I/opt/mpich/include"
+ENV MPI_ARCH_LIBS="-L/opt/mpich/lib -lmpi"
+ENV CC=/opt/mpich/bin/mpicc
+ENV CXX=/opt/mpich/bin/mpicxx
+ENV F77=/opt/mpich/bin/mpif77
+ENV F90=/opt/mpich/bin/mpif90
 
-RUN DEBIAN_FRONTEND=noninteractive \
-    # Install OpenFOAM build dependencies
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libqt5opengl5-dev \
-        libqt5x11extras5-dev \
-        libxt-dev \
-        paraview \
-        paraview-dev \
-        qtbase5-dev \
-        qttools5-dev \
-        qttools5-dev-tools \
-        wget \
-    && \
-    # Install OpenFOAM
-    bash ./scripts/install-openfoam.sh -o /opt/openfoam -s && \
-    # The MOOSE container leaves an mpich tar lying around...
-    rm "$(find /opt -maxdepth 1 -type f -name 'mpich-*')" && \
-    # Clean up build dependencies
-    apt-get -y remove \
-        libqt5opengl5-dev \
-        libqt5x11extras5-dev \
-        libxt-dev \
-        paraview \
-        paraview-dev \
-        qtbase5-dev \
-        qttools5-dev \
-        qttools5-dev-tools \
-        wget \
-    && \
-    rm -rf /var/lib/apt/lists/*
-RUN make -C ${MOOSE_DIR}/modules/heat_conduction
-# Python requirements for linting and testing
-RUN python -m pip install --upgrade pip && \
-    python -m pip install \
-        pre-commit \
-        "fluidfoam>=0.2.4" \
-        "deepdiff>=6.1.0"
+# Build MOOSE.
+RUN git clone --branch 2024-11-11-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
+RUN . /environment && make -C "${MOOSE_DIR}/test/"
+RUN . /environment && make -C "${MOOSE_DIR}/modules/heat_transfer/"
+# Build OpenFOAM.
+RUN . /environment && bash ./scripts/install-openfoam.sh -o /opt/openfoam -s
+# Python requirements for linting and testing.
+RUN . /environment && conda install -y fluidfoam pre-commit
 
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-10/etc/bashrc && \"$@\"", "-s"]
