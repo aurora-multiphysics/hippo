@@ -1,8 +1,7 @@
 [Mesh]
     type = FoamMesh
-    foam_args = '-case fluid-openfoam'
+    case = 'fluid-openfoam'
     foam_patch = 'interface'
-    dim = 2
 []
 
 [Variables]
@@ -38,7 +37,7 @@
     type = Transient
     start_time = 0
     end_time = 1
-    dt = 0.01
+    dt = 0.025
 
     solve_type = 'PJFNK'
     petsc_options_iname = '-pc_type -pc_hypre_type'

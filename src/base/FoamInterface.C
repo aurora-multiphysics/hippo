@@ -9,10 +9,8 @@
 
 namespace Hippo
 {
-
 namespace
 {
-
 constexpr auto FOAM_PARALLEL_FLAG = "-parallel";
 
 /** Check if OpenFOAM's parallel flag needs to be added to the CLI arguments.
