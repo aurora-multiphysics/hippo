@@ -1,8 +1,9 @@
 #include "hippoApp.h"
-#include "Moose.h"
-#include "AppFactory.h"
-#include "ModulesApp.h"
-#include "MooseSyntax.h"
+
+#include <AppFactory.h>
+#include <ModulesApp.h>
+#include <Moose.h>
+#include <MooseSyntax.h>
 
 InputParameters
 hippoApp::validParams()
@@ -11,6 +12,7 @@ hippoApp::validParams()
 
   // Do not use legacy material output, i.e., output properties on INITIAL as well as TIMESTEP_END
   params.set<bool>("use_legacy_material_output") = false;
+  params.set<bool>("use_legacy_initial_residual_evaluation_behavior") = false;
 
   return params;
 }

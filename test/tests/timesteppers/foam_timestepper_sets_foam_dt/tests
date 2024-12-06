@@ -7,7 +7,7 @@
     # 2.5.
     [setup]
       type = RunCommand
-      command = 'cd buoyantCavity && ./Allclean && blockMesh'
+      command = 'bash -c "cd buoyantCavity && ./Allclean && blockMesh"'
     []
     [run]
       type = RunApp
@@ -16,13 +16,7 @@
     []
     [verify]
       type = RunCommand
-      command = 'for t in $(seq 1 0.5 2.5); do \
-                     t="$(echo $t | sed "s/\.0$//")";
-                     echo "buoyantCavity/$t";
-                     [ -d buoyantCavity/$t ]; \
-                 done \
-                 && ! [ -d buoyantCavity/0.5 ] \
-                 && ! [ -d buoyantCavity/3 ]'
+      command = 'bash verify.sh'
       prereq = foam_timestepper_sets_foam_t_and_dt/run
     []
   []

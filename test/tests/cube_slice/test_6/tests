@@ -1,17 +1,19 @@
 [Tests]
   [test]
     [run]
-      type=RunCommand
-      command = './run.sh ../../../../hippo-opt'
-      group='cube_slice'
-      tags='test_6'
+      type = RunApp
+      input = 'run.i'
+      min_parallel = 4
+      max_parallel = 4
+      group = 'cube_slice'
+      tags = 'test_6'
     []
     [verify_num_nodes]
-      type=RunCommand
+      type = RunCommand
       command = '../scripts/check.sh config run_out.e'
-      prereq=test/run
-      group='cube_slice'
-      tags='test_6'
+      prereq = test/run
+      group = 'cube_slice'
+      tags = 'test_6'
     []
   []
 []

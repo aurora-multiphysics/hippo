@@ -2,7 +2,7 @@
   [buoyantFoam_serial]
     [setup]
       type = RunCommand
-      command = '(cd buoyantCavity && ./Allclean && blockMesh)'
+      command = 'bash -c "cd buoyantCavity && ./Allclean && blockMesh"'
     []
     [run]
       type = Exodiff

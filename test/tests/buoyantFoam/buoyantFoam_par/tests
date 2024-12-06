@@ -2,7 +2,7 @@
   [buoyantFoam_par]
     [setup]
       type = RunCommand
-      command = '(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force)'
+      command = 'bash -c "cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force"'
     []
     [run]
       type = Exodiff

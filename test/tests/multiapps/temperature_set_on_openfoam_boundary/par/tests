@@ -2,8 +2,8 @@
   [temperature_set_on_openfoam_boundary_in_parallel]
     [setup]
       type = RunCommand
-      command = '(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force) \
-                 && (cd gold/buoyantCavity && blockMesh)'
+      command = 'bash -c "(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force) \
+                          && (cd gold/buoyantCavity && blockMesh)"'
     []
     [run]
       type = RunApp
@@ -14,7 +14,7 @@
     []
     [reconstruct]
       type = RunCommand
-      command = '(cd buoyantCavity && reconstructPar)'
+      command = 'reconstructPar -case buoyantCavity'
       prereq = temperature_set_on_openfoam_boundary_in_parallel/run
     []
     [verify]
