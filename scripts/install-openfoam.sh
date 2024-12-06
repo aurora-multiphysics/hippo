@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
 
+set -e
+
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 STRIP_SOURCES=0
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
@@ -34,7 +36,7 @@ options:
   -h              show help and exit
 "
 
-SCRIPT_REQUIREMENTS=("getopts" "tar")
+SCRIPT_REQUIREMENTS=("getopts" "tar" "wget")
 for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     if ! command -v "${REQ}" > /dev/null; then
         >&2 echo "install-openfoam: error: '${REQ}' is not installed and is required to run this script"
@@ -58,13 +60,13 @@ THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-10"
 # Fetch and patch OpenFOAM
 mkdir -p "${OPENFOAM_DIR}"
 if [ ! -d "${OPENFOAM_DIR}/.git" ]; then
-    git clone  https://github.com/OpenFOAM/OpenFOAM-10.git "${OPENFOAM_DIR}"
+    git clone https://github.com/OpenFOAM/OpenFOAM-10.git "${OPENFOAM_DIR}"
 fi
 git -C "${OPENFOAM_DIR}" reset --hard "${OPENFOAM_REV}"
 git -C "${OPENFOAM_DIR}" apply "${SCRIPT_DIR}/openfoam.patch"
 
 # Set up OpenFOAM
-source "${OPENFOAM_DIR}/etc/bashrc"
+source "${OPENFOAM_DIR}/etc/bashrc" || true
 
 echo "Hippo installing OpenFOAM-10 with options:"
 echo "------------------------------------------"
@@ -85,12 +87,14 @@ mv "ThirdParty-10-version-10" "${THIRDPARTY_DIR}"
 )
 
 # Refresh OpenFOAM paths
-wmRefresh
+wmRefresh || true
 
 # Build OpenFOAM
 (
     cd "${OPENFOAM_DIR}" \
-    && ./Allwmake -j -s -q
+    && ./Allwmake -j dep \
+    && ./Allwmake -j -s src/ \
+    && ./Allwmake -j -s applications/utilities
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then
@@ -100,6 +104,7 @@ if [ ${STRIP_SOURCES} -eq 1 ]; then
     rm -rf "${OPENFOAM_DIR}/.git/"
     rm -rf "${OPENFOAM_DIR}/applications/"
     rm -rf "${OPENFOAM_DIR}/doc/"
+    rm -rf "${OPENFOAM_DIR}/platforms/${WM_OPTIONS}/src"
     rm -rf "${OPENFOAM_DIR}/test/"
     rm -rf "${OPENFOAM_DIR}/tutorials/"
     rm -rf "${OPENFOAM_DIR}/wmake/"
