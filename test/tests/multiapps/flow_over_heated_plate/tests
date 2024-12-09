@@ -2,12 +2,12 @@
   [flow_over_heated_plate]
     [setup]
       type = RunCommand
-      command = '(cd fluid-openfoam && ./Allclean && blockMesh && decomposePar -force)'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh && decomposePar"'
     []
     [run]
       # TODO(hsaunders1904): convert this to an Exodus type test.
       #  Use the 'time_step_interval' option to only output a few timesteps to
-      #  check against
+      #  check against, so we don't need a large gold exodus file.
       type = RunApp
       input = heated_plate.i
       min_parallel = 4
@@ -16,7 +16,7 @@
     []
     [reconstruct]
       type = RunCommand
-      command = '(cd fluid-openfoam && reconstructPar)'
+      command = 'reconstructPar -case fluid-openfoam'
       prereq = flow_over_heated_plate/run
     []
     [verify]

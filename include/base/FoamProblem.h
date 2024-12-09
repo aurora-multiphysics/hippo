@@ -19,7 +19,7 @@ public:
   static InputParameters validParams();
   virtual void externalSolve() override;
   virtual void syncSolutions(Direction /* dir */) override {}
-  virtual bool converged() override { return true; }
+  virtual bool converged(const unsigned int nl_sys_num) override { return true; }
   virtual void addExternalVariables() override{};
   // Want to be able to share the object from here so we don't
   // have to pass the args around and problem is available in
