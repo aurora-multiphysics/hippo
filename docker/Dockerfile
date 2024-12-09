@@ -51,6 +51,7 @@ RUN dnf --enablerepo=devel install -y \
     && dnf install -y \
         ./glpk-4.65-4.el8.x86_64.rpm \
         ./glpk-devel-4.65-4.el8.x86_64.rpm \
+    && rm glpk-* \
     && dnf clean all
 
 # MOOSE
