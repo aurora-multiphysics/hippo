@@ -1,0 +1,25 @@
+[Tests]
+  [energy_conserved_in_simple_conduction_example]
+    [setup]
+      type = RunCommand
+      command = '(cd buoyantCavity && ./Allclean && blockMesh && decomposePar -force)'
+    []
+    [run]
+      type = RunApp
+      input = run.i
+      min_parallel = 4
+      max_parallel = 4
+      prereq = energy_conserved_in_simple_conduction_example/setup
+    []
+    [reconstruct]
+      type = RunCommand
+      command = '(cd buoyantCavity && reconstructPar && buoyantFoam -postProcess -func "writeObjects(rho)" -latestTime)'
+      prereq = energy_conserved_in_simple_conduction_example/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = energy_conserved_in_simple_conduction_example/reconstruct
+    []
+  []
+[]
