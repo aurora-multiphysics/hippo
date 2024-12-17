@@ -1,6 +1,13 @@
 #include "FoamSolver.H"
 
+#include <fixedGradientFvPatchFields.H>
+#include <fvPatchField.H>
 #include <pimpleSingleRegionControl.H>
+#include <scalarField.H>
+#include <volFieldsFwd.H>
+
+#include <algorithm>
+#include <iterator>
 
 namespace Hippo
 {
@@ -57,6 +64,10 @@ setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
 void
 FoamSolver::run()
 {
+  if (_solver == nullptr)
+  {
+    return;
+  }
   auto & runTime = const_cast<Foam::Time &>(_solver->runTime);
   auto & solver = *_solver;
 
@@ -102,6 +113,49 @@ FoamSolver::run()
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
             << "\n"
             << std::endl;
+}
+
+std::size_t
+FoamSolver::appendPatchTemperatures(int patch_id, std::vector<double> & foam_t)
+{
+  auto & mesh = _solver->mesh;
+  auto & temp = mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T");
+  std::copy(temp.begin(), temp.end(), std::back_inserter(foam_t));
+  return temp.size();
+}
+
+std::size_t
+FoamSolver::patchSize(int patch_id)
+{
+  auto & mesh = _solver->mesh;
+  return mesh.boundary()[patch_id].size();
+}
+
+void
+FoamSolver::setPatchTemperatures(int patch_id, const std::vector<double> & moose_t)
+{
+  auto & mesh = _solver->mesh;
+  auto & temp = const_cast<Foam::fvPatchField<double> &>(
+      mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T"));
+  assert(moose_t.size() == static_cast<std::size_t>(temp.size()));
+  std::copy(moose_t.begin(), moose_t.end(), temp.begin());
+}
+
+void
+FoamSolver::setPatchNegativeHeatFlux(int patch_id, std::vector<double> & negative_hf)
+{
+  auto & mesh = _solver->mesh;
+  auto & temp = const_cast<Foam::fvPatchField<double> &>(
+      mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T"));
+  Foam::scalarField & temp_gradient(
+      Foam::refCast<Foam::fixedGradientFvPatchScalarField>(temp).gradient());
+  auto & thermal_conductivity =
+      mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("kappa");
+  assert(temp_gradient.size() == thermal_conductivity.size());
+  for (auto i = 0U; i < temp_gradient.size(); ++i)
+  {
+    temp_gradient[i] = negative_hf[i] / thermal_conductivity[i];
+  }
 }
 
 }

@@ -10,15 +10,13 @@
 #include <MooseVariableFieldBase.h>
 #include <SystemBase.h>
 
-/* Base class for FoamProblems */
-
 class FoamProblem : public ExternalProblem
 {
 public:
   FoamProblem(InputParameters const & params);
   static InputParameters validParams();
   virtual void externalSolve() override;
-  virtual void syncSolutions(Direction /* dir */) override {}
+  virtual void syncSolutions(Direction /* dir */) override;
   virtual bool converged(const unsigned int nl_sys_num) override { return true; }
   virtual void addExternalVariables() override{};
   // Want to be able to share the object from here so we don't
@@ -36,14 +34,15 @@ public:
     WallHeatFlux,
     Both
   };
+
   template <SyncVariables sync_vars>
-  void syncFromOpenFoam()
-  {
-  }
+  void syncFromOpenFoam();
+
   template <SyncVariables sync_vars>
-  void syncToOpenFoam()
-  {
-  }
+  void syncToOpenFoam();
+
+  MooseVariableFieldBase *
+  getConstantMonomialVariableFromParameters(const std::string & parameter_name);
 
 protected:
   FoamMesh * _foam_mesh = nullptr;
