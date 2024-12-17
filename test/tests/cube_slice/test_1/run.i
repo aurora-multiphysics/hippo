@@ -5,14 +5,19 @@
 []
 [Variables]
   [T]
-  initial_condition = 1.0
+    initial_condition = 1.0
+    family = MONOMIAL
+    order = CONSTANT
   []
   [hf]
-  initial_condition = 1.0
+    initial_condition = 1.0
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 [Problem]
-  type=FoamProblem
+  type = FoamProblem
+  solve = false
   temp = T
   foam_temp = T
   foam_heat_flux = hf

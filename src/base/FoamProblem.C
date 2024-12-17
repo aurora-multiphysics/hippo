@@ -1,12 +1,14 @@
 #include "FoamProblem.h"
 #include "FoamInterface.h"
 #include "FoamMesh.h"
+#include "FoamSolver.H"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
 #include <finiteVolume/solver/solver.H>
+#include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
 
@@ -57,7 +59,9 @@ FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
     _interface(_foam_mesh->getFoamInterface()),
-    _solver(Foam::solver::New("fluid", _interface->getMesh()).ptr())
+    // Do not initialise the solver if we're not actually solving.
+    _solver(params.get<bool>("solve") ? Foam::solver::New("fluid", _interface->getMesh()).ptr()
+                                      : nullptr)
 {
   assert(_foam_mesh);
   assert(_interface);
@@ -108,12 +112,19 @@ FoamProblem::FoamProblem(InputParameters const & params)
 void
 FoamProblem::externalSolve()
 {
-  _solver.run();
+  if (parameters().get<bool>("solve"))
+  {
+    _solver.run();
+  }
 }
 
 void
 FoamProblem::syncSolutions(Direction dir)
 {
+  if (!parameters().get<bool>("solve"))
+  {
+    return;
+  }
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
     auto transfer_wall_temp = !parameters().get<std::string>(PARAM_VAR_FOAM_T).empty();
