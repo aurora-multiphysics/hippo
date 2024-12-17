@@ -26,7 +26,7 @@
 []
 
 [Problem]
-    type = BuoyantFoamProblem
+    type = FoamProblem
     # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
     heat_flux = solid_heat_flux
     # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
