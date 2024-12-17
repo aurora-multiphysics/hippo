@@ -12,7 +12,8 @@
   []
 []
 [Problem]
-  type=FoamProblem
+  type = FoamProblem
+  solve = false
   temp = T
   foam_temp = T
   foam_heat_flux = hf

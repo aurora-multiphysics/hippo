@@ -118,6 +118,10 @@ FoamSolver::run()
 std::size_t
 FoamSolver::appendPatchTemperatures(int patch_id, std::vector<double> & foam_t)
 {
+  if (!_solver)
+  {
+    return 0;
+  }
   auto & mesh = _solver->mesh;
   auto & temp = mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T");
   std::copy(temp.begin(), temp.end(), std::back_inserter(foam_t));
@@ -127,6 +131,10 @@ FoamSolver::appendPatchTemperatures(int patch_id, std::vector<double> & foam_t)
 std::size_t
 FoamSolver::patchSize(int patch_id)
 {
+  if (!_solver)
+  {
+    return 0;
+  }
   auto & mesh = _solver->mesh;
   return mesh.boundary()[patch_id].size();
 }
@@ -134,6 +142,10 @@ FoamSolver::patchSize(int patch_id)
 void
 FoamSolver::setPatchTemperatures(int patch_id, const std::vector<double> & moose_t)
 {
+  if (!_solver)
+  {
+    return;
+  }
   auto & mesh = _solver->mesh;
   auto & temp = const_cast<Foam::fvPatchField<double> &>(
       mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T"));
@@ -144,6 +156,10 @@ FoamSolver::setPatchTemperatures(int patch_id, const std::vector<double> & moose
 void
 FoamSolver::setPatchNegativeHeatFlux(int patch_id, std::vector<double> & negative_hf)
 {
+  if (!_solver)
+  {
+    return;
+  }
   auto & mesh = _solver->mesh;
   auto & temp = const_cast<Foam::fvPatchField<double> &>(
       mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T"));
