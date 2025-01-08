@@ -8,24 +8,20 @@ STRIP_SOURCES=0
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
 USAGE="usage: install-openfoam.sh [-h] [-s] [-o DIRECTORY]
 
-Install OpenFOAM-10 for Ubuntu, applying the patch required by hippo.
+Install OpenFOAM-12 for Ubuntu, applying the patch required by hippo.
 
 Note that you will need to install OpenFOAM's requirements separately.
 You can do this by running:
 
     apt install \\
-        bison \\
-        flex \\
-        libptscotch-dev \\
-        libqt5opengl5-dev \\
-        libqt5x11extras5-dev \\
+        build-essential \\
+        cmake \\
+        flex\\
+        gnuplot \\
+        gnuplot-x11 \\
+        libopenmpi-dev \\
         libxt-dev \\
-        make \\
-        paraview \\
-        paraview-dev \\
-        qtbase5-dev \\
-        qttools5-dev \\
-        qttools5-dev-tools
+        zlib1g-dev
 
 options:
   -o <DIRECTORY>  the directory to install OpenFOAM within. This will be
@@ -53,14 +49,15 @@ while getopts "o:sh" opt; do
     esac
 done
 
-OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-10"
-OPENFOAM_REV="d72c3ccf156ba0191a0a090e651a0da0a96a83a3"
-THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-10"
+OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-12"
+OPENFOAM_REV="9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6"
+THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-12"
+THIRDPARTY_REV="cab725f5e7929e8f5ec35c54edc493a822355235"
 
 # Fetch and patch OpenFOAM
 mkdir -p "${OPENFOAM_DIR}"
 if [ ! -d "${OPENFOAM_DIR}/.git" ]; then
-    git clone https://github.com/OpenFOAM/OpenFOAM-10.git "${OPENFOAM_DIR}"
+    git clone https://github.com/OpenFOAM/OpenFOAM-12.git "${OPENFOAM_DIR}"
 fi
 git -C "${OPENFOAM_DIR}" reset --hard "${OPENFOAM_REV}"
 git -C "${OPENFOAM_DIR}" apply "${SCRIPT_DIR}/openfoam.patch"
@@ -68,7 +65,7 @@ git -C "${OPENFOAM_DIR}" apply "${SCRIPT_DIR}/openfoam.patch"
 # Set up OpenFOAM
 source "${OPENFOAM_DIR}/etc/bashrc" || true
 
-echo "Hippo installing OpenFOAM-10 with options:"
+echo "Hippo installing OpenFOAM-12 with options:"
 echo "------------------------------------------"
 echo "  WM_ARCH_OPTION:      ${WM_ARCH_OPTION}"
 echo "  WM_COMPILE_OPTION:   ${WM_COMPILE_OPTION}"
@@ -78,9 +75,11 @@ echo "  WM_LABEL_SIZE:       ${WM_LABEL_SIZE}"
 echo "  WM_MPLIB:            ${WM_MPLIB}"
 echo "  WM_PRECISION_OPTION: ${WM_PRECISION_OPTION}"
 
-# Fetch and install OpenFOAM's third-party dependencies
-wget -O - http://dl.openfoam.org/third-party/10 | tar xvz
-mv "ThirdParty-10-version-10" "${THIRDPARTY_DIR}"
+mkdir -p "${THIRDPARTY_DIR}"
+if [ ! -d "${THIRDPARTY_DIR}/.git" ]; then
+    git clone https://github.com/OpenFOAM/ThirdParty-12.git "${THIRDPARTY_DIR}"
+fi
+git -C "${THIRDPARTY_DIR}" reset --hard "${THIRDPARTY_REV}"
 (
     cd "${THIRDPARTY_DIR}" \
     && ./Allwmake
@@ -93,8 +92,9 @@ wmRefresh || true
 (
     cd "${OPENFOAM_DIR}" \
     && ./Allwmake -j dep \
-    && ./Allwmake -j -s src/ \
-    && ./Allwmake -j -s applications/utilities
+    && ./Allwmake -j src/ \
+    && ./Allwmake -j applications/modules/ \
+    && ./Allwmake -j applications/utilities/
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then
