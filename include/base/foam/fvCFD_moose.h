@@ -13,7 +13,7 @@
 // FoamInterfaceImpl.H
 #include <argList.H>
 
-// FoamSolver.H
+// FoamSolver.h
 #include <solver.H>
 
 #undef NotImplemented

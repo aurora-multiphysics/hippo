@@ -2,7 +2,7 @@
 
 #include "FoamMesh.h"
 #include "FoamInterface.h"
-#include "FoamSolver.H"
+#include "FoamSolver.h"
 
 #include <libmesh/elem.h>
 #include <ExternalProblem.h>

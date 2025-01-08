@@ -1,7 +1,7 @@
 #include "FoamProblem.h"
 #include "FoamInterface.h"
 #include "FoamMesh.h"
-#include "FoamSolver.H"
+#include "FoamSolver.h"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>

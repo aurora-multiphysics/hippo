@@ -1,4 +1,4 @@
-#include "FoamSolver.H"
+#include "FoamSolver.h"
 
 #include <fixedGradientFvPatchFields.H>
 #include <fvPatchField.H>
