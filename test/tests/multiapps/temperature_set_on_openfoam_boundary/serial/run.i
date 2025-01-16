@@ -81,7 +81,7 @@
 
 [Transfers]
     [wall_temperature_to_fluid]
-        type = MultiAppGeometricInterpolationTransfer
+        type = MultiAppShapeEvaluationTransfer
         source_variable = temp
         to_multi_app = hippo
         variable = T

@@ -2,8 +2,7 @@
   [temperature_set_on_openfoam_boundary]
     [setup]
       type = RunCommand
-      command = 'bash -c "(cd buoyantCavity && ./Allclean && blockMesh) \
-                 && (cd gold/buoyantCavity && blockMesh)"'
+      command = 'bash -c "(cd buoyantCavity && ./Allclean && blockMesh)"'
     []
     [run]
       type = RunApp
