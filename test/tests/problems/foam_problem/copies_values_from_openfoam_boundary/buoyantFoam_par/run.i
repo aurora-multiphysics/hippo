@@ -1,23 +1,30 @@
 [Mesh]
   type = FoamMesh
-  case = './foam_mesh'
+  case = 'buoyantCavity'
   foam_patch = 'topAndBottom frontAndBack'
+[]
+
+[Variables]
+  [Dummy]
+    initial_condition = 3.14
+  []
 []
 
 [AuxVariables]
   [T]
     initial_condition = 111
     family = MONOMIAL
+    order = CONSTANT
   []
   [foam_T]
     initial_condition = 999
-    order = CONSTANT
     family = MONOMIAL
+    order = CONSTANT
   []
   [foam_hf]
-    initial_condition = 999
-    order = CONSTANT
+    initial_condition = -999
     family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -31,10 +38,17 @@
 [Executioner]
   type = Transient
   start_time = 0
-  end_time = 1
+  end_time = 20
   dt = 1
+  solve_type = 'PJFNK'
+  petsc_options_iname = '-pc_type -pc_hypre_type'
+  petsc_options_value = 'hypre boomeramg'
 
   [TimeStepper]
     type = FoamTimeStepper
   []
+[]
+
+[Outputs]
+  exodus = true
 []

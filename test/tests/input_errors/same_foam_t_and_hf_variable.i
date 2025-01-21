@@ -23,7 +23,7 @@
 []
 
 [Problem]
-  type=BuoyantFoamProblem
+  type=FoamProblem
   temp = T
   foam_temp = foam_T
   foam_heat_flux = foam_T

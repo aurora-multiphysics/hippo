@@ -91,6 +91,8 @@ RUN git clone --branch 2024-11-11-release https://github.com/idaholab/moose.git 
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer"
 
 # Build OpenFOAM
+# Ugly, but the Zoltan build looks for things in 'lib64' that are in 'lib'
+RUN ln -s "${MPI_ROOT}/lib" "${MPI_ROOT}/lib64"
 COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
@@ -99,4 +101,4 @@ RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s
 # Python linting and testing requirements
 RUN conda install fluidfoam pre-commit
 
-ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-10/etc/bashrc && \"$@\"", "-s"]
+ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-12/etc/bashrc && \"$@\"", "-s"]

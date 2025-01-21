@@ -46,7 +46,7 @@ struct EnvImpl
     : _args{argc, argv, comm},
       _runtime{Foam::Time::controlDictName, _args.args},
       _mesh{Foam::IOobject(
-          Foam::fvMesh::defaultRegion, _runtime.timeName(), _runtime, Foam::IOobject::MUST_READ)}
+          Foam::fvMesh::defaultRegion, _runtime.name(), _runtime, Foam::IOobject::MUST_READ)}
   {
   }
 
@@ -66,7 +66,7 @@ struct EnvImpl
 
   int getPatchID(std::string const & patch_name)
   {
-    auto id = _mesh.boundaryMesh().findPatchID(patch_name);
+    auto id = _mesh.boundaryMesh().findIndex(patch_name);
     assert(id != -1 && "Patch name does not exist");
     return id;
   }

@@ -1,16 +1,18 @@
 #include "FoamProblem.h"
 #include "FoamInterface.h"
 #include "FoamMesh.h"
+#include "FoamSolver.h"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include <finiteVolume/solver/solver.H>
+#include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
 
 registerMooseObject("hippoApp", FoamProblem);
-registerMooseObject("hippoApp", BuoyantFoamProblem);
 
 namespace
 {
@@ -32,7 +34,7 @@ variableValueAtElement(const libMesh::Elem * element, MooseVariableFieldBase * v
   auto dof = element->dof_number(sys.number(), variable->number(), 0);
   return sys.solution()(dof);
 }
-}
+} // namespace
 
 InputParameters
 FoamProblem::validParams()
@@ -56,7 +58,10 @@ FoamProblem::validParams()
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
-    _interface(_foam_mesh->getFoamInterface())
+    _interface(_foam_mesh->getFoamInterface()),
+    // Do not initialise the solver if we're not actually solving.
+    _solver(params.get<bool>("solve") ? Foam::solver::New("fluid", _interface->getMesh()).ptr()
+                                      : nullptr)
 {
   assert(_foam_mesh);
   assert(_interface);
@@ -107,34 +112,19 @@ FoamProblem::FoamProblem(InputParameters const & params)
 void
 FoamProblem::externalSolve()
 {
-}
-
-InputParameters
-BuoyantFoamProblem::validParams()
-{
-  auto params = FoamProblem::validParams();
-  return params;
-}
-
-BuoyantFoamProblem::BuoyantFoamProblem(InputParameters const & params)
-  : FoamProblem(params), _app(_interface)
-{
+  if (parameters().get<bool>("solve"))
+  {
+    _solver.run();
+  }
 }
 
 void
-BuoyantFoamProblem::addExternalVariables()
+FoamProblem::syncSolutions(Direction dir)
 {
-}
-
-void
-BuoyantFoamProblem::externalSolve()
-{
-  _app.run();
-}
-
-void
-BuoyantFoamProblem::syncSolutions(Direction dir)
-{
+  if (!parameters().get<bool>("solve"))
+  {
+    return;
+  }
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
     auto transfer_wall_temp = !parameters().get<std::string>(PARAM_VAR_FOAM_T).empty();
@@ -177,9 +167,9 @@ BuoyantFoamProblem::syncSolutions(Direction dir)
   }
 }
 
-template <BuoyantFoamProblem::SyncVariables sync_vars>
+template <FoamProblem::SyncVariables sync_vars>
 void
-BuoyantFoamProblem::syncFromOpenFoam()
+FoamProblem::syncFromOpenFoam()
 {
   constexpr bool transfer_wall_temp =
       (sync_vars == SyncVariables::WallTemperature) || (sync_vars == SyncVariables::Both);
@@ -211,7 +201,7 @@ BuoyantFoamProblem::syncFromOpenFoam()
   {
     if constexpr (transfer_wall_temp)
     {
-      auto n_added = _app.append_patch_face_T(subdomains[i], wall_temp);
+      auto n_added = _solver.appendPatchTemperatures(subdomains[i], wall_temp);
       patch_counts[i] = n_added;
     }
     if constexpr (transfer_wall_heat_flux)
@@ -255,9 +245,9 @@ BuoyantFoamProblem::syncFromOpenFoam()
   }
 }
 
-template <BuoyantFoamProblem::SyncVariables sync_vars>
+template <FoamProblem::SyncVariables sync_vars>
 void
-BuoyantFoamProblem::syncToOpenFoam()
+FoamProblem::syncToOpenFoam()
 {
   constexpr bool transfer_wall_temp =
       (sync_vars == SyncVariables::WallTemperature) || (sync_vars == SyncVariables::Both);
@@ -288,7 +278,7 @@ BuoyantFoamProblem::syncToOpenFoam()
   std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
   for (auto i = 0U; i < subdomains.size(); ++i)
   {
-    patch_counts[i] = _app.patch_size(subdomains[i]);
+    patch_counts[i] = _solver.patchSize(subdomains[i]);
   }
   std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
 
@@ -318,17 +308,17 @@ BuoyantFoamProblem::syncToOpenFoam()
     // Copy the values from the MOOSE temperature vector into OpenFOAM's
     if constexpr (transfer_wall_temp)
     {
-      _app.set_patch_face_t(subdomains[i], moose_T);
+      _solver.setPatchTemperatures(subdomains[i], moose_T);
     }
     if constexpr (transfer_wall_heat_flux)
     {
-      _app.set_patch_face_negative_heat_flux(subdomains[i], moose_hf);
+      _solver.setPatchNegativeHeatFlux(subdomains[i], moose_hf);
     }
   }
 }
 
 MooseVariableFieldBase *
-BuoyantFoamProblem::getConstantMonomialVariableFromParameters(const std::string & parameter_name)
+FoamProblem::getConstantMonomialVariableFromParameters(const std::string & parameter_name)
 {
   auto variable_name = parameters().get<std::string>(parameter_name);
   auto * var = &getVariable(0, variable_name);

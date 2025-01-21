@@ -1,8 +1,7 @@
 [Mesh]
   type = FoamMesh
   case = 'buoyantCavity'
-  foam_patch = 'topAndBottom frontAndBack'
-  dim = 2
+  foam_patch = 'patch2 patch4'
 []
 
 [Variables]
@@ -38,10 +37,13 @@
 
 [Executioner]
   type = Transient
-  start_time = 1
-  end_time = 2.5
-  dt = 0.5
+  start_time = 0
+  end_time = 0.1
+  dt = 0.1
+
   solve_type = 'PJFNK'
+
+  petsc_options = '-snes_ksp_ew'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'
 
