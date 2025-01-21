@@ -32,12 +32,12 @@ jobs:
         cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
 
         # Initialise OpenFOAM
-        . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
+        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
 
         # Build hippo
         make -j
     - name: Test
       shell: bash
       run: |
-        . /opt/openfoam/OpenFOAM-10/etc/bashrc || true
+        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         ./run_tests
