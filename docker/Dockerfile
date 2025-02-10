@@ -99,6 +99,7 @@ COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s
 
 # Python linting and testing requirements
-RUN conda install fluidfoam pre-commit
+RUN conda install --yes --file requirements.test.txt \
+    && conda install --yes pre-commit
 
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-12/etc/bashrc && \"$@\"", "-s"]
