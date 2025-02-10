@@ -1,6 +1,10 @@
 # hippo
 
-Moose app that wraps OpenFOAM buoyantFoam solver.
+Hippo is a MOOSE app wrapping OpenFOAM's fluid solver.
+It provides tools for solving coupled conjugate heat transfer problems.
+
+Some simple 1 and 2D validation cases can be found in
+[the tests](https://github.com/aurora-multiphysics/hippo/tree/main/test/tests/multiapps).
 
 ## Install/Build
 
@@ -78,7 +82,9 @@ METHOD=dbg make
 
 ## Tests
 
-Some basic tests can be run with `./run_tests`.
+Hippo's tests are written using MOOSE's
+[test harness system](https://mooseframework.inl.gov/python/TestHarness.html).
+Just run `./run_tests`.
 
 Note that you must have the required Python packages installed:
 
@@ -112,15 +118,16 @@ git commit --no-verify
 ## Notes
 
 This is a work in progress.
-So far hippo can:
+So far, Hippo can:
 
-- Create a moose mesh from the boundary of an openfoam mesh
-- Can run an buoyantFOAM case via moose
-- Transfer temperature from faces of openfoam mesh to nodes of Moose mesh
-
-> *Note: When running in parallel add `--keep-cout` to the command line
-> because OpenFOAM will crash if a process fails to write to stdout*
+- Create a 2D MOOSE boundary mesh from the boundary of an OpenFOAM mesh.
+- Run a fluid solver case via a MOOSE input file.
+- Transfer temperatures and or heat fluxes from an OpenFOAM mesh to
+  the MOOSE boundary mesh.
+- Set OpenFOAM temperature field boundary conditions
+  using values from a MOOSE mesh.
 
 "Fork hippo" to create a new MOOSE-based application.
 
-For more information see: [http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)
+For more information see:
+[http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)
