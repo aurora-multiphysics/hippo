@@ -80,10 +80,10 @@ METHOD=dbg make
 
 Some basic tests can be run with `./run_tests`.
 
-Note that you must have installed the `fluidfoam` Python package:
+Note that you must have the required Python packages installed:
 
 ```bash
-pip install "fluidfoam>=0.2.4"
+pip install -r requirements.test.txt
 ```
 
 ## Quality
