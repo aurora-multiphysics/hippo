@@ -127,6 +127,33 @@ So far, Hippo can:
 - Set OpenFOAM temperature field boundary conditions
   using values from a MOOSE mesh.
 
+### Floating Point Error Trapping
+
+If you have floating point error (FPE) trapping enabled in OpenFOAM,
+you may run into errors when running Hippo.
+
+Hippo input files that run a MOOSE case do not require a Kernel or variables.
+However, MOOSE will still happily go off and calculate a residual.
+Since there are no variables defined,
+the residual calculation results in a division by vero and an FPE signal.
+OpenFOAM will catch this signal and abort the application.
+
+There are two workarounds for this problem:
+
+1. Disable trapping for floating point exceptions.
+   `unset FOAM_SIGFPE && unset FOAM_SETNAN`.
+
+2. Add a dummy variable to the MOOSE input file.
+   E.g.,
+
+   ```toml
+   [Variables]
+     [dummy]
+       initial_value = 999
+     []
+   []
+   ```
+
 "Fork hippo" to create a new MOOSE-based application.
 
 For more information see:
