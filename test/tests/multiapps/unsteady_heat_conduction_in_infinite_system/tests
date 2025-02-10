@@ -1,0 +1,25 @@
+[Tests]
+  [unsteady_heat_conduction_in_infinite_system]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh && decomposePar"'
+    []
+    [run]
+      type = RunApp
+      input = run.i
+      min_parallel = 6
+      max_parallel = 6
+      prereq = unsteady_heat_conduction_in_infinite_system/setup
+    []
+    [reconstruct]
+      type = RunCommand
+      command = 'reconstructPar -case fluid-openfoam'
+      prereq = unsteady_heat_conduction_in_infinite_system/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = unsteady_heat_conduction_in_infinite_system/reconstruct
+    []
+  []
+[]

@@ -76,8 +76,8 @@ public:
                         MPI_Comm * comm = nullptr);
   Foam2MooseMeshAdapter() = default;
   ~Foam2MooseMeshAdapter();
-  std::int32_t npoint();
-  std::int32_t nface();
+  int32_t npoint();
+  int32_t nface();
   FoamPoint const & point(uint32_t i);
   FoamFace face(uint32_t i);
   int get_patch_id(std::string const & patch_name);
