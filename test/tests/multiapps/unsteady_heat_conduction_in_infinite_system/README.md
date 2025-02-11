@@ -25,13 +25,14 @@ was derived by Yoshida et al [1].
 | h $[m]$          | 0.1   | 0.1   |
 | T $[K]$          | 1     | 0     |
 
-All boundaries (other than the interface) have symmetry boundary conditions.
+All boundaries (other than the interface) have
+zero gradient boundary conditions.
 The idea here is that `L` is large enough such that the system is
 effectively infinite in the time frame of the simulation.
 
 ## Analytical Solution
 
-The analytical solution to the problem is:
+The analytic solution to the problem is:
 
 $$
 T(x, t) =

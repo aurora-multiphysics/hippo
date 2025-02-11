@@ -2,6 +2,15 @@
 
 This page contains information to aid in development of Hippo.
 
+## Documentation
+
+The project uses the MOOSE docs system to generate its HTML documentation.
+The HTML artifacts are generated and deployed within Hippo's CI.
+The CI pipeline is run on any pull request
+and also on a push to `main` (i.e., a merged pull request).
+The documentation pages are always built,
+however they are only deployed on a push to `main`.
+
 ## Docker
 
 The Dockerfile `docker/Dockerfile` contains the build definition for

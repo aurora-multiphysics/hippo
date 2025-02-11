@@ -23,6 +23,7 @@ jobs:
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
         pre-commit install
         SKIP=no-commit-to-branch pre-commit run --all
+
     - name: Build
       shell: bash
       run: |
@@ -36,9 +37,36 @@ jobs:
 
         # Build hippo
         make -j
+
     - name: Test
       shell: bash
       run: |
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         pip install -r requirements.test.txt
         ./run_tests
+
+    - name: Docs
+      shell: bash
+      run: |
+        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+        cd doc
+        ./moosedocs.py build --destination=htmldoc
+        [ -f htmldoc/index.html ]
+
+    - name: Artifact docs
+      id: deployment
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: doc/htmldoc
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'main' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build-test
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
