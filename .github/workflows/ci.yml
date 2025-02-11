@@ -42,3 +42,10 @@ jobs:
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         pip install -r requirements.test.txt
         ./run_tests
+    - name: Docs
+      shell: bash
+      run: |
+        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+        cd doc
+        ./moosedocs.py build --destination=htmldoc
+        [ -f htmldoc/index.html ]
