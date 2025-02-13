@@ -6,6 +6,13 @@ It provides tools for solving coupled conjugate heat transfer problems.
 Some simple 1 and 2D validation cases can be found in
 [the tests](https://github.com/aurora-multiphysics/hippo/tree/main/test/tests/multiapps).
 
+## Using Hippo
+
+Hippo's documentation is a work in progress,
+and can be found [here](https://aurora-multiphysics.github.io/hippo/).
+It includes an example of how to set up
+a coupled conjugate heat transfer problem.
+
 ## Install/Build
 
 Note: Only tested with GCC.
