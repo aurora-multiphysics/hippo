@@ -25,7 +25,7 @@ class FoamPoint
   int32_t _gid = -1;
 
 public:
-  FoamPoint(double x0, double x1, double x2, int32_t id) : _pos{x0, x1, x2}, _gid(id){};
+  FoamPoint(double x0, double x1, double x2, int32_t id) : _pos{x0, x1, x2}, _gid(id) {};
   FoamPoint() {}
 
   libMesh::Point get_point() const { return libMesh::Point(_pos[0], _pos[1], _pos[2]); }
