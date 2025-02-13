@@ -21,7 +21,7 @@ vertices
 
 blocks
 (
-    hex (0 1 2 3 4 5 6 7) (100 1 1) simpleGrading (25 1 1)
+    hex (0 1 2 3 4 5 6 7) (50 1 1) simpleGrading (25 1 1)
 );
 
 boundary
