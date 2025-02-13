@@ -135,10 +135,10 @@ you may run into errors when running Hippo.
 Hippo input files that run a MOOSE case do not require a Kernel or variables.
 However, MOOSE will still happily go off and calculate a residual.
 Since there are no variables defined,
-the residual calculation results in a division by vero and an FPE signal.
+the residual calculation results in a division by zero and an FPE signal.
 OpenFOAM will catch this signal and abort the application.
 
-There are two workarounds for this problem:
+Either of these two workarounds will work:
 
 1. Disable trapping for floating point exceptions.
    `unset FOAM_SIGFPE && unset FOAM_SETNAN`.
@@ -153,8 +153,3 @@ There are two workarounds for this problem:
      []
    []
    ```
-
-"Fork hippo" to create a new MOOSE-based application.
-
-For more information see:
-[http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)
