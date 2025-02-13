@@ -42,7 +42,6 @@ jobs:
       shell: bash
       run: |
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
-        pip install -r requirements.test.txt
         ./run_tests
 
     - name: Docs
