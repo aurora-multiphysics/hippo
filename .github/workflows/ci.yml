@@ -11,7 +11,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/ukaea/hippo:6eb722b71542e6100fd7
+      image: quay.io/ukaea/hippo:5c52a671f8e9a3f81a74
 
     steps:
     - uses: actions/checkout@v4
@@ -42,7 +42,6 @@ jobs:
       shell: bash
       run: |
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
-        pip install -r requirements.test.txt
         ./run_tests
 
     - name: Docs

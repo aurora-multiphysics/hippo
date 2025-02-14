@@ -6,6 +6,13 @@ It provides tools for solving coupled conjugate heat transfer problems.
 Some simple 1 and 2D validation cases can be found in
 [the tests](https://github.com/aurora-multiphysics/hippo/tree/main/test/tests/multiapps).
 
+## Using Hippo
+
+Hippo's documentation is a work in progress,
+and can be found [here](https://aurora-multiphysics.github.io/hippo/).
+It includes an example of how to set up
+a coupled conjugate heat transfer problem.
+
 ## Install/Build
 
 Note: Only tested with GCC.
@@ -135,10 +142,10 @@ you may run into errors when running Hippo.
 Hippo input files that run a MOOSE case do not require a Kernel or variables.
 However, MOOSE will still happily go off and calculate a residual.
 Since there are no variables defined,
-the residual calculation results in a division by vero and an FPE signal.
+the residual calculation results in a division by zero and an FPE signal.
 OpenFOAM will catch this signal and abort the application.
 
-There are two workarounds for this problem:
+Either of these two workarounds will work:
 
 1. Disable trapping for floating point exceptions.
    `unset FOAM_SIGFPE && unset FOAM_SETNAN`.
@@ -153,8 +160,3 @@ There are two workarounds for this problem:
      []
    []
    ```
-
-"Fork hippo" to create a new MOOSE-based application.
-
-For more information see:
-[http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)

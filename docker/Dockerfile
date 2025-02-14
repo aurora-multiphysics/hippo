@@ -99,7 +99,10 @@ COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s
 
 # Python linting and testing requirements
-RUN conda install --yes --file requirements.test.txt \
-    && conda install --yes pre-commit
+COPY ./requirements.test.txt ./requirements.test.txt
+RUN conda install pre-commit --file requirements.test.txt -S --yes
+
+# Pull down MOOSE's 'large_media' submodule for building docs
+RUN git -C "${MOOSE_DIR}" submodule update --init large_media
 
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-12/etc/bashrc && \"$@\"", "-s"]

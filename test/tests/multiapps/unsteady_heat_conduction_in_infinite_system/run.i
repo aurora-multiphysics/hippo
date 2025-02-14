@@ -3,7 +3,7 @@
         type = GeneratedMeshGenerator
         dim = 3
 
-        nx = 100
+        nx = 50
         xmin = -1.0
         xmax = 0.0
 
@@ -18,7 +18,7 @@
         # Calculated here:
         # https://openfoamwiki.net/index.php/Scripts/blockMesh_grading_calculation
         # Based on a grading factor of 25 and 100 elements.
-        bias_x = 0.9680089966756151
+        bias_x = 0.9364198516989446
     []
 []
 

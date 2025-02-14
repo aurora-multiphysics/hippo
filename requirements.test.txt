@@ -1,2 +1,2 @@
 fluidfoam>=0.2.8
-scipy>=1.15.1
+scipy
