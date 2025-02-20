@@ -1,6 +1,5 @@
-#include "FoamProblem.h"
-#include "FoamInterface.h"
 #include "FoamMesh.h"
+#include "FoamProblem.h"
 #include "FoamSolver.h"
 
 #include <AuxiliarySystem.h>
@@ -42,29 +41,30 @@ FoamProblem::validParams()
   auto params = ExternalProblem::validParams();
 
   // Parameters to set variables to read from/write to.
-  // Note that these can be omitted or point to the same variable to save memory.
-  params.addParam<std::string>(
-      PARAM_VAR_FOAM_HF, "The name of the aux variable to write the OpenFOAM wall heat flux into.");
-  params.addParam<std::string>(
-      PARAM_VAR_FOAM_T,
-      "The name of the aux variable to write the OpenFOAM boundary temperature into.");
+  // Note that these can be omitted or point to the same variable to save
+  // memory.
+  params.addParam<std::string>(PARAM_VAR_FOAM_HF,
+                               "The name of the aux variable to write the "
+                               "OpenFOAM wall heat flux into.");
+  params.addParam<std::string>(PARAM_VAR_FOAM_T,
+                               "The name of the aux variable to write the "
+                               "OpenFOAM boundary temperature into.");
   params.addParam<std::string>(
       PARAM_VAR_HF, "The name of the aux variable to set the OpenFOAM wall heat flux from.");
-  params.addParam<std::string>(
-      PARAM_VAR_T, "The name of the aux variable to set the OpenFOAM boundary temperature from.");
+  params.addParam<std::string>(PARAM_VAR_T,
+                               "The name of the aux variable to set the "
+                               "OpenFOAM boundary temperature from.");
   return params;
 }
 
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
-    _interface(_foam_mesh->getFoamInterface()),
     // Do not initialise the solver if we're not actually solving.
-    _solver(params.get<bool>("solve") ? Foam::solver::New("fluid", _interface->getMesh()).ptr()
+    _solver(params.get<bool>("solve") ? Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr()
                                       : nullptr)
 {
   assert(_foam_mesh);
-  assert(_interface);
 
   auto t_var_name = params.get<std::string>(PARAM_VAR_T);
   auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
@@ -206,7 +206,7 @@ FoamProblem::syncFromOpenFoam()
     }
     if constexpr (transfer_wall_heat_flux)
     {
-      auto n_added = _interface->getWallHeatFlux(wall_heat_flux, subdomains[i]);
+      auto n_added = _solver.wallHeatFlux(wall_heat_flux, subdomains[i]);
       patch_counts[i] = n_added;
     }
   }

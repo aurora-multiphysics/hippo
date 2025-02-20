@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FoamInterface.h"
 #include "HippoPtr.h"
+#include "fvCFD_moose.h"
 
 #include <libmesh/point.h>
 
@@ -14,7 +14,7 @@ template <typename T>
 class IOList;
 typedef int label;
 typedef IOList<label> labelIOList;
-}
+} // namespace Foam
 
 namespace Hippo
 {
@@ -65,16 +65,49 @@ public:
   int32_t subdomain_id() const { return _subdomain_id; }
 };
 
+class FvMeshWrapper
+{
+public:
+  FvMeshWrapper(Foam::fvMesh * mesh) : _mesh(mesh) { calcGlobalData(); }
+
+  int patchId(const std::string & name) const
+  {
+    auto id = _mesh->boundaryMesh().findIndex(name);
+    assert(id != -1 && "Patch name does not exist");
+    return id;
+  }
+
+  Foam::polyPatch const & patch(const int patch_id) const
+  {
+    return _mesh->boundaryMesh()[patch_id];
+  }
+
+  Foam::labelList const & uniquePoints() const { return _uniquePoints; }
+
+  Foam::fvMesh & mesh() { return *_mesh; }
+
+protected:
+  void calcGlobalData()
+  {
+    _globalIndex = _mesh->globalData().mergePoints(_pointToGlobal, _uniquePoints);
+  }
+
+private:
+  Foam::fvMesh * _mesh;
+  Foam::autoPtr<Foam::globalIndex> _globalIndex;
+  Foam::labelList _pointToGlobal;
+  Foam::labelList _uniquePoints;
+};
+
 /**
  * Class to help convert an OpenFOAM mesh to a MOOSE one.
  */
 class Foam2MooseMeshAdapter
 {
 public:
-  Foam2MooseMeshAdapter(std::vector<std::string> const & patch_name,
-                        FoamInterface * interface,
+  Foam2MooseMeshAdapter(std::vector<std::string> patch_name,
+                        Foam::fvMesh * fv_mesh,
                         MPI_Comm * comm = nullptr);
-  Foam2MooseMeshAdapter() = default;
   ~Foam2MooseMeshAdapter();
   int32_t npoint();
   int32_t nface();
@@ -87,13 +120,14 @@ public:
   size_t rank_element_offset{0};
 
 private:
+  FvMeshWrapper _mesh_wrapper;
+
   std::vector<std::string> _patch_name;
   // patch ids
   std::vector<int> _patch_id;
   // map from patch_id to a vector that maps local patch id to global id
   // need to keep these around to map from patch data to the moose mesh
   std::map<int, std::vector<int>> _patch_local2global;
-  FoamInterface * _interface;
   MPI_Comm * _comm;
 
   // Should contain every point (coord + global_id) from every rank
@@ -129,7 +163,7 @@ private:
   void set_up_serial();
   void set_up_parallel();
 };
-}
+} // namespace Hippo
 
 // Local Variables:
 // mode: c++

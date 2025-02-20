@@ -1,11 +1,9 @@
-#include "Foam2MooseMeshGen.h"
 #include "CommUtil.h"
-#include "FoamInterface.h"
-#include "fvCFD_moose.h"
+#include "Foam2MooseMeshGen.h"
 #include "HippoPtr.h"
+#include "fvCFD_moose.h"
 
 #include <MooseError.h>
-#include <PrimitivePatch.H>
 
 #include <algorithm>
 #include <memory>
@@ -55,22 +53,21 @@ append_local_points(T const & mesh_to_global_map,
 template <typename T>
 std::vector<FoamPoint>
 get_local_points(T const & mesh_to_global_map,
-                 FoamInterface * interface,
-                 std::vector<std::string> & patch_list)
+                 std::vector<int> const & patch_ids,
+                 FvMeshWrapper const & mesh_wrapper)
 {
-  auto unique_point = interface->uniquePoints();
   std::vector<FoamPoint> local_point;
   std::set<Foam::label> unique_point_set;
   // Create a set to hold local points
   // append_function removes them as they are added so we don't double
   // count. Must be a nicer way but this is simple enough for now
-  for (auto const pt : unique_point)
+  for (auto const pt : mesh_wrapper.uniquePoints())
     unique_point_set.insert(pt);
 
-  for (auto const & patch_name : patch_list)
+  for (auto const & patch_id : patch_ids)
   {
-    append_local_points<T>(
-        mesh_to_global_map, unique_point_set, interface->getPatch(patch_name), local_point);
+    auto patch = mesh_wrapper.patch(patch_id);
+    append_local_points<T>(mesh_to_global_map, unique_point_set, patch, local_point);
   }
 
   return local_point;
@@ -138,16 +135,17 @@ struct PatchInfo
 template <typename T>
 PatchInfo
 get_local_face_info(T const & mesh_to_global_map,
-                    FoamInterface * interface,
+                    const FvMeshWrapper & mesh_wrapper,
                     std::vector<int> & patch_id)
 {
   PatchInfo patch_info;
   for (auto const & id : patch_id)
   {
-    auto patch = interface->getPatch(id);
+    auto patch = mesh_wrapper.patch(id);
 
     auto local2global = create_local2global_map<T>(mesh_to_global_map, patch);
-    // patch_info.local2global[id] = create_local2global_map<T>(mesh_to_global_map, patch);
+    // patch_info.local2global[id] =
+    // create_local2global_map<T>(mesh_to_global_map, patch);
     auto const & local_face = patch.localFaces();
     auto nfaces =
         append_local_faces(local2global, local_face, patch_info.count, patch_info.point_id);
@@ -160,9 +158,8 @@ get_local_face_info(T const & mesh_to_global_map,
 }
 
 std::unique_ptr<Foam::labelIOList>
-get_local_global_map(FoamInterface * interface)
+get_local_global_map(const Foam::fvMesh & mesh)
 {
-  auto & mesh = interface->getMesh();
   Foam::typeIOobject<Foam::labelIOList> addrHeader("pointProcAddressing",
                                                    mesh.facesInstance() / mesh.meshSubDir,
                                                    mesh,
@@ -225,10 +222,9 @@ Foam2MooseMeshAdapter::set_up_serial()
 {
   // This is suboptimal (computationally and codeistically)
   // but serial is not the common case so havn't optimised
-  _interface->calcGlobalData();
-  auto local_point = get_local_points<IdMap>(IdMap(), _interface, _patch_name);
+  auto local_point = get_local_points<IdMap>(IdMap(), _patch_id, _mesh_wrapper);
   std::vector<int32_t> face_count, face_point_id, face_subdomain_id;
-  auto face_info = get_local_face_info<IdMap>(IdMap(), _interface, _patch_id);
+  auto face_info = get_local_face_info<IdMap>(IdMap(), _mesh_wrapper, _patch_id);
 
   _point = copy_vec_to_pointer(local_point);
   _face_offset = scan_vec_to_pointer(face_info.count);
@@ -244,11 +240,10 @@ Foam2MooseMeshAdapter::set_up_serial()
 void
 Foam2MooseMeshAdapter::set_up_parallel()
 {
-  _interface->calcGlobalData();
-  _loc2glob = get_local_global_map(_interface);
-  auto local_point = get_local_points<Foam::labelIOList>(*_loc2glob, _interface, _patch_name);
+  _loc2glob = get_local_global_map(_mesh_wrapper.mesh());
+  auto local_point = get_local_points<Foam::labelIOList>(*_loc2glob, _patch_id, _mesh_wrapper);
   std::vector<int32_t> face_count, face_point_id, face_subdomain_id;
-  auto face_info = get_local_face_info<Foam::labelIOList>(*_loc2glob, _interface, _patch_id);
+  auto face_info = get_local_face_info<Foam::labelIOList>(*_loc2glob, _mesh_wrapper, _patch_id);
   gather_unique_points(local_point);
   gather_faces(face_info.count, face_info.point_id);
 
@@ -270,16 +265,15 @@ Foam2MooseMeshAdapter::set_up_parallel()
   _patch_local2global = std::move(face_info.local2global);
 }
 
-Foam2MooseMeshAdapter::Foam2MooseMeshAdapter(std::vector<std::string> const & patch_name,
-                                             FoamInterface * foam_interface,
+Foam2MooseMeshAdapter::Foam2MooseMeshAdapter(std::vector<std::string> patch_name,
+                                             Foam::fvMesh * fv_mesh,
                                              MPI_Comm * comm)
-  : _patch_name(patch_name), _interface(foam_interface), _comm(comm)
+  : _mesh_wrapper(fv_mesh), _patch_name(std::move(patch_name)), _comm(comm)
 {
-  _patch_id.reserve(_patch_name.size());
-  for (auto const & name : patch_name)
-  {
-    _patch_id.push_back(get_patch_id(name));
-  }
+  std::transform(_patch_name.begin(),
+                 _patch_name.end(),
+                 std::back_inserter(_patch_id),
+                 [this](const auto & name) { return this->get_patch_id(name); });
 
   if (comm)
   {
@@ -291,9 +285,9 @@ Foam2MooseMeshAdapter::Foam2MooseMeshAdapter(std::vector<std::string> const & pa
   }
 
   // TODO: Move this - this is some annoying bookeeping I need to change the
-  // patch ids in the local2global maps so that they point to the id in the moose mesh
-  // I can't find a way to stop moose renumbering the nodes so I can't
-  // use the openFoam global ids
+  // patch ids in the local2global maps so that they point to the id in the
+  // moose mesh I can't find a way to stop moose renumbering the nodes so I
+  // can't use the openFoam global ids
   int count = 0;
   for (auto pt : _point)
   {
@@ -343,7 +337,7 @@ Foam2MooseMeshAdapter::face(uint32_t i)
 int
 Foam2MooseMeshAdapter::get_patch_id(std::string const & name)
 {
-  return _interface->getPatchID(name);
+  return _mesh_wrapper.patchId(name);
 }
 
 int
@@ -359,4 +353,4 @@ Foam2MooseMeshAdapter::get_moose_id(int32_t global_id)
 {
   return _global2moose[global_id];
 }
-}
+} // namespace Hippo
