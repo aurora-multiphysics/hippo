@@ -1,0 +1,25 @@
+[Tests]
+  [simplified_heat_exchanger]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "(cd fluid-top-openfoam && ./Allclean && blockMesh && decomposePar) && (cd fluid-bottom-openfoam && ./Allclean && blockMesh && decomposePar)"'
+    []
+    [run]
+      type = RunApp
+      input = solid.i
+      min_parallel = 4
+      max_parallel = 4
+      prereq = simplified_heat_exchanger/setup
+    []
+    [reconstruct]
+      type = RunCommand
+      command = 'bash -c "reconstructPar -case fluid-top-openfoam -latestTime && reconstructPar -case fluid-bottom-openfoam -latestTime"'
+      prereq = simplified_heat_exchanger/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = simplified_heat_exchanger/reconstruct
+    []
+  []
+[]
