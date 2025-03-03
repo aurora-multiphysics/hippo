@@ -25,7 +25,7 @@ public:
   // Set the negative heat flux values on the OpenFOAM patch (boundary).
   void setPatchNegativeHeatFlux(int patch_id, std::vector<double> & negative_hf);
   // Get or calculate the wall heat flux for the given patch.
-  std::size_t wallHeatFlux(std::vector<double> & fill_vector, int patch_id);
+  std::size_t wallHeatFlux(int patch_id, std::vector<double> & fill_vector);
   // Set the solver's time step size.
   void setTimeDelta(double dt) { runTime().setDeltaTNoAdjust(dt); }
   // Set the solver to the given time.

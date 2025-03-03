@@ -206,7 +206,7 @@ FoamProblem::syncFromOpenFoam()
     }
     if constexpr (transfer_wall_heat_flux)
     {
-      auto n_added = _solver.wallHeatFlux(wall_heat_flux, subdomains[i]);
+      auto n_added = _solver.wallHeatFlux(subdomains[i], wall_heat_flux);
       patch_counts[i] = n_added;
     }
   }
