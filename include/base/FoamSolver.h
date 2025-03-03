@@ -32,11 +32,15 @@ public:
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
+  // Get the current time step size in seconds.
+  double timeDelta() const { return runTime().deltaT().value(); }
+
+protected:
+  Foam::Time & runTime() { return const_cast<Foam::Time &>(_solver->runTime); }
+  const Foam::Time & runTime() const { return _solver->runTime; }
 
 private:
   Foam::solver * _solver = nullptr;
-
-  Foam::Time & runTime() { return const_cast<Foam::Time &>(_solver->runTime); }
 };
 
 } // namespace Hippo

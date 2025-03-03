@@ -33,6 +33,7 @@ public:
   bool isSerial() const { return _serial; }
   libMesh::Elem * getElemPtr(int local) const;
   Foam::fvMesh & fvMesh() { return _foam_mesh; }
+  Hippo::FoamRuntime & runTime() { return _foam_runtime; }
 
   std::vector<int32_t> n_faces{0};
   // The index offset into the MOOSE element array, for the current rank.
@@ -41,7 +42,7 @@ public:
   // to get the i-th element owned by the current rank from the mesh.
   size_t rank_element_offset{0};
 
-protected:
+private:
   std::vector<std::string> _foam_patch;
   Hippo::FoamRuntime _foam_runtime;
   Foam::fvMesh _foam_mesh;

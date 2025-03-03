@@ -22,6 +22,7 @@ public:
 
   /// Initial time-step size comes from the MOOSE input file.
   virtual Real computeInitialDT();
+
   /**
    * Read the time-step MOOSE wants to take and set it on the OpenFOAM problem.
    *
@@ -30,11 +31,12 @@ public:
    * solve needs to be updated to reflect this.
    */
   virtual Real computeDT();
+
   /// Set the initial time, final time and time step size on the OpenFOAM
   /// problem.
   virtual void init();
 
-private:
+protected:
   Hippo::FoamSolver & solver() { return problem()->solver(); }
   FoamProblem * problem();
 };
