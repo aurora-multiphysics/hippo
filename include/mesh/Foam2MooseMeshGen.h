@@ -28,9 +28,9 @@ public:
   FoamPoint(double x0, double x1, double x2, int32_t id) : _pos{x0, x1, x2}, _gid(id) {};
   FoamPoint() {}
 
-  libMesh::Point get_point() const { return libMesh::Point(_pos[0], _pos[1], _pos[2]); }
+  libMesh::Point getPoint() const { return libMesh::Point(_pos[0], _pos[1], _pos[2]); }
 
-  int32_t get_id() const { return _gid; }
+  int32_t getId() const { return _gid; }
 
   double & operator[](int32_t i)
   {
@@ -113,9 +113,9 @@ public:
   int32_t nface();
   FoamPoint const & point(uint32_t i);
   FoamFace face(uint32_t i);
-  int get_patch_id(std::string const & patch_name);
-  int get_gid(int32_t local, int32_t patch_id) const;
-  int get_moose_id(int32_t global_id);
+  int getPatchId(std::string const & patch_name);
+  int getGid(int32_t local, int32_t patch_id) const;
+  int getMooseId(int32_t global_id);
 
   size_t rank_element_offset{0};
 
@@ -154,14 +154,13 @@ private:
 
   std::unordered_map<int32_t, int32_t> _global2moose;
 
-  void gather_unique_points(std::vector<FoamPoint> & unique_point);
-  void gather_faces(std::vector<int32_t> & counts, std::vector<int32_t> & ids);
+  void gatherUniquePoints(std::vector<FoamPoint> & unique_point);
+  void gatherFaces(std::vector<int32_t> & counts, std::vector<int32_t> & ids);
 
-  void
-  calc_subdom_and_rank_arrays(HippoPtr<int32_t> subdom_count, int32_t nsubdom, int32_t mpi_size);
+  void calcSubdomAndRankArrays(HippoPtr<int32_t> subdom_count, int32_t nsubdom, int32_t mpi_size);
 
-  void set_up_serial();
-  void set_up_parallel();
+  void setUpSerial();
+  void setUpParallel();
 };
 } // namespace Hippo
 
