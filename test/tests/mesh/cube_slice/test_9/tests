@@ -1,0 +1,25 @@
+[Tests]
+  [test]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "blockMesh -case foaminput && decomposePar -case foaminput -force"'
+      group = 'cube_slice'
+    []
+    [run]
+      type = RunApp
+      input = 'run.i'
+      min_parallel = 2
+      max_parallel = 2
+      prereq = test/setup
+      group = 'cube_slice'
+      tags = 'test_9'
+    []
+    [verify_num_nodes]
+      type = RunCommand
+      command = '../scripts/check.sh config run_out.e'
+      prereq = test/run
+      group = 'cube_slice'
+      tags = 'test_9'
+    []
+  []
+[]
