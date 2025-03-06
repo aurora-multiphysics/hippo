@@ -60,9 +60,7 @@ FoamProblem::validParams()
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
-    // Do not initialise the solver if we're not actually solving.
-    _solver(params.get<bool>("solve") ? Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr()
-                                      : nullptr)
+    _solver(Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr())
 {
   assert(_foam_mesh);
 
