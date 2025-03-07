@@ -8,3 +8,9 @@ polyMesh/
 
 # Calculated by OpenFOAM
 wallHeatFlux
+
+# OpenFOAM meshes
+*.foam
+
+# OpenFOAM postprocess output
+*.postProcess.*
