@@ -1,5 +1,5 @@
-#include "FoamTimeStepper.h"
 #include "FoamProblem.h"
+#include "FoamTimeStepper.h"
 
 #include <TimeStepper.h>
 #include <Transient.h>
@@ -20,21 +20,20 @@ FoamTimeStepper::FoamTimeStepper(InputParameters const & params) : TimeStepper(p
   {
     mooseError("FoamTimeStepper expects to be used with FoamProblem");
   }
-  _interface = problem->shareInterface();
 }
 
 Real
 FoamTimeStepper::computeInitialDT()
 {
   auto dt = _executioner.parameters().get<double>("dt");
-  _interface->setTimeDelta(_dt);
+  solver().setTimeDelta(_dt);
   return dt;
 }
 
 Real
 FoamTimeStepper::computeDT()
 {
-  _interface->setTimeDelta(_dt);
+  solver().setTimeDelta(_dt);
   return _dt;
 }
 
@@ -42,7 +41,18 @@ void
 FoamTimeStepper::init()
 {
   TimeStepper::init();
-  _interface->setCurrentTime(_time);
-  _interface->setEndTime(_end_time);
-  _interface->setTimeDelta(_dt);
+  solver().setCurrentTime(_time);
+  solver().setEndTime(_end_time);
+  solver().setTimeDelta(_dt);
+}
+
+FoamProblem *
+FoamTimeStepper::problem()
+{
+  auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
+  if (!problem)
+  {
+    mooseError("FoamTimeStepper expects to be used with FoamProblem");
+  }
+  return problem;
 }
