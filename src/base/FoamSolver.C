@@ -8,6 +8,7 @@
 #include <volFieldsFwd.H>
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 
 namespace Hippo
