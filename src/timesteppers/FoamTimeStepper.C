@@ -45,3 +45,14 @@ FoamTimeStepper::init()
   solver().setEndTime(_end_time);
   solver().setTimeDelta(_dt);
 }
+
+FoamProblem *
+FoamTimeStepper::problem()
+{
+  auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
+  if (!problem)
+  {
+    mooseError("FoamTimeStepper expects to be used with FoamProblem");
+  }
+  return problem;
+}

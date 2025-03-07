@@ -16,11 +16,7 @@ public:
   static InputParameters validParams();
   virtual void externalSolve() override;
   virtual void syncSolutions(Direction /* dir */) override;
-  virtual bool converged(const unsigned int /* nl_sys_num */) override
-  {
-    // TODO(hsaunders): can we tell if the OpenFOAM solver actually converged?
-    return true;
-  }
+  virtual bool converged(const unsigned int /* nl_sys_num */) override { return true; }
   virtual void addExternalVariables() override {};
 
   using ExternalProblem::mesh;

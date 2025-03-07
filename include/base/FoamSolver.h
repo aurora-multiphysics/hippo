@@ -36,7 +36,6 @@ public:
 private:
   Foam::solver * _solver = nullptr;
 
-  // TODO(hsaunders1904): check if this is used.
   Foam::Time & runTime() { return const_cast<Foam::Time &>(_solver->runTime); }
 };
 

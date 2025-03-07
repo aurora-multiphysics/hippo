@@ -36,14 +36,5 @@ public:
 
 private:
   Hippo::FoamSolver & solver() { return problem()->solver(); }
-
-  FoamProblem * problem()
-  {
-    auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
-    if (!problem)
-    {
-      mooseError("FoamTimeStepper expects to be used with FoamProblem");
-    }
-    return problem;
-  }
+  FoamProblem * problem();
 };
