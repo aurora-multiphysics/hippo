@@ -7,8 +7,6 @@
         xmin = 0
         xmax = 1
 
-        # TODO: we could do some grading on the y axis, but we might need to
-        #  stitch two meshes together to bias away from the center.
         ny = 41
         ymin = -0.5
         ymax = 0

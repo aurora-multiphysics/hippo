@@ -31,7 +31,6 @@ class CliArgs:
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv[1:])
-    foam_case = TOP_CASE
     for foam_case in [BOTTOM_CASE, TOP_CASE]:
         temperatures = read_openfoam_interface_boundary(
             args.tutorial_dir / foam_case, str(REFERENCE_TIME)
