@@ -294,6 +294,7 @@ index 03433b398..dc9e39c0b 100644
 +    int rank,size;
 +    MPI_Comm_rank(comm,&rank);
 +    MPI_Comm_size(comm,&size);
++    std::cout << rank << ", " << size <<std::endl;
 +    int flag;
 +    MPI_Initialized(&flag);
 +    if (!flag) {
