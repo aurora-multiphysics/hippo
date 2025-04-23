@@ -121,7 +121,6 @@
     [top_heat_flux_aux]
         type = HeatFluxAux
         variable = top_wall_heat_flux
-        thermal_conductivity = 100.0  # W/(m.K)
         T = temp
         boundary = top
     []
@@ -129,7 +128,6 @@
     [bottom_heat_flux_aux]
         type = HeatFluxAux
         variable = bottom_wall_heat_flux
-        thermal_conductivity = 100.0  # W/(m.K)
         T = temp
         boundary = bottom
     []
