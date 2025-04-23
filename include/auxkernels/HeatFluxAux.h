@@ -26,7 +26,7 @@ public:
 
 private:
   VariableGradient const & _grad;
-  Real const _thermal_conductivity{0.0};
+  const MaterialProperty<Real> & _thermal_conductivity;
   MooseArray<Point> const & _normals;
   unsigned const _dim{0};
   Real const _scale{1.0};
