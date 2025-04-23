@@ -19,8 +19,8 @@ public:
    * Computes q = -s * k * ∇T, where 's' is a scale factor, k is the thermal conductivity, and T
    * is temperature.
    *
-   * Note that we are assuming the thermal conductivity is equal at every quadrature point on the
-   * given boundary.
+   * By default, the thermal_conductivity material property is used for k.
+   * It can also be  specified using the diffusion_coefficient parameter.
    */
   Real computeValue();
 
