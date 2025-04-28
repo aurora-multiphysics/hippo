@@ -1,9 +1,10 @@
 # This tests the ability of the HeatFluxAux to handle variable thermal conductivity.
-# This case does not solve for a temperature field but uses a predefined function
-# as the for the temperature field. A linear thermal conductivity is used such it is
-# 71 W/(m.K) at the left boundary and 142 W/(m.K) at the right boundary. The input
-# temperature field results in a gradient of 100 K/m, hence the heat fluxes should
-# be 7100 W/m^2 and -14200 W/m^2 normal to the left and right boundaries respectively.
+# This case does not solve for a temperature field but initialises it using a
+# pre-defined function for the temperature field. A linear thermal conductivity is
+# used such it is 71 W/(m.K) at the left boundary and 142 W/(m.K) at the right
+# boundary. The input temperature field results in a gradient of 100 K/m, hence the
+# heat fluxes should be 7100 W/m^2 and -14200 W/m^2 normal to the left and right
+# boundaries respectively.
 
 [Mesh]
     type = GeneratedMesh
@@ -14,22 +15,20 @@
     ymax = 1.0
 []
 [Variables]
-    [dummy]
-    []
-[]
-
-[Kernels]
-    [dummy]
-        type = NullKernel
-        variable = dummy
-    []
-[]
-
-[AuxVariables]
     [T]
         family = MONOMIAL
         order = FIRST
     []
+[]
+
+[Kernels]
+    [T]
+        type = NullKernel
+        variable = T
+    []
+[]
+
+[AuxVariables]
     [heat_flux]
         family = MONOMIAL
         order = FIRST
@@ -37,7 +36,11 @@
 []
 
 [ICs]
-
+    [T]
+        type = FunctionAux
+        variable = T
+        function = '300 + 100*x'
+    []
 []
 
 [AuxKernels]
@@ -46,11 +49,6 @@
         variable = heat_flux
         T = T
         boundary = 'left right'
-    []
-    [temp]
-        type = FunctionAux
-        variable = T
-        function = '300 + 100*x'
     []
 []
 
