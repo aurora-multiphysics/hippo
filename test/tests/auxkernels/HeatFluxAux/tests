@@ -6,6 +6,13 @@
                    constant_gradient_heat_flux_steady_state_csv_right_boundary_hf_0002.csv'
         ignore_columns = 'id'
     []
+    [variable_thermal_conductivity]
+        type = CSVDiff
+        input = variable_thermal_conductivity.i
+        csvdiff = 'variable_thermal_conductivity_csv_left_boundary_hf_0002.csv
+        variable_thermal_conductivity_csv_right_boundary_hf_0002.csv'
+        ignore_columns = 'id'
+    []
     [error_if_no_boundary_set]
         type = RunException
         input = error_if_no_boundary_set.i
