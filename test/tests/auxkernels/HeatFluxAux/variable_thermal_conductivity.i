@@ -37,7 +37,7 @@
 
 [ICs]
     [T]
-        type = FunctionAux
+        type = FunctionIC
         variable = T
         function = '300 + 100*x'
     []
