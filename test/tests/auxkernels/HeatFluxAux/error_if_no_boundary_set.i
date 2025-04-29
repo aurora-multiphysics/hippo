@@ -32,7 +32,6 @@
         type = HeatFluxAux
         variable = heat_flux
         T = T
-        thermal_conductivity = 71  # W/(m.K)
     []
 []
 

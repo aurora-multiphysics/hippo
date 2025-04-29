@@ -1,10 +1,10 @@
-# In this example we have a 2D mesh with a temperature gradient. The left side
-# is held at 300 K, the right side at 400 K, and the sides are 1 m apart.
-# This results in a temperature gradient of 100 K/m, in the positive x
-# direction.
-# If we set the thermal conductivity k := 71 W/(m.K), by Fourier's law of
-# conduction, we expect the heat flux to be q = -71*100 on the right boundary,
-# and the 71*100 at the left boundary.
+# This tests the ability of the HeatFluxAux to handle variable thermal conductivity.
+# This case does not solve for a temperature field but initialises it using a
+# pre-defined function for the temperature field. A linear thermal conductivity is
+# used such it is 71 W/(m.K) at the left boundary and 142 W/(m.K) at the right
+# boundary. The input temperature field results in a gradient of 100 K/m, hence the
+# heat fluxes should be 7100 W/m^2 and -14200 W/m^2 normal to the left and right
+# boundaries respectively.
 
 [Mesh]
     type = GeneratedMesh
@@ -14,32 +14,17 @@
     xmax = 1.0
     ymax = 1.0
 []
-
 [Variables]
     [T]
-        initial_condition = 300
+        family = MONOMIAL
+        order = FIRST
     []
 []
 
 [Kernels]
-    [heat_conduction]
-        type = HeatConduction
+    [T]
+        type = NullKernel
         variable = T
-    []
-[]
-
-[BCs]
-    [left_bc]
-        type = DirichletBC
-        variable = T
-        boundary = left
-        value = 300
-    []
-    [right_bc]
-        type = DirichletBC
-        variable = T
-        boundary = right
-        value = 400
     []
 []
 
@@ -47,6 +32,14 @@
     [heat_flux]
         family = MONOMIAL
         order = FIRST
+    []
+[]
+
+[ICs]
+    [T]
+        type = FunctionIC
+        variable = T
+        function = '300 + 100*x'
     []
 []
 
@@ -59,10 +52,17 @@
     []
 []
 
+[Functions]
+    [k]
+        type = ParsedFunction
+        expression = '71 + 71*x'
+    []
+[]
 [Materials]
     [conduction_mat]
-        type = HeatConductionMaterial
-        thermal_conductivity = 71
+        type = GenericFunctionMaterial
+        prop_names = 'thermal_conductivity'
+        prop_values = 'k'
     []
     [thermal_mat]
         type = GenericConstantMaterial

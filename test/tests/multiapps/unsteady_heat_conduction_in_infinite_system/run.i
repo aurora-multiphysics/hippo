@@ -86,7 +86,6 @@
     [heat_flux_aux]
         type = HeatFluxAux
         variable = wall_heat_flux
-        thermal_conductivity = 1.0  # W/(m.K)
         T = temp
         boundary = right
     []

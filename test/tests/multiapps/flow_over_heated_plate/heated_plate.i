@@ -100,7 +100,6 @@
     [heat_flux_aux]
         type = HeatFluxAux
         variable = wall_heat_flux
-        thermal_conductivity = 100  # W/(m.K)
         T = temp
         boundary = 'solid_top'
     []
