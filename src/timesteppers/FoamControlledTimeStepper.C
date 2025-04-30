@@ -1,6 +1,5 @@
 #include "FoamProblem.h"
 #include "FoamControlledTimeStepper.h"
-#include "MooseError.h"
 #include "scalar.H"
 
 #include <TimeStepper.h>
@@ -32,14 +31,13 @@ FoamControlledTimeStepper::computeDT(){
     return foam_solver.runTime.deltaTValue();
 
   Real deltaT = std::min(foam_solver.maxDeltaT(),
-                         foam_solver.runTime.functionObjects().maxDeltaT());
+                        foam_solver.runTime.functionObjects().maxDeltaT());
 
-  if (deltaT < Foam::rootVGreat){
-    deltaT = std::min(Foam::solver::deltaTFactor * foam_solver.runTime.deltaTValue(), deltaT);
-    std::cout << "FoamControlledTimeStepper: " << deltaT <<"\n";
-    return deltaT;
-  }
-  mooseError("deltaT nust be less that rootVGreat");
+  if (deltaT >= Foam::rootVGreat)
+    mooseError("Computed OpenFOAM time step must be less that rootVGreat");
+
+  return std::min(Foam::solver::deltaTFactor * foam_solver.runTime.deltaTValue(), deltaT);
+
 }
 
 FoamProblem *

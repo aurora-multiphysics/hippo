@@ -57,6 +57,15 @@ setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
 }
 } // namespace
 
+void FoamSolver::synchronizeAdaptiveTimes(double dt)
+{
+  double foam_dt  = runTime().deltaTValue();
+  if (std::abs(dt - foam_dt) > 1e-6)
+  {
+    runTime().setDeltaTNoAdjust(dt);
+  }
+}
+
 /**
  * This was copied from 'applications/solvers/foamRun/foamRun.C' OpenFOAM-12
  * revision 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6. Modifications made:
@@ -67,7 +76,7 @@ setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
  *   - Some changes to the logging.
  */
 void
-FoamSolver::run()
+FoamSolver::run(double deltaT)
 {
   if (_solver == nullptr)
   {
@@ -91,7 +100,7 @@ FoamSolver::run()
 
   // Adjust the time-step according to the solver maxDeltaT
   adjustDeltaT(time, solver);
-
+  synchronizeAdaptiveTimes(deltaT);
   time++;
 
   // TODO: replace std::cout with MOOSE output or a dependency-injected stream.

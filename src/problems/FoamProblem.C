@@ -112,7 +112,7 @@ FoamProblem::externalSolve()
 {
   if (parameters().get<bool>("solve"))
   {
-    _solver.run();
+    _solver.run(_dt);
   }
 }
 

@@ -13,7 +13,7 @@ public:
   explicit FoamSolver(Foam::solver * solver) : _solver(solver) {}
 
   // Run a timestep of the OpenFOAM solver.
-  void run();
+  void run(double deltaT);
 
   // Append temperature values from the OpenFOAM patch (boundary) to the end of
   // the given vector.
@@ -32,6 +32,8 @@ public:
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
+  // Synchronize times on parent up execution
+  void synchronizeAdaptiveTimes(double dt);
   // Provide access to the openfoam solver
   Foam::solver& solver() {return *_solver;};
 
