@@ -1,7 +1,7 @@
 [Mesh]
   type = FoamMesh
-  case = 'buoyantCavity'
-  foam_patch = 'topAndBottom frontAndBack'
+  case = 'fluid-openfoam'
+  foam_patch = 'interface'
   dim = 2
 []
 
