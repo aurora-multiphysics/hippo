@@ -57,9 +57,10 @@ setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
 }
 } // namespace
 
-void FoamSolver::synchronizeAdaptiveTimes(double dt)
+void
+FoamSolver::synchronizeAdaptiveTimes(double dt)
 {
-  double foam_dt  = runTime().deltaTValue();
+  double foam_dt = runTime().deltaTValue();
   if (std::abs(dt - foam_dt) > 1e-6)
   {
     runTime().setDeltaTNoAdjust(dt);

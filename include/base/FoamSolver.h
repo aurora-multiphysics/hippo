@@ -35,7 +35,7 @@ public:
   // Synchronize times on parent up execution
   void synchronizeAdaptiveTimes(double dt);
   // Provide access to the openfoam solver
-  Foam::solver& solver() {return *_solver;};
+  Foam::solver & solver() { return *_solver; };
 
 private:
   Foam::solver * _solver = nullptr;

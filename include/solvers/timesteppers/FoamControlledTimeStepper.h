@@ -12,14 +12,14 @@ Time stepper that allows OpenFOAM to control the time step enabling features suc
  to be exposed to MOOSE
  */
 
- class FoamControlledTimeStepper: public TimeStepper
- {
-  public:
+class FoamControlledTimeStepper : public TimeStepper
+{
+public:
   FoamControlledTimeStepper(InputParameters const & params);
   static InputParameters validParams();
 
   // Get initial time step from OpenFOAM input file
-  virtual Real computeInitialDT() {return computeDT();};
+  virtual Real computeInitialDT() { return computeDT(); };
 
   /* Read time step from OpenFOAM
     - Make sure the time step duration is computed in the current step
@@ -31,10 +31,10 @@ Time stepper that allows OpenFOAM to control the time step enabling features suc
   // OpenFOAM restart.
   virtual void init();
 
-  private:
-   // These two variables are needed depending on how the time-stepper is initialised
-    Hippo::FoamSolver & solver() { return problem()->solver(); }
-    FoamProblem * problem();
-    bool _dt_adjustable = false;
-    Real _foam_initial_dt = 0.;
- };
+private:
+  // These two variables are needed depending on how the time-stepper is initialised
+  Hippo::FoamSolver & solver() { return problem()->solver(); }
+  FoamProblem * problem();
+  bool _dt_adjustable = false;
+  Real _foam_initial_dt = 0.;
+};

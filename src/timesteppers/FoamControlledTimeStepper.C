@@ -14,7 +14,8 @@ FoamControlledTimeStepper::validParams()
   return params;
 }
 
-FoamControlledTimeStepper::FoamControlledTimeStepper(InputParameters const & params) : TimeStepper(params)
+FoamControlledTimeStepper::FoamControlledTimeStepper(InputParameters const & params)
+  : TimeStepper(params)
 {
   auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
   if (!problem)
@@ -24,20 +25,20 @@ FoamControlledTimeStepper::FoamControlledTimeStepper(InputParameters const & par
 }
 
 Real
-FoamControlledTimeStepper::computeDT(){
+FoamControlledTimeStepper::computeDT()
+{
   Foam::solver & foam_solver{solver().solver()};
 
   if (!_dt_adjustable)
     return _foam_initial_dt;
 
-  Real deltaT = std::min(foam_solver.maxDeltaT(),
-                        foam_solver.runTime.functionObjects().maxDeltaT());
+  Real deltaT =
+      std::min(foam_solver.maxDeltaT(), foam_solver.runTime.functionObjects().maxDeltaT());
 
   if (deltaT >= Foam::rootVGreat)
     mooseError("Computed OpenFOAM time step must be less that rootVGreat");
 
   return std::min(Foam::solver::deltaTFactor * foam_solver.runTime.deltaTValue(), deltaT);
-
 }
 
 FoamProblem *
@@ -51,7 +52,8 @@ FoamControlledTimeStepper::problem()
   return problem;
 }
 
-void FoamControlledTimeStepper::init()
+void
+FoamControlledTimeStepper::init()
 {
   TimeStepper::init();
 
