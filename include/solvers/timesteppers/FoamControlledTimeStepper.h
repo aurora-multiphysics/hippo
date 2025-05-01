@@ -36,4 +36,5 @@ Time stepper that allows OpenFOAM to control the time step enabling features suc
     Hippo::FoamSolver & solver() { return problem()->solver(); }
     FoamProblem * problem();
     bool _dt_adjustable = false;
+    Real _foam_initial_dt = 0.;
  };

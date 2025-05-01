@@ -28,7 +28,7 @@ FoamControlledTimeStepper::computeDT(){
   Foam::solver & foam_solver{solver().solver()};
 
   if (!_dt_adjustable)
-    return foam_solver.runTime.deltaTValue();
+    return _foam_initial_dt;
 
   Real deltaT = std::min(foam_solver.maxDeltaT(),
                         foam_solver.runTime.functionObjects().maxDeltaT());
@@ -57,4 +57,7 @@ void FoamControlledTimeStepper::init()
 
   Foam::solver & foam_solver{solver().solver()};
   _dt_adjustable = foam_solver.runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
+
+  if (!_dt_adjustable)
+    _foam_initial_dt = foam_solver.runTime.deltaTValue();
 }
