@@ -2,13 +2,13 @@
 
 #include "FoamProblem.h"
 #include "FoamSolver.h"
-#include "InputParameters.h"
 
+#include <InputParameters.h>
 #include <TimeStepper.h>
 
 /*
 Time stepper that allows OpenFOAM to control the time step enabling features such as CFL
- daptive time steps. the intention is to allows the current time step in OpenFOAM
+ daptive time steps. The intention is to allows the current time step in OpenFOAM
  to be exposed to MOOSE
  */
 
