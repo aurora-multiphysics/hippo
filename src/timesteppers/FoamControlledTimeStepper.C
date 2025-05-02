@@ -27,11 +27,13 @@ FoamControlledTimeStepper::FoamControlledTimeStepper(InputParameters const & par
 Real
 FoamControlledTimeStepper::computeDT()
 {
-  Foam::solver & foam_solver{solver().solver()};
+  Foam::solver const & foam_solver{solver().solver()};
 
   if (!_dt_adjustable)
     return _foam_initial_dt;
 
+  // This code has been adapted from OpenFOAM's adjustDeltaT to determine the time-step that
+  // OpenFOAM will use on the next time step so MOOSE can predict it.
   Real deltaT =
       std::min(foam_solver.maxDeltaT(), foam_solver.runTime.functionObjects().maxDeltaT());
 
@@ -61,7 +63,9 @@ FoamControlledTimeStepper::init()
 {
   TimeStepper::init();
 
-  Foam::solver & foam_solver{solver().solver()};
+  Foam::solver const & foam_solver{solver().solver()};
+
+  // determine if OpenFOAM's time-step is adjustable in controlDict
   _dt_adjustable = foam_solver.runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
 
   if (!_dt_adjustable)

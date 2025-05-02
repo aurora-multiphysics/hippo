@@ -35,6 +35,8 @@ private:
   // These two variables are needed depending on how the time-stepper is initialised
   Hippo::FoamSolver & solver() { return problem()->solver(); }
   FoamProblem * problem();
+  // Variables to determine whether an adjustable time step is used in OF and
+  // what it is.
   bool _dt_adjustable = false;
   Real _foam_initial_dt = 0.;
 };

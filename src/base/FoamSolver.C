@@ -101,6 +101,8 @@ FoamSolver::run(double deltaT)
 
   // Adjust the time-step according to the solver maxDeltaT
   adjustDeltaT(time, solver);
+  // Adjust time-step if MOOSE wishes to insert a timestep for
+  // synchronisation with main app
   synchronizeAdaptiveTimes(deltaT);
   time++;
 
