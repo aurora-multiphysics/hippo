@@ -2,6 +2,7 @@
 
 #include "FoamProblem.h"
 #include "FoamSolver.h"
+#include "functionObject.H"
 
 #include <InputParameters.h>
 #include <TimeStepper.h>
@@ -11,6 +12,34 @@ Time stepper that allows OpenFOAM to control the time step enabling features suc
  daptive time steps. The intention is to allows the current time step in OpenFOAM
  to be exposed to MOOSE
  */
+
+namespace Foam
+{
+namespace functionObjects
+{
+// Function object to tell OpenFOAM what MOOSE's dt is
+class mooseDeltaT : public functionObject
+{
+private:
+  const Real & dt_;
+
+public:
+  TypeName("mooseDeltaT");
+  mooseDeltaT(const word & name, const Time & runTime, const Real & dt)
+    : functionObject(name, runTime), dt_(dt)
+  {
+  }
+
+  wordList fields() const { return wordList::null(); }
+
+  bool executeAtStart() const { return false; }
+
+  bool execute() { return true; }
+  bool write() { return true; }
+  scalar maxDeltaT() const { return dt_; }
+};
+}
+}
 
 class FoamControlledTimeStepper : public TimeStepper
 {

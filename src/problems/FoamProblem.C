@@ -112,7 +112,8 @@ FoamProblem::externalSolve()
 {
   if (parameters().get<bool>("solve"))
   {
-    _solver.run(_dt);
+    _solver.setTimeDelta(_dt); // Needed for constant deltaT cases
+    _solver.run();
   }
 }
 
