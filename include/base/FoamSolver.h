@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fvCFD_moose.h"
+#include "solver.H"
 
 #include <vector>
 
@@ -32,6 +32,9 @@ public:
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
+
+  // Provide access to the openfoam solver
+  Foam::solver & solver() { return *_solver; };
 
 private:
   Foam::solver * _solver = nullptr;

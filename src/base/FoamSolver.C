@@ -91,7 +91,6 @@ FoamSolver::run()
 
   // Adjust the time-step according to the solver maxDeltaT
   adjustDeltaT(time, solver);
-
   time++;
 
   // TODO: replace std::cout with MOOSE output or a dependency-injected stream.
