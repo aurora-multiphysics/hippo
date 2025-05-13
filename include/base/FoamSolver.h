@@ -32,9 +32,12 @@ public:
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
-
+  // Run the presolve from MOOSE objects
+  void preSolve();
   // Provide access to the openfoam solver
   Foam::solver & solver() { return *_solver; };
+  // Calculate OpenFOAM's time step
+  Foam::scalar computeDeltaT();
 
 private:
   Foam::solver * _solver = nullptr;
