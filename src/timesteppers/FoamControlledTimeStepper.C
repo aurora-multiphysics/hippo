@@ -1,6 +1,5 @@
 #include "FoamProblem.h"
 #include "FoamControlledTimeStepper.h"
-#include "functionObject.H"
 #include <pimpleSingleRegionControl.H>
 
 #include <scalar.H>
@@ -8,15 +7,6 @@
 #include <Transient.h>
 
 registerMooseObject("hippoApp", FoamControlledTimeStepper);
-
-namespace Foam
-{
-namespace functionObjects
-{
-defineTypeNameAndDebug(mooseDeltaT, 0);
-
-}
-}
 
 InputParameters
 FoamControlledTimeStepper::validParams()
@@ -75,19 +65,18 @@ FoamControlledTimeStepper::init()
 {
   TimeStepper::init();
 
-  Foam::solver & foam_solver{solver().solver()};
-
   // determine if OpenFOAM's time-step is adjustable in controlDict
-  _dt_adjustable = foam_solver.runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
+  _dt_adjustable = solver().isDeltaTAdjustable();
 
-  // Add functionObject that tells OpenFOAM what MOOSE's time step is.
-  // If MOOSE inserts a timestep then functionObjects.maxDeltaT() will return
-  // MOOSE's timestep
-  Foam::Time & runtime = const_cast<Foam::Time &>(foam_solver.runTime);
+  // The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
+  // loops over the function objects and chooses the minimum, so by having
+  // a function Object that returns what MOOSE wants, OpenFOAM will use the
+  // MOOSE time step if it is smaller than what OpenFOAM wants. As a result,
+  // if MOOSE wants to add a synchronisation step OpenFOAM will also use it too.
 
-  runtime.functionObjects().append(
-      new Foam::functionObjects::mooseDeltaT("Moose time step", foam_solver.runTime, _dt));
+  // create function object and append it to the solver's function object list
+  solver().appendDeltaTFunctionObject(_dt);
 
   if (!_dt_adjustable)
-    _foam_initial_dt = foam_solver.runTime.deltaTValue();
+    _foam_initial_dt = solver().getTimeDelta();
 }

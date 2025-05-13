@@ -1,8 +1,37 @@
 #pragma once
 
 #include "solver.H"
+#include "functionObject.H"
 
 #include <vector>
+
+namespace Foam
+{
+namespace functionObjects
+{
+// Function object to tell OpenFOAM what MOOSE's dt is
+class mooseDeltaT : public functionObject
+{
+private:
+  const scalar & dt_;
+
+public:
+  TypeName("mooseDeltaT");
+  mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
+    : functionObject(name, runTime), dt_(dt)
+  {
+  }
+
+  wordList fields() const { return wordList::null(); }
+
+  bool executeAtStart() const { return false; }
+
+  bool execute() { return true; }
+  bool write() { return true; }
+  scalar maxDeltaT() const { return dt_; }
+};
+}
+}
 
 namespace Hippo
 {
@@ -32,12 +61,19 @@ public:
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
-  // Run the presolve from MOOSE objects
+  // Run the presolve from MOOSE objects.
   void preSolve();
-  // Provide access to the openfoam solver
+  // Provide access to the openfoam solver.
   Foam::solver & solver() { return *_solver; };
-  // Calculate OpenFOAM's time step
+  // Calculate OpenFOAM's time step.
   Foam::scalar computeDeltaT();
+  // check whether OpenFOAM has variable time step.
+  bool isDeltaTAdjustable() const;
+  // creates function object that tells OpenFOAM what MOOSE's
+  // time step is.
+  void appendDeltaTFunctionObject(const Foam::scalar & dt);
+  // get the current deltaT.
+  Foam::scalar getTimeDelta() { return runTime().deltaTValue(); };
 
 private:
   Foam::solver * _solver = nullptr;

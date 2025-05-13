@@ -11,6 +11,15 @@
 #include <cassert>
 #include <iterator>
 
+namespace Foam
+{
+namespace functionObjects
+{
+defineTypeNameAndDebug(mooseDeltaT, 0);
+
+}
+}
+
 namespace Hippo
 {
 namespace
@@ -223,5 +232,18 @@ FoamSolver::computeDeltaT()
   if (deltaT < Foam::rootVGreat)
     return std::min(Foam::solver::deltaTFactor * _solver->runTime.deltaTValue(), deltaT);
   return _solver->runTime.deltaTValue();
+}
+
+bool
+FoamSolver::isDeltaTAdjustable() const
+{
+  return _solver->runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
+}
+
+void
+FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
+{
+  runTime().functionObjects().append(
+      new Foam::functionObjects::mooseDeltaT("Moose time step", runTime(), dt));
 }
 } // namespace Hippo
