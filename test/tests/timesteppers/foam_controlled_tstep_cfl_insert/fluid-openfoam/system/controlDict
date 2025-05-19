@@ -1,0 +1,46 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     buoyantFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.5;
+
+deltaT          0.04;
+
+adjustTimeStep     yes;
+
+maxCo              2.;         // max Courant number
+
+writeControl    timeStep;
+
+writeInterval   1;
+
+// purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  15;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   15;
+
+runTimeModifiable true;
+
+functions
+{
+    #includeFunc writeObjects(h, rho)
+}

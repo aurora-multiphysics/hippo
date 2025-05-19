@@ -11,6 +11,15 @@
 #include <cassert>
 #include <iterator>
 
+namespace Foam
+{
+namespace functionObjects
+{
+defineTypeNameAndDebug(mooseDeltaT, 0);
+
+}
+}
+
 namespace Hippo
 {
 namespace
@@ -91,7 +100,6 @@ FoamSolver::run()
 
   // Adjust the time-step according to the solver maxDeltaT
   adjustDeltaT(time, solver);
-
   time++;
 
   // TODO: replace std::cout with MOOSE output or a dependency-injected stream.
@@ -206,4 +214,36 @@ FoamSolver::wallHeatFlux(const int patch_id, std::vector<double> & fill_vector)
   return whf_boundary.size();
 }
 
+void
+FoamSolver::preSolve()
+{
+  _solver->pimple.readIfModified();
+  _solver->preSolve();
+}
+
+Foam::scalar
+FoamSolver::computeDeltaT()
+{
+  // This code has been adapted from OpenFOAM's adjustDeltaT to determine the time-step that
+  // OpenFOAM will use on the next time step so MOOSE can predict it.
+  Foam::scalar deltaT =
+      std::min(_solver->maxDeltaT(), _solver->runTime.functionObjects().maxDeltaT());
+
+  if (deltaT < Foam::rootVGreat)
+    return std::min(Foam::solver::deltaTFactor * _solver->runTime.deltaTValue(), deltaT);
+  return _solver->runTime.deltaTValue();
+}
+
+bool
+FoamSolver::isDeltaTAdjustable() const
+{
+  return _solver->runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
+}
+
+void
+FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
+{
+  runTime().functionObjects().append(
+      new Foam::functionObjects::mooseDeltaT("Moose time step", runTime(), dt));
+}
 } // namespace Hippo
