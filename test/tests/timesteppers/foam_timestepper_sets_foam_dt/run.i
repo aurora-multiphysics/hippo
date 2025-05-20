@@ -2,7 +2,6 @@
   type = FoamMesh
   case = 'buoyantCavity'
   foam_patch = 'topAndBottom frontAndBack'
-  dim = 2
 []
 
 [Variables]
