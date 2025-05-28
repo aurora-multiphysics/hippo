@@ -82,6 +82,7 @@ public:
     return _mesh->boundaryMesh()[patch_id];
   }
 
+  Foam::pointField const & points() const { return _mesh->points(); }
   Foam::labelList const & uniquePoints() const { return _uniquePoints; }
 
   Foam::fvMesh & mesh() { return *_mesh; }

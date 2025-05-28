@@ -1,6 +1,7 @@
 #include "FoamMesh.h"
 #include "Foam2MooseMeshGen.h"
 #include "libmesh/elem.h"
+#include "libmesh/enum_elem_type.h"
 #include "libmesh/face_quad4.h"
 #include "libmesh/face_c0polygon.h"
 #include "libmesh/face_tri3.h"
@@ -12,12 +13,13 @@
 #include <mpi.h>
 
 #include <memory>
-#include <ostream>
 
 registerMooseObject("hippoApp", FoamMesh);
 
 namespace
 {
+static std::map<int, int> subdomain_id_map{
+    {libMesh::TRI3, 1}, {libMesh::QUAD4, 2}, {libMesh::C0POLYGON, 3}};
 Foam::fvMesh
 read_polymesh(const Foam::Time & run_time)
 {
@@ -118,8 +120,6 @@ FoamMesh::buildMesh()
     // patch_id?
     elem->subdomain_id() = face.subdomain_id();
     elem->processor_id() = face.rank();
-
-    elem->processor_id();
   }
 
   // patch id has the openfoam id that corresponds to the patch name
