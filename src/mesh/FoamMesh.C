@@ -1,5 +1,10 @@
 #include "FoamMesh.h"
 #include "Foam2MooseMeshGen.h"
+#include "libmesh/elem.h"
+#include "libmesh/enum_elem_type.h"
+#include "libmesh/face_quad4.h"
+#include "libmesh/face_c0polygon.h"
+#include "libmesh/face_tri3.h"
 
 #include <IOobject.H>
 #include <Pstream/mpi/PstreamGlobals.H>
@@ -13,12 +18,30 @@ registerMooseObject("hippoApp", FoamMesh);
 
 namespace
 {
+static std::map<int, int> subdomain_id_map{
+    {libMesh::TRI3, 1}, {libMesh::QUAD4, 2}, {libMesh::C0POLYGON, 3}};
 Foam::fvMesh
 read_polymesh(const Foam::Time & run_time)
 {
   Foam::IOobject mesh_header(
       Foam::fvMesh::defaultRegion, run_time.name(), run_time, Foam::IOobject::MUST_READ);
   return Foam::fvMesh(mesh_header);
+}
+
+std::unique_ptr<Elem>
+getElement(const Hippo::FoamFace & face)
+{
+  switch (face.size())
+  {
+    case 3:
+      return std::make_unique<libMesh::Tri3>();
+
+    case 4:
+      return std::make_unique<libMesh::Quad4>();
+
+    default:
+      return std::make_unique<libMesh::C0Polygon>(face.size());
+  }
 }
 }
 
@@ -84,8 +107,8 @@ FoamMesh::buildMesh()
   for (int32_t fc = 0; fc < mesh_adapter->nface(); ++fc)
   {
     auto face = mesh_adapter->face(fc);
-    assert(face.size() == 4 && "Only support quads currently");
-    auto elem = _mesh->add_elem(Elem::build_with_id(QUAD4, fc));
+    auto elem = _mesh->add_elem(getElement(face));
+    elem->set_id(fc);
 
     int count = 0;
     for (auto point = face.begin(); point < face.end(); ++point)
