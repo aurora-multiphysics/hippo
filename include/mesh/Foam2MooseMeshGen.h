@@ -61,6 +61,8 @@ public:
   uint32_t size() const { return _end - _start; }
   int32_t const * begin() { return _start; }
   int32_t const * end() { return _end; }
+  int32_t const * begin() const { return _start; }
+  int32_t const * end() const { return _end; }
   int32_t rank() const { return _rank; }
   int32_t subdomain_id() const { return _subdomain_id; }
 };
