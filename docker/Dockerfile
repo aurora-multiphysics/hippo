@@ -87,7 +87,7 @@ ENV PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
 WORKDIR "/opt/hippo"
 
 # Build MOOSE
-RUN git clone --branch 2024-11-11-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
+RUN git clone --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer"
 
 # Build OpenFOAM
