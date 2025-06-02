@@ -10,7 +10,7 @@
 # environment, but it does provide a stable place to build and run
 # hippo (for example in a CI pipeline).
 
-FROM idaholab/moose-dev:e930b1d AS moose-deps
+FROM idaholab/moose-dev:2025.05.23 AS moose-deps
 
 # Strip debug libraries out of libMesh
 RUN . /environment \
