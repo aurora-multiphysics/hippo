@@ -14,7 +14,8 @@ jobs:
   build-and-push:
     if: >
       github.actor == 'hsaunders1904' ||
-      github.actor == 'dynamicist'
+      github.actor == 'dynamicist' ||
+      github.actor == 'mattfalcone1997'
     runs-on: ubuntu-latest
     steps:
       - name: Log in to Quay.io
