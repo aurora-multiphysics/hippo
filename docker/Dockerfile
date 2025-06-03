@@ -83,7 +83,7 @@ ENV CONDA_PYTHON_EXE=/opt/miniforge3/bin/python
 ENV CONDA_DEFAULT_ENV=moose
 ENV CPLUS_INCLUDE_PATH="/opt/miniforge3/envs/moose/include/python3.11:${CPLUS_INCLUDE_PATH}"
 ENV PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
-RUN ls -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
+RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 WORKDIR "/opt/hippo"
 
 # Build MOOSE
