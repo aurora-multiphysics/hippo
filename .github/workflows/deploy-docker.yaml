@@ -31,5 +31,5 @@ jobs:
           push: true
           file: ./docker/Dockerfile
           tags: quay.io/ukaea/hippo:${{ github.event.inputs.tag }}
-          build-args:
-            - "MOOSE_JOBS=1"
+          build-args: |
+            MOOSE_JOBS=1
