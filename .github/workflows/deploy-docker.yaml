@@ -15,7 +15,8 @@ jobs:
     if: >
       github.actor == 'hsaunders1904' ||
       github.actor == 'dynamicist' ||
-      github.actor == 'mattfalcone1997'
+      github.actor == 'mattfalcone1997' ||
+      github.actor = 'k-collie'
     runs-on: ubuntu-latest
     steps:
       - name: Log in to Quay.io
