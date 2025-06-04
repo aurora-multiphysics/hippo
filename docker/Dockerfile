@@ -31,7 +31,6 @@ COPY --from=moose-deps /opt/openmpi /opt/openmpi
 COPY --from=moose-deps /opt/miniforge3 /opt/miniforge3
 COPY --from=moose-deps /opt/vtk /opt/vtk
 COPY --from=moose-deps /lib64/libmpc* /lib64
-COPY --from=moose-deps /lib64/libmpc* /lib64
 
 # Dependencies
 RUN dnf --enablerepo=devel install -y \
@@ -76,14 +75,15 @@ ENV PATH="/opt/rh/gcc-toolset-12/root/usr/bin:${PATH}"
 ENV CPLUS_INCLUDE_PATH="/opt/rh/gcc-toolset-12/root/usr/include/c++/12:${CPLUS_INCLUDE_PATH}"
 ENV LD_LIBRARY_PATH="/opt/rh/gcc-toolset-12/root/usr/lib64:/opt/rh/gcc-toolset-12/root/usr/lib:${LD_LIBRARY_PATH}"
 # Conda
-ENV CONDA_PREFIX=/opt/miniforge3/envs/moose
+ENV CONDA_PREFIX=/opt/miniforge3
 ENV CONDA_SHLVL=1
 ENV CONDA_EXE=/opt/miniforge3/bin/conda
 ENV CONDA_PYTHON_EXE=/opt/miniforge3/bin/python
-ENV CONDA_DEFAULT_ENV=moose
-ENV CPLUS_INCLUDE_PATH="/opt/miniforge3/envs/moose/include/python3.11:${CPLUS_INCLUDE_PATH}"
+ENV CONDA_DEFAULT_ENV=base
 ENV PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
+ENV CPLUS_INCLUDE_PATH="/opt/miniforge3/include/python3.12:${CPLUS_INCLUDE_PATH}"
 RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
+
 WORKDIR "/opt/hippo"
 
 # Build MOOSE
