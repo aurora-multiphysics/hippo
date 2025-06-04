@@ -32,8 +32,8 @@ ARG GID=1000
 ARG UNAME=hippo-user
 # Number of parallel jobs for MOOSE build
 ARG MOOSE_JOBS=""
-# Number of parallel jobs for OPENFOAM build
-ARG OPENFOAM_JOBS=""
+# Number of parallel jobs for OPENFOAM build, 0 for no limit
+ARG OPENFOAM_JOBS=0
 
 COPY --from=moose-deps /opt/libmesh /opt/libmesh
 COPY --from=moose-deps /opt/rh /opt/rh

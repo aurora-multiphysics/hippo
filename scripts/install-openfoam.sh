@@ -30,7 +30,8 @@ options:
                   [default: '${OUT_DIR}']
   -s              if given, remove OpenFOAM source files not required by
                   hippo
-  -j              set the number of build jobs, no limit by default
+  -j              set the number of build jobs, no limit by default. Pass 0 for
+                  no limit
   -h              show help and exit
 "
 
@@ -51,6 +52,11 @@ while getopts "o:j:sh" opt; do
         *) exit 1
     esac
 done
+
+# remove limit on build jobs when 0 is passed
+if [ "$BUILD_JOBS" -eq "0" ]; then
+    BUILD_JOBS=""
+fi;
 
 OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-12"
 OPENFOAM_REV="9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6"
