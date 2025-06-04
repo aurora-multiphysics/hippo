@@ -98,11 +98,6 @@ RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 
 WORKDIR "/opt/hippo"
 
-RUN groupadd -g $GID --non-unique $UNAME
-RUN useradd -u $UID -g $GID --shell /bin/bash --create-home $UNAME
-USER $UNAME
-ENV USER $UNAME
-
 # Build MOOSE
 RUN git clone --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS
@@ -121,5 +116,11 @@ RUN conda install pre-commit --file requirements.test.txt -S --yes
 
 # Pull down MOOSE's 'large_media' submodule for building docs
 RUN git -C "${MOOSE_DIR}" submodule update --init large_media
+
+RUN groupadd -g $GID --non-unique $UNAME
+RUN useradd -u $UID -g $GID --shell /bin/bash --create-home $UNAME
+USER $UNAME
+ENV USER $UNAME
+WORKDIR /home/$UNAME
 
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/openfoam/OpenFOAM-12/etc/bashrc && \"$@\"", "-s"]
