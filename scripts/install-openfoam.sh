@@ -42,11 +42,11 @@ for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     fi
 done
 
-while getopts "o:sh" opt; do
+while getopts "o:j:sh" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}" ;;
-        s) STRIP_SOURCES=1 ;;
         j) BUILD_JOBS="${OPTARG}" ;;
+        s) STRIP_SOURCES=1 ;;
         h) echo "${USAGE}" && exit 0 ;;
         *) exit 1
     esac
