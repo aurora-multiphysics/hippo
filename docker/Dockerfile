@@ -86,6 +86,9 @@ RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 
 WORKDIR "/opt/hippo"
 
+RUN useradd --create-home --shell /bin/bash hippo-user
+USER hippo-user
+
 # Build MOOSE
 RUN git clone --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer"
