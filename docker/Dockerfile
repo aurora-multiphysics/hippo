@@ -31,7 +31,7 @@ ARG UID=1000
 ARG GID=1000
 ARG UNAME=hippo-user
 # Number of parallel jobs for MOOSE build
-ARG MOOSE_JOBS=""
+ARG MOOSE_JOBS=1
 # Number of parallel jobs for OPENFOAM build, 0 for no limit
 ARG OPENFOAM_JOBS=0
 
