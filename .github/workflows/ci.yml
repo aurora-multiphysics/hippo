@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: quay.io/ukaea/hippo:ce40b973303ad714419c
+      options: --user root
 
     steps:
     - uses: actions/checkout@v4
