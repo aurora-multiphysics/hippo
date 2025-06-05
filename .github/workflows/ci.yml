@@ -41,8 +41,10 @@ jobs:
 
     - name: Test
       shell: bash
+      env:
+        OMPI_ALLOW_RUN_AS_ROOT: 1
+        OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
       run: |
-        su - hippo-user
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         unset FOAM_SIGFPE && unset FOAM_SETNAN
         ./run_tests
