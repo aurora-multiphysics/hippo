@@ -42,6 +42,7 @@ jobs:
     - name: Test
       shell: bash
       run: |
+        su - hippo-user
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         unset FOAM_SIGFPE && unset FOAM_SETNAN
         ./run_tests
