@@ -88,6 +88,7 @@
         end_point = '0 1 0'
         sort_by = x
         variable = heat_flux
+        warn_discontinuous_face_values = false
     []
     [right_boundary_hf]
         type = LineValueSampler
@@ -96,6 +97,7 @@
         end_point = '1 1 0'
         sort_by = x
         variable = heat_flux
+        warn_discontinuous_face_values = false
     []
 []
 

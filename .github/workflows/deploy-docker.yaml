@@ -14,7 +14,9 @@ jobs:
   build-and-push:
     if: >
       github.actor == 'hsaunders1904' ||
-      github.actor == 'dynamicist'
+      github.actor == 'dynamicist' ||
+      github.actor == 'mattfalcone1997' ||
+      github.actor == 'k-collie'
     runs-on: ubuntu-latest
     steps:
       - name: Log in to Quay.io
@@ -29,3 +31,5 @@ jobs:
           push: true
           file: ./docker/Dockerfile
           tags: quay.io/ukaea/hippo:${{ github.event.inputs.tag }}
+          build-args: |
+            MOOSE_JOBS=1
