@@ -1,6 +1,8 @@
 #pragma once
 
 #include "FoamRuntime.h"
+#include "libmesh/elem.h"
+#include "Foam2MooseMeshGen.h"
 
 #include <argList.H>
 #include <fvMesh.H>
@@ -33,6 +35,9 @@ public:
   bool isSerial() const { return _serial; }
   libMesh::Elem * getElemPtr(int local) const;
   Foam::fvMesh & fvMesh() { return _foam_mesh; }
+  // Create a MOOSE element from a Foam face, removing collinear points on edges.
+  std::unique_ptr<Elem> createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
+                                      const Hippo::FoamFace & face);
 
   std::vector<int32_t> n_faces{0};
   // The index offset into the MOOSE element array, for the current rank.
