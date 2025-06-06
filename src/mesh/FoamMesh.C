@@ -94,11 +94,18 @@ inline bool
 checkPointOnLine(const libMesh::Node * pt,
                  const libMesh::Node * start,
                  const libMesh::Node * end,
-                 const double tol = 1e-6)
+                 const double rtol = 1e-6)
 {
+
+  assert(pt != nullptr && pt != start && pt != end &&
+         "checkPointOnLine: Point must not be nullptr or the same as start or end.");
+
   // Check if the point is on the line segment defined by start and end
   auto AP = *pt - *start;
   auto AB = *end - *start;
+
+  // convert relative tolerance to absolute tolerance
+  double const tol = AP.norm() * AB.norm() * rtol;
 
   auto cross_product = AB.cross(AP);
   if (cross_product.norm() > tol)
@@ -127,14 +134,13 @@ FoamMesh::createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter, const Hippo
   // elements on this edge neigh)
 
   // check last point
-  while (checkPointOnLine(points.back(), points.front(), points.end()[-2]))
+  while (checkPointOnLine(points.back(), points.end()[-2], points.front()))
     points.pop_back(); // remove last point if it is the same as the first
 
   // check in reverse the middle points
   // we start from the second last point and go to the second point
   for (auto point = points.end() - 2; point != points.begin(); --point)
   {
-    int idx = point - points.begin();
     if (checkPointOnLine(*point, *(point - 1), *(point + 1)))
       points.erase(point); // remove point if it is the same as the previous one
   }
