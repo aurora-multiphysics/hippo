@@ -5,6 +5,7 @@ set -e
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 STRIP_SOURCES=0
+BUILD_JOBS=""
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
 USAGE="usage: install-openfoam.sh [-h] [-s] [-o DIRECTORY]
 
@@ -29,6 +30,8 @@ options:
                   [default: '${OUT_DIR}']
   -s              if given, remove OpenFOAM source files not required by
                   hippo
+  -j              set the number of build jobs, no limit by default. Pass 0 for
+                  no limit
   -h              show help and exit
 "
 
@@ -40,14 +43,20 @@ for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     fi
 done
 
-while getopts "o:sh" opt; do
+while getopts "o:j:sh" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}" ;;
+        j) BUILD_JOBS="${OPTARG}" ;;
         s) STRIP_SOURCES=1 ;;
         h) echo "${USAGE}" && exit 0 ;;
         *) exit 1
     esac
 done
+
+# remove limit on build jobs when 0 is passed
+if [ "$BUILD_JOBS" -eq "0" ]; then
+    BUILD_JOBS=""
+fi;
 
 OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-12"
 OPENFOAM_REV="9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6"
@@ -91,10 +100,10 @@ wmRefresh || true
 # Build OpenFOAM
 (
     cd "${OPENFOAM_DIR}" \
-    && ./Allwmake -j dep \
-    && ./Allwmake -j src/ \
-    && ./Allwmake -j applications/modules/ \
-    && ./Allwmake -j applications/utilities/
+    && ./Allwmake -j${BUILD_JOBS} dep \
+    && ./Allwmake -j${BUILD_JOBS} src/ \
+    && ./Allwmake -j${BUILD_JOBS} applications/modules/ \
+    && ./Allwmake -j${BUILD_JOBS} applications/utilities/
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then

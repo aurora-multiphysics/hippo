@@ -11,7 +11,8 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/ukaea/hippo:5c52a671f8e9a3f81a74
+      image: quay.io/ukaea/hippo:ce40b973303ad714419c
+      options: --user root
 
     steps:
     - uses: actions/checkout@v4
@@ -40,6 +41,9 @@ jobs:
 
     - name: Test
       shell: bash
+      env:
+        OMPI_ALLOW_RUN_AS_ROOT: 1
+        OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
       run: |
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         unset FOAM_SIGFPE && unset FOAM_SETNAN
