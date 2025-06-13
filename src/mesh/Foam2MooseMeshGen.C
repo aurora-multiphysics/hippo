@@ -336,6 +336,15 @@ Foam2MooseMeshAdapter::setUpParallel()
   std::vector<int32_t> face_count, face_point_id, face_subdomain_id;
   auto face_info = getLocalFaceInfo<Foam::labelIOList>(*_loc2glob, _mesh_wrapper, _patch_id);
   gatherUniquePoints(local_point);
+
+  // This resolves an edge case
+  // - getLocalPoints gets all the unique_points on the relevant interface boundary patches
+  // - therefore, a face on a rank may need a point from the adjacent rank
+  // - but that point on the adjacent rank may not be associated with a face on the interface so
+  //   that point will not be in that rank's local points
+  // - so this functions gets each rank to ensure all the points required are present and if not
+  // request them be collected It may be useful to refactor how the points are gathered in the
+  // future
   getMissingPoints(_point, *_loc2glob, _patch_id, _mesh_wrapper, _comm);
 
   gatherFaces(face_info.count, face_info.point_id);
@@ -451,10 +460,8 @@ Foam2MooseMeshAdapter::getMooseId(int32_t global_id)
 {
   auto kv = _global2moose.find(global_id);
   if (kv == _global2moose.end())
-    if (kv == _global2moose.end())
-    {
-      mooseError("getMooseId failed to find global id, ", global_id, " in the moose mesh\n");
-    }
+    mooseError("getMooseId failed to find global id, ", global_id, " in the moose mesh\n");
+
   return kv->second;
 }
 } // namespace Hippo

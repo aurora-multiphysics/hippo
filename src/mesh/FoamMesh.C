@@ -28,22 +28,6 @@ read_polymesh(const Foam::Time & run_time)
       Foam::fvMesh::defaultRegion, run_time.name(), run_time, Foam::IOobject::MUST_READ);
   return Foam::fvMesh(mesh_header);
 }
-
-std::unique_ptr<Elem>
-getElement(const Hippo::FoamFace & face)
-{
-  switch (face.size())
-  {
-    case 3:
-      return std::make_unique<libMesh::Tri3>();
-
-    case 4:
-      return std::make_unique<libMesh::Quad4>();
-
-    default:
-      return std::make_unique<libMesh::C0Polygon>(face.size());
-  }
-}
 }
 
 InputParameters
@@ -131,7 +115,7 @@ FoamMesh::createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter, const Hippo
   }
 
   // Remove collinear points on edge (due to more than one neighbouring
-  // elements on this edge neigh)
+  // elements on this edge)
 
   // check last point
   while (checkPointOnLine(points.back(), points.end()[-2], points.front()))
