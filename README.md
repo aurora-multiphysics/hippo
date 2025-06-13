@@ -59,7 +59,7 @@ Follow instructions
 [here](https://mooseframework.inl.gov/getting_started/installation/gcc_install_moose.html)
 to build MOOSE.
 
-Hippo requires MOOSE release `2024-11-11-release` or higher.
+Hippo requires MOOSE release `2024-09-05-release` or higher.
 
 ### Environment
 

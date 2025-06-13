@@ -1,7 +1,7 @@
 #include "CommUtil.h"
 #include "Foam2MooseMeshGen.h"
 #include "HippoPtr.h"
-#include "fvCFD_moose.h"
+#include "fvMesh.H"
 
 #include <MooseError.h>
 
@@ -19,6 +19,8 @@ namespace Hippo
 struct IdMap
 {
   int32_t operator[](int32_t const id) const { return id; }
+  int32_t * find(int32_t & id) const { return &id; }
+  int32_t size() const { return 0; }
 };
 
 template <typename T>
@@ -119,6 +121,94 @@ appendLocalFaces(std::vector<int> patch_to_global,
     }
   }
   return nfaces;
+}
+
+void
+appendMissingPoints(HippoPtr<FoamPoint> & point,
+                    Foam::labelIOList const & mesh_to_global_map,
+                    std::set<Foam::label> & unique_point,
+                    Hippo::FvMeshWrapper const & mesh_wrapper,
+                    Foam::polyPatch const & poly_patch,
+                    MPI_Comm * _comm)
+{
+  auto mesh_point_map = poly_patch.meshPointMap();
+  auto local_point = mesh_wrapper.points();
+
+  std::vector<int> global_ids(point.size());
+  std::transform(
+      point.begin(), point.end(), global_ids.begin(), [](auto & pt) { return pt.getId(); });
+
+  std::vector<int> local_patch_points;
+  for (auto const & pt : mesh_point_map.toc())
+  {
+    local_patch_points.push_back(pt);
+  }
+
+  std::map<int, int> global_to_local_map;
+  for (int i = 0; i < local_point.size(); ++i)
+  {
+    global_to_local_map[mesh_to_global_map[i]] = i;
+  }
+
+  std::vector<int> missing_ids;
+  for (auto const & pt : local_patch_points)
+  {
+    // Check if the point is in the mesh
+    auto it = std::find(global_ids.begin(), global_ids.end(), mesh_to_global_map[pt]);
+    if (it == global_ids.end())
+    {
+      // This point is not in the mesh
+      missing_ids.push_back(mesh_to_global_map[pt]);
+    }
+  }
+
+  auto global_missing = gather_vector<int>(missing_ids, *_comm);
+  if (global_missing.size() > 0)
+  {
+    std::vector<int> global_unique(unique_point.size());
+    std::transform(unique_point.begin(),
+                   unique_point.end(),
+                   global_unique.begin(),
+                   [&mesh_to_global_map](auto & pt) { return mesh_to_global_map[pt]; });
+
+    std::vector<FoamPoint> missing_point;
+    for (auto const & id : global_missing)
+    {
+      auto it = std::find(global_unique.begin(), global_unique.end(), id);
+      if (it != global_unique.end())
+      {
+        auto pt = local_point[global_to_local_map[*it]];
+        missing_point.emplace_back(pt[0], pt[1], pt[2], id);
+      }
+    }
+
+    auto point_vec = point.to_std_vector();
+    auto global_missing_points = gather_vector<FoamPoint>(missing_point, *_comm);
+    point_vec.insert(point_vec.end(), global_missing_points.begin(), global_missing_points.end());
+    point = HippoPtr<FoamPoint>(point_vec);
+  }
+}
+
+void
+getMissingPoints(HippoPtr<FoamPoint> & point,
+                 Foam::labelIOList const & mesh_to_global_map,
+                 std::vector<int> const & patch_ids,
+                 FvMeshWrapper const & mesh_wrapper,
+                 MPI_Comm * _comm)
+{
+  std::vector<FoamPoint> local_point;
+  std::set<Foam::label> unique_point_set;
+  // Create a set to hold local points
+  // append_function removes them as they are added so we don't double
+  // count. Must be a nicer way but this is simple enough for now
+  for (auto const pt : mesh_wrapper.uniquePoints())
+    unique_point_set.insert(pt);
+
+  for (auto const & patch_id : patch_ids)
+  {
+    auto patch = mesh_wrapper.patch(patch_id);
+    appendMissingPoints(point, mesh_to_global_map, unique_point_set, mesh_wrapper, patch, _comm);
+  }
 }
 
 struct PatchInfo
@@ -239,11 +329,24 @@ Foam2MooseMeshAdapter::setUpSerial()
 void
 Foam2MooseMeshAdapter::setUpParallel()
 {
+  // _loc2glob should be a map from the local id to the global id and it is read directly from the
+  // pointProcAddressing file
   _loc2glob = getLocalGlobalMap(_mesh_wrapper.mesh());
   auto local_point = getLocalPoints<Foam::labelIOList>(*_loc2glob, _patch_id, _mesh_wrapper);
   std::vector<int32_t> face_count, face_point_id, face_subdomain_id;
   auto face_info = getLocalFaceInfo<Foam::labelIOList>(*_loc2glob, _mesh_wrapper, _patch_id);
   gatherUniquePoints(local_point);
+
+  // This resolves an edge case
+  // - getLocalPoints gets all the unique_points on the relevant interface boundary patches
+  // - therefore, a face on a rank may need a point from the adjacent rank
+  // - but that point on the adjacent rank may not be associated with a face on the interface so
+  //   that point will not be in that rank's local points
+  // - so this functions gets each rank to ensure all the points required are present and if not
+  // request them be collected It may be useful to refactor how the points are gathered in the
+  // future
+  getMissingPoints(_point, *_loc2glob, _patch_id, _mesh_wrapper, _comm);
+
   gatherFaces(face_info.count, face_info.point_id);
 
   // Gather the indices of the start of each patch in each rank.
@@ -296,6 +399,11 @@ Foam2MooseMeshAdapter::Foam2MooseMeshAdapter(std::vector<std::string> patch_name
   {
     for (auto v = map.second.begin(); v != map.second.end(); ++v)
     {
+      auto kv = _global2moose.find(*v);
+      if (kv == _global2moose.end())
+      {
+        mooseError("getMooseId failed to find global id, ", *v, " in the moose mesh\n");
+      }
       auto moose_id = _global2moose[*v];
       *v = moose_id;
     }
@@ -350,6 +458,10 @@ Foam2MooseMeshAdapter::getGid(int32_t local, int32_t patch_id) const
 int
 Foam2MooseMeshAdapter::getMooseId(int32_t global_id)
 {
-  return _global2moose[global_id];
+  auto kv = _global2moose.find(global_id);
+  if (kv == _global2moose.end())
+    mooseError("getMooseId failed to find global id, ", global_id, " in the moose mesh\n");
+
+  return kv->second;
 }
 } // namespace Hippo

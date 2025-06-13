@@ -16,8 +16,9 @@ private:
   const scalar & dt_;
 
 public:
-  TypeName("mooseDeltaT");
-  mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
+  TypeName("mooseDeltaT")
+
+      mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
     : functionObject(name, runTime), dt_(dt)
   {
   }
