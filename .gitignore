@@ -145,6 +145,12 @@ moose/include/base/Precompiled.h.gch
 .*.swp
 .*.swo
 
+# clang
+.clangd
+
+# OpenFOAM mesh object files
+test/**/*.obj
+
 framework/contrib/exodiff/exodiff
 
 # Mac garbage
