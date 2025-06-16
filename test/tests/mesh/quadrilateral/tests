@@ -2,13 +2,18 @@
   [quad]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/quadrilateral.msh && refineMesh -overwrite"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
     []
-    [verify]
-      type = CSVDiff
+    [run]
+      type = RunApp
       input = run.i
-      csvdiff = run_temp_over_line_csv_temp_over_line_0032.csv
       prereq = quad/setup
+    []
+
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = quad/run
     []
   []
 []
