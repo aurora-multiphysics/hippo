@@ -1,0 +1,32 @@
+[Tests]
+  [short_prep]
+    type = RunCommand
+    command = "bash -c './prep.sh -d -e 10 -w 10'"
+  []
+  [run_short]
+    type = Exodiff
+    input = solid.i
+    min_parallel = 4
+    max_parallel = 4
+    prereq = short_prep
+    exodiff = solid_out.e
+  []
+  [reset_short]
+    type = RunCommand
+    command = "bash -c './prep.sh -e 500 -w 50'"
+    prereq = run_short
+  []
+  [heavy_prep]
+    type = RunCommand
+    command = "bash -c './prep.sh -d -e 500 -w 50'"
+    heavy = true
+  []
+  [run_heavy]
+    type = RunApp
+    input = solid.i
+    min_parallel = 4
+    max_parallel = 4
+    prereq = heavy_prep
+    heavy = true
+  []
+[]
