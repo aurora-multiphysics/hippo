@@ -116,5 +116,4 @@ if [ ${STRIP_SOURCES} -eq 1 ]; then
     rm -rf "${OPENFOAM_DIR}/platforms/${WM_OPTIONS}/src"
     rm -rf "${OPENFOAM_DIR}/test/"
     rm -rf "${OPENFOAM_DIR}/tutorials/"
-    rm -rf "${OPENFOAM_DIR}/wmake/"
 fi
