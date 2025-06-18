@@ -4,6 +4,7 @@
 
 #include <mpi.h>
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 /*
