@@ -22,6 +22,7 @@ jobs:
         # used by 'actions/checkout', so git operations fail.
         # https://github.com/actions/checkout/issues/766
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global --add safe.directory /opt/moose
         pre-commit install
         SKIP=no-commit-to-branch pre-commit run --all
 
