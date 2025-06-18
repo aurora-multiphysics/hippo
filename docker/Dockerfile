@@ -119,6 +119,7 @@ RUN git -C "${MOOSE_DIR}" submodule update --init large_media
 
 RUN groupadd -g $GID --non-unique $UNAME
 RUN useradd -u $UID -g $GID --shell /bin/bash --create-home $UNAME
+RUN chown -R $UNAME:$UNAME /opt/moose
 USER $UNAME
 ENV USER $UNAME
 WORKDIR /home/$UNAME
