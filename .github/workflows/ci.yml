@@ -11,7 +11,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/ukaea/hippo:4a33e58cc914ad502556
+      image: quay.io/ukaea/hippo:94c602bb87e287be87da
       options: --user 1001
 
     steps:
