@@ -27,8 +27,8 @@ FROM rockylinux/rockylinux:8.10 AS main
 # docker build --build-arg "MOOSE_JOBS=4" --build-arg "OPENFOAM_JOBS=8" ...
 # Args must be in the same image in multi-stage build
 # Allow specifying UID and GID to avoid permissions problems when mounting directories
-ARG UID=1000
-ARG GID=1000
+ARG UID=1001
+ARG GID=1001
 ARG UNAME=hippo-user
 # Number of parallel jobs for MOOSE build
 ARG MOOSE_JOBS=1
@@ -119,6 +119,7 @@ RUN git -C "${MOOSE_DIR}" submodule update --init large_media
 
 RUN groupadd -g $GID --non-unique $UNAME
 RUN useradd -u $UID -g $GID --shell /bin/bash --create-home $UNAME
+RUN chown -R $UNAME:$UNAME /opt/moose
 USER $UNAME
 ENV USER $UNAME
 WORKDIR /home/$UNAME

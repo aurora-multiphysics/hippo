@@ -11,8 +11,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/ukaea/hippo:4a33e58cc914ad502556
-      options: --user root
+      image: quay.io/ukaea/hippo:e61505f86052be9bb6a5
 
     steps:
     - uses: actions/checkout@v4
@@ -22,6 +21,7 @@ jobs:
         # used by 'actions/checkout', so git operations fail.
         # https://github.com/actions/checkout/issues/766
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global --add safe.directory /opt/moose
         pre-commit install
         SKIP=no-commit-to-branch pre-commit run --all
 
@@ -41,9 +41,6 @@ jobs:
 
     - name: Test
       shell: bash
-      env:
-        OMPI_ALLOW_RUN_AS_ROOT: 1
-        OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
       run: |
         . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
         unset FOAM_SIGFPE && unset FOAM_SETNAN
