@@ -1,10 +1,14 @@
+"""Test module for non-conformal quadrilateral OpenFOAM meshes."""
+
 import unittest
 from pathlib import Path
 
+import numpy as np
+
+#import Hippo test python functions
 from analytical import unsteady1d_temp
 from read_hippo_data import read_moose_exodus_data, read_openfoam_data
 
-import numpy as np
 
 RUN_DIR = Path(__file__).parent
 FOAM_CASE = RUN_DIR / "fluid-openfoam"
@@ -18,8 +22,9 @@ L = 1
 
 
 class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
-
+    """Test class for 1D unsteady problem with non-conformal quadrilateral elements for OpenFOAM"""
     def test_matches_analytic_solution_at_times(self):
+        """Compare against analytical solution."""
         times = [0.0025, 0.005, 0.01]  # seconds
         for time in times:
             moose_coords, moose_temperature = read_moose_exodus_data(RUN_DIR / "run_out.e",

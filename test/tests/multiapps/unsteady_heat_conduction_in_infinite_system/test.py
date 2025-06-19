@@ -1,11 +1,16 @@
+"""Test module for the unsteady 1D heat conduction problem"""
+
 import unittest
 from pathlib import Path
 
-from analytical import unsteady1d_temp
-from read_hippo_data import read_moose_exodus_data, read_openfoam_data
-
 import numpy as np
 import pyvista as pv
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+#import Hippo test python functions
+from analytical import unsteady1d_temp
+from read_hippo_data import read_moose_exodus_data, read_openfoam_data
 
 RUN_DIR = Path(__file__).parent
 FOAM_CASE = RUN_DIR / "fluid-openfoam"
@@ -19,8 +24,9 @@ L = 1
 
 
 class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
-
+    """Test class for 1D unsteady heat conduction problem"""
     def test_matches_analytic_solution_at_times(self):
+        """Compare against analytical solution."""
         times = [0.0025, 0.005, 0.01]  # seconds
         for time in times:
             moose_coords, moose_temperature = read_moose_exodus_data(RUN_DIR / "run_out.e",
@@ -48,7 +54,23 @@ class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
 
 
 def moose_get_temp_x(exo_file: Path,
-                     time: float | int):
+                     time: float | int)-> tuple[np.ndarray, np.ndarray]:
+    """Get x coordinate and temperature on a line though the solid.
+
+    Parameters
+    ----------
+    exo_file : Path
+        Exodus file from MOOSE
+    time : float | int
+        time
+
+    Returns
+    -------
+    np.ndarray
+        x coordinates of line
+    np.ndarray
+        temperature on line
+    """
     moose_reader = pv.get_reader(exo_file)
     moose_reader.set_active_time_value(time)
     moose_data = moose_reader.read()[0].combine(True)
@@ -57,6 +79,22 @@ def moose_get_temp_x(exo_file: Path,
 
 def foam_get_temp_x(foam_dir,
                      time):
+    """Get x coordinate and temperature on a line though the fluid.
+
+    Parameters
+    ----------
+    exo_file : Path
+        OpenFOAM directory
+    time : float | int
+        time
+
+    Returns
+    -------
+    np.ndarray
+        x coordinates of line
+    np.ndarray
+        temperature on line
+    """
 
     file_name = Path(foam_dir) / "case.foam"
     file_name.touch()
@@ -70,8 +108,7 @@ def foam_get_temp_x(foam_dir,
     return foam_line.points[:,0], foam_line['T']
 
 def main():
-    import matplotlib.pyplot as plt
-    from scipy.optimize import curve_fit
+    """Main function for plotting output of 1D test."""
 
     # Here we leave some helpful debugging code that generates figures
     # to check this by eye.
@@ -98,7 +135,7 @@ def main():
         dx = foam_x[-1] - foam_x[-2]
         foam_x2 = [foam_x[0]]
         foam_temperature2 = [foam_temperature[0]]
-        for fi in range(1, len(foam_x)):
+        for _ in range(1, len(foam_x)):
             next_value = foam_x2[-1] + dx
             dx *= 1.1
             idx = find_nearest(foam_x, next_value)
@@ -169,4 +206,4 @@ def main():
 
 
 if __name__ == "__main__":
-   main()
+    main()
