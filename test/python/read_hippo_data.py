@@ -4,7 +4,7 @@ from typing import Literal
 import numpy as np
 import pyvista as pv
 
-def read_moose_exo_data(exo_file,
+def read_moose_exodus_data(exo_file,
                         time,
                         variable,
                         block: int | str=0):
