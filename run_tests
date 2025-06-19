@@ -8,5 +8,8 @@ MOOSE_DIR = os.environ.get('MOOSE_DIR', MOOSE_DIR)
 
 sys.path.append(os.path.join(MOOSE_DIR, 'python'))
 
+HIPPO_TEST_PYTHON_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test', 'python'))
+sys.path.append(HIPPO_TEST_PYTHON_DIR)
+
 from TestHarness import TestHarness
 TestHarness.buildAndRun(sys.argv, 'hippo', MOOSE_DIR)
