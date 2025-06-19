@@ -34,7 +34,7 @@
 
 [Transfers]
     [wall_temperature_from_fluid]
-        type = MultiAppGeometricInterpolationTransfer
+        type = MultiAppGeneralFieldShapeEvaluationTransfer
         source_variable = fluid_wall_temp
         from_multi_app = hippo
         variable = fluid_wall_temperature
@@ -42,7 +42,7 @@
     []
 
     [heat_flux_to_fluid]
-        type = MultiAppGeometricInterpolationTransfer
+        type = MultiAppGeneralFieldShapeEvaluationTransfer
         source_variable = wall_heat_flux
         to_multi_app = hippo
         variable = solid_heat_flux
