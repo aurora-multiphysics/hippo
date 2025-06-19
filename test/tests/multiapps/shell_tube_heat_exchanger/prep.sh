@@ -34,7 +34,7 @@ fi
 if [ ! -z ${ENDTIME+x} ]; then
     echo "Updating end time to $ENDTIME"
 
-    sed -i "85s/.*/    end_time = $ENDTIME/" solid.i
+    sed -i "112s/.*/    end_time = $ENDTIME/" solid.i
     sed -i "34s/.*/endTime $ENDTIME;/" fluid_outer/system/controlDict
     sed -i "30s/.*/endTime             $ENDTIME;/" fluid_inner/system/controlDict
 

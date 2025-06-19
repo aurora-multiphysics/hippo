@@ -22,6 +22,16 @@
         order = CONSTANT
         initial_condition = 0
     []
+    [inner_wall_temp]
+        family = MONOMIAL
+        order = CONSTANT
+        initial_condition = 300
+    []
+    [outer_wall_temp]
+        family = MONOMIAL
+        order = CONSTANT
+        initial_condition = 300
+    []
 []
 
 [Kernels]
@@ -32,6 +42,23 @@
     [heat-conduction-dt]
         type = ADHeatConductionTimeDerivative
         variable = T
+    []
+[]
+
+[AuxKernels]
+    [inner_wall_temp]
+        type = ProjectionAux
+        variable = inner_wall_temp
+        v = T
+        boundary = 'inner'
+        check_boundary_restricted = false
+    []
+    [outer_wall_temp]
+        type = ProjectionAux
+        variable = outer_wall_temp
+        v = T
+        boundary = 'outer'
+        check_boundary_restricted = false
     []
 []
 
@@ -117,34 +144,39 @@
 
 [Transfers]
     [wall_temperature_to_inner]
-        type = MultiAppGeometricInterpolationTransfer
-        source_variable = T
+        type = MultiAppGeneralFieldNearestLocationTransfer
+        source_variable = inner_wall_temp
         to_multi_app = inner
         variable = solid_wall_temp
         execute_on = same_as_multiapp
+        from_boundaries = 'outer'
     []
 
     [heat_flux_from_inner]
-        type = MultiAppGeometricInterpolationTransfer
+        type = MultiAppGeneralFieldNearestLocationTransfer
         source_variable = fluid_heat_flux
         from_multi_app = inner
         variable = inner_heat_flux
         execute_on = same_as_multiapp
+        to_boundaries = 'inner'
     []
 
     [wall_temperature_to_outer]
-        type = MultiAppGeometricInterpolationTransfer
-        source_variable = T
+        type = MultiAppGeneralFieldNearestLocationTransfer
+        source_variable = outer_wall_temp
         to_multi_app = outer
         variable = solid_wall_temp
         execute_on = same_as_multiapp
+        from_boundaries = 'outer'
     []
 
     [heat_flux_from_outer]
-        type = MultiAppGeometricInterpolationTransfer
+        type = MultiAppGeneralFieldNearestLocationTransfer
         source_variable = fluid_heat_flux
         from_multi_app = outer
         variable = outer_heat_flux
         execute_on = same_as_multiapp
+        to_boundaries = 'outer'
+        search_value_conflicts=false
     []
 []
