@@ -1,9 +1,11 @@
 import unittest
 from pathlib import Path
 
-import fluidfoam as ff
+from analytical import unsteady1d_temp
+from read_hippo_data import read_moose_exodus_data, read_openfoam_data
+
 import numpy as np
-from scipy.special import erfc
+import pyvista as pv
 
 RUN_DIR = Path(__file__).parent
 FOAM_CASE = RUN_DIR / "fluid-openfoam"
@@ -11,8 +13,8 @@ K_SOLID = 1
 RHO_CP_SOLID = 1
 K_FLUID = 4
 RHO_CP_FLUID = 16
-T_HOT = 1
-T_COLD = 1e-10
+T_HOT = 1.
+T_COLD = 0.
 L = 1
 
 
@@ -21,12 +23,16 @@ class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
     def test_matches_analytic_solution_at_times(self):
         times = [0.0025, 0.005, 0.01]  # seconds
         for time in times:
-            moose_x, moose_temperature = read_moose_temperature(RUN_DIR, time)
-            foam_x, foam_temperature = read_openfoam_temperature(FOAM_CASE, time)
-            x = np.concatenate([moose_x, foam_x])
+            moose_coords, moose_temperature = read_moose_exodus_data(RUN_DIR / "run_out.e",
+                                                                time,
+                                                                "temp")
+            foam_coords, foam_temperature = read_openfoam_data(FOAM_CASE,
+                                                          time,
+                                                          'T')
+            x = np.concatenate([moose_coords['x'], foam_coords['x']])
             temp = np.concatenate([moose_temperature, foam_temperature])
 
-            analytic_temp = calc_analytic_temp(
+            analytic_temp = unsteady1d_temp(
                 x=x,
                 time=time,
                 temp_cold=T_COLD,
@@ -41,113 +47,29 @@ class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
             self.assertLess(rmse, 5e-3, msg=f"for time = {time} s")
 
 
-def read_moose_temperature(run_dir: Path, time: float) -> tuple[np.ndarray, np.ndarray]:
-    times_csv = run_dir / "run_temp_over_line_csv_temp_over_line_time.csv"
-    times = np.genfromtxt(times_csv, delimiter=",", skip_header=1)
-    time_step = int(times[np.isclose(times[:, 0], time), 1][0])
+def moose_get_temp_x(exo_file: Path,
+                     time: float | int):
+    moose_reader = pv.get_reader(exo_file)
+    moose_reader.set_active_time_value(time)
+    moose_data = moose_reader.read()[0].combine(True)
+    moose_line = moose_data.sample_over_line((-1,0,0), (0,0,0), 100)
+    return moose_line.points[:,0], moose_line['temp']
 
-    temperature_csv = (
-        RUN_DIR / f"run_temp_over_line_csv_temp_over_line_{time_step:04d}.csv"
-    )
-    data = np.genfromtxt(temperature_csv, delimiter=",", skip_header=1)
-    moose_x = data[:, 2]
-    moose_temperature = data[:, 1]
-    return moose_x, moose_temperature
+def foam_get_temp_x(foam_dir,
+                     time):
 
+    file_name = Path(foam_dir) / "case.foam"
+    file_name.touch()
 
-def read_openfoam_temperature(
-    case_dir: Path, time: float
-) -> tuple[np.ndarray, np.ndarray]:
-    time_name = str(time)
-    for time_dir in map(
-        lambda p: p.name, filter(lambda p: p.is_dir(), case_dir.glob("*"))
-    ):
-        try:
-            f = float(time_dir)
-        except (TypeError, ValueError):
-            continue
-        if np.isclose(f, time):
-            time_name = time_dir
-            break
+    reader: pv.POpenFOAMReader = pv.get_reader(file_name)
+    reader.set_active_time_value(time)
+    foam_data: pv.UnstructuredGrid = reader.read()['internalMesh']
 
-    case = str(case_dir)
-    coords = np.array(ff.readmesh(case, verbose=False))
-    all_foam_temp = ff.readfield(case, name="T", time_name=time_name, verbose=False)
-    center_z_pos = 0.05
-    mid_line_idx = np.where(np.isclose(coords[1], center_z_pos))
-    foam_x = coords[0, mid_line_idx].T
-    foam_x = np.reshape(coords[0, mid_line_idx].T, (len(foam_x),))
-    foam_temperature = all_foam_temp[mid_line_idx]
-    return foam_x, foam_temperature
+    foam_line = foam_data.sample_over_line((0,0,0), (1,0,0), 100)
 
+    return foam_line.points[:,0], foam_line['T']
 
-def calc_analytic_temp(
-    x: np.ndarray,
-    time: float,
-    temp_cold: float,
-    temp_hot: float,
-    k1: float,
-    k2: float,
-    rho_cp1: float,
-    rho_cp2: float,
-) -> np.ndarray:
-    def temp_minus(
-        x: np.ndarray,
-        time: float,
-        temp_cold: float,
-        temp_hot: float,
-        k1: float,
-        k2: float,
-        rho_cp1: float,
-        rho_cp2: float,
-    ) -> np.ndarray:
-        numerator = (temp_hot - temp_cold) * np.sqrt(k2 * rho_cp2)
-        denominator = np.sqrt(k1 * rho_cp1) + np.sqrt(k2 * rho_cp2)
-        erfc_arg = -x / (2 * np.sqrt(k1 / rho_cp1 * time))
-        return temp_hot - (numerator / denominator) * erfc(erfc_arg)
-
-    def temp_plus(
-        x: np.ndarray,
-        time: float,
-        temp_cold: float,
-        temp_hot: float,
-        k1: float,
-        k2: float,
-        rho_cp1: float,
-        rho_cp2: float,
-    ) -> np.ndarray:
-        numerator = (temp_hot - temp_cold) * np.sqrt(k1 * rho_cp1)
-        denominator = np.sqrt(k1 * rho_cp1) + np.sqrt(k2 * rho_cp2)
-        erfc_arg = x / (2 * np.sqrt(k2 / rho_cp2 * time))
-        return temp_cold + (numerator / denominator) * erfc(erfc_arg)
-
-    positive_x_idx = x >= 0
-    temp = np.empty_like(x)
-    temp[positive_x_idx] = temp_plus(
-        x=x[positive_x_idx],
-        time=time,
-        temp_cold=temp_cold,
-        temp_hot=temp_hot,
-        k1=k1,
-        k2=k2,
-        rho_cp1=rho_cp1,
-        rho_cp2=rho_cp2,
-    )
-    negative_x_idx = ~positive_x_idx
-    temp[negative_x_idx] = temp_minus(
-        x=x[negative_x_idx],
-        time=time,
-        temp_cold=temp_cold,
-        temp_hot=temp_hot,
-        k1=k1,
-        k2=k2,
-        rho_cp1=rho_cp1,
-        rho_cp2=rho_cp2,
-    )
-    return temp
-
-
-if __name__ == "__main__":
+def main():
     import matplotlib.pyplot as plt
     from scipy.optimize import curve_fit
 
@@ -169,8 +91,9 @@ if __name__ == "__main__":
 
     _, axs = plt.subplot_mosaic([["1", "2"], ["3", "3"]])
     for i, time in enumerate([0.0025, 0.005, 0.01]):
-        moose_x, moose_temperature = read_moose_temperature(RUN_DIR, time)
-        foam_x, foam_temperature = read_openfoam_temperature(FOAM_CASE, time)
+
+        moose_x, moose_temperature = moose_get_temp_x(RUN_DIR / "run_out.e", time)
+        foam_x, foam_temperature = foam_get_temp_x(FOAM_CASE, time)
         # Sample down the OpenFOAM values so the plot is less busy
         dx = foam_x[-1] - foam_x[-2]
         foam_x2 = [foam_x[0]]
@@ -185,7 +108,7 @@ if __name__ == "__main__":
             foam_temperature2.append(foam_temperature[idx])
 
         x_space = np.linspace(-L, L, 201)
-        analytic_temp = calc_analytic_temp(
+        analytic_temp = unsteady1d_temp(
             x_space,
             time,
             T_COLD,
@@ -201,7 +124,7 @@ if __name__ == "__main__":
         fit_y = np.concatenate([moose_temperature, foam_temperature])
         fit_kwargs = {"time": time, "temp_cold": T_COLD, "temp_hot": T_HOT}
         popt, pcov = curve_fit(
-            lambda x, k1, k2, rho_cp1, rho_cp2: calc_analytic_temp(
+            lambda x, k1, k2, rho_cp1, rho_cp2: unsteady1d_temp(
                 x, k1=k1, k2=k2, rho_cp1=rho_cp1, rho_cp2=rho_cp2, **fit_kwargs
             ),
             fit_x,
@@ -214,7 +137,7 @@ if __name__ == "__main__":
         # Calculate RMS
         x = np.concatenate([moose_x, foam_x])
         y = np.concatenate([moose_temperature, foam_temperature])
-        expected_y = calc_analytic_temp(x, time, T_COLD, T_HOT, 1, 4, 1, 16)
+        expected_y = unsteady1d_temp(x, time, T_COLD, T_HOT, 1, 4, 1, 16)
         rmse = np.sqrt(np.sum(np.square(y - expected_y)) / len(y))
         print(f"{time}s RMS error: {rmse:e}")
 
@@ -233,7 +156,7 @@ if __name__ == "__main__":
         ax.plot(x_space, analytic_temp, "--", label="Analytic")
         ax.plot(
             x_space,
-            calc_analytic_temp(x_space, time, T_COLD, T_HOT, *popt),
+            unsteady1d_temp(x_space, time, T_COLD, T_HOT, *popt),
             "r-.",
             label="fit",
             linewidth=0.5,
@@ -243,3 +166,7 @@ if __name__ == "__main__":
         ax.set_ylabel(r"Temperature $[K]$")
         ax.legend()
     plt.show()
+
+
+if __name__ == "__main__":
+   main()
