@@ -103,6 +103,7 @@ wmRefresh || true
     && ./Allwmake -j${BUILD_JOBS} dep \
     && ./Allwmake -j${BUILD_JOBS} src/ \
     && ./Allwmake -j${BUILD_JOBS} applications/modules/ \
+    && ./Allwmake -j${BUILD_JOBS} applications/solvers/ \
     && ./Allwmake -j${BUILD_JOBS} applications/utilities/
 )
 
