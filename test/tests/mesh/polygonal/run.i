@@ -42,7 +42,7 @@
     []
 
     [heat_flux_to_fluid]
-        type = MultiAppProjectionTransfer
+        type = MultiAppGeneralFieldShapeEvaluationTransfer
         source_variable = wall_heat_flux
         to_multi_app = hippo
         variable = solid_heat_flux
