@@ -28,11 +28,13 @@ boundaryField
     {
         type            zeroGradient;
     }
+
     hot
     {
         type            fixedValue;
         value           uniform 307.75;
     }
+
     cold
     {
         type            fixedValue;
