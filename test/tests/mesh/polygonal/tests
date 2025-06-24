@@ -2,13 +2,18 @@
   [poly]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/polygon.msh && polyDualMesh -overwrite 35"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/polygon.msh && polyDualMesh -overwrite 75"'
     []
-    [verify]
-      type = CSVDiff
+    [run]
+      type = RunApp
       input = run.i
-      csvdiff = run_temp_over_line_csv_temp_over_line_0032.csv
       prereq = poly/setup
+    []
+
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = poly/run
     []
   []
 []
