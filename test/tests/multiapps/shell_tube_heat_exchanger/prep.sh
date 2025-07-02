@@ -2,9 +2,16 @@
 
 set -e
 
-usage() { echo "Usage: $0 [-e endtime] [-w writetime] [-d decompose?]" 1>&2; exit 1; }
+usage() {
+    echo "Usage: $0 [-e endtime] [-w writetime] [-p partition with decomposePar] [-d download meshes]." 1>&2
+    if [ $# -gt 0 ]; then
+        echo "Unknown option: $1" 1>&2
+    fi
+    exit 1
 
-while getopts ":e:w:d" o; do
+}
+
+while getopts ":e:w:dp" o; do
     case "${o}" in
         e)
             ENDTIME=${OPTARG}
@@ -12,11 +19,14 @@ while getopts ":e:w:d" o; do
         w)
             WRITETIME=${OPTARG}
             ;;
-        d)
+        p)
             DECOMPOSE=true
             ;;
+        d)
+            DOWNLOAD=true
+            ;;
         *)
-            usage
+            usage ${o}
             ;;
     esac
 done
@@ -24,7 +34,9 @@ done
 foamCleanCase -case fluid_inner
 foamCleanCase -case fluid_outer
 
-./download-meshes.sh
+if [ "$DOWNLOAD" == "true" ]; then
+    ./download-meshes.sh
+fi
 
 if [ "$DECOMPOSE" == "true" ]; then
     decomposePar -case fluid_inner
