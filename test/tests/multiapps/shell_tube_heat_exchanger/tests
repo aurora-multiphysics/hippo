@@ -6,8 +6,6 @@
   [run_short]
     type = Exodiff
     input = solid.i
-    min_parallel = 4
-    max_parallel = 4
     prereq = setup_short
     exodiff = solid_out.e
   []
