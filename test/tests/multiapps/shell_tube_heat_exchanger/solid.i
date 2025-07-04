@@ -149,7 +149,7 @@
         to_multi_app = inner
         variable = solid_wall_temp
         execute_on = same_as_multiapp
-        from_boundaries = 'outer'
+        from_boundaries = 'inner'
     []
 
     [heat_flux_from_inner]
