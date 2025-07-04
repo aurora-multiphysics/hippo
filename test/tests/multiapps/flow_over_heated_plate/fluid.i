@@ -25,12 +25,25 @@
     []
 []
 
+[FoamBCs]
+    [foam_heat_flux_bc]
+        # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
+        moose_variable = solid_heat_flux
+        foam_bc_type = fixedGradient
+    []
+[]
+
+[FoamTransfer]
+    [wall_temp]
+        type = FromFoamBoundaryTransfer
+        target_variable = fluid_wall_temp
+        # Take the boundary temperature from OpenFOAM for setting on the MOOSE mesh.
+        foam_variable = T
+    []
+[]
+
 [Problem]
     type = FoamProblem
-    # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
-    heat_flux = solid_heat_flux
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
-    foam_temp = fluid_wall_temp
 []
 
 [Executioner]
