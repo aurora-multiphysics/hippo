@@ -7,6 +7,8 @@
     type = Exodiff
     input = solid.i
     prereq = setup_short
+    min_parallel = 2
+    max_parallel = 2
     exodiff = solid_out.e
   []
   [reset_short]
