@@ -11,6 +11,8 @@
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
 
+#include <filesystem>
+
 registerMooseObject("hippoApp", FoamProblem);
 
 namespace
@@ -115,6 +117,21 @@ FoamProblem::externalSolve()
     _solver.setTimeDelta(_dt); // Needed for constant deltaT cases
     _solver.run();
   }
+}
+
+void
+FoamProblem::saveState()
+{
+  _solver.write();
+  _prev_time = _solver.currentTime();
+  printf("saveState() -> %f", _prev_time);
+}
+
+void
+FoamProblem::loadState()
+{
+  printf("loadState() -> %f", _prev_time);
+  _solver.readTime(_prev_time);
 }
 
 void
