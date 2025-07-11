@@ -2,60 +2,23 @@
 
 set -e
 
-usage() {
-    echo "Usage: $0 [-e endtime] [-w writetime] [-p partition with decomposePar] [-d download meshes]." 1>&2
-    if [ $# -gt 0 ]; then
-        echo "Unknown option: $1" 1>&2
-    fi
-    exit 1
-
-}
-
-while getopts ":e:w:dp" o; do
-    case "${o}" in
-        e)
-            ENDTIME=${OPTARG}
-            ;;
-        w)
-            WRITETIME=${OPTARG}
-            ;;
-        p)
-            DECOMPOSE=true
-            ;;
-        d)
-            DOWNLOAD=true
-            ;;
-        *)
-            usage ${o}
-            ;;
-    esac
-done
-
 foamCleanCase -case fluid_inner
 foamCleanCase -case fluid_outer
 
-if [ "$DOWNLOAD" == "true" ]; then
-    ./download-meshes.sh
-fi
+echo "Downloading and extracting the Inner-Fluid mesh..."
+wget -nv -O - https://syncandshare.lrz.de/dl/fiNsYGC1DKzgio4jS5NhsXg7/polyMesh.org.tar.gz | tar -xzv -C fluid_inner/constant
+mv fluid_inner/constant/polyMesh.org fluid_inner/constant/polyMesh
+gzip -d -q fluid_inner/constant/polyMesh/*
 
-if [ "$DECOMPOSE" == "true" ]; then
-    decomposePar -case fluid_inner
-    decomposePar -case fluid_outer
-fi
 
-if [ ! -z ${ENDTIME+x} ]; then
-    echo "Updating end time to $ENDTIME"
+echo "Downloading and extracting the Outer-Fluid mesh..."
+wget -nv -O - https://syncandshare.lrz.de/dl/fiEZRQ8rcVWRkoyZvANim1R1/polyMesh.org.tar.gz | tar -xzv -C fluid_outer/constant
+mv fluid_outer/constant/polyMesh.org fluid_outer/constant/polyMesh
+gzip -d -q fluid_outer/constant/polyMesh/*
 
-    sed -i "112s/.*/    end_time = $ENDTIME/" solid.i
-    sed -i "34s/.*/endTime $ENDTIME;/" fluid_outer/system/controlDict
-    sed -i "30s/.*/endTime             $ENDTIME;/" fluid_inner/system/controlDict
+echo "Update boundary type"
+sed -i 's/mapped/wall/g'  fluid_inner/constant/polyMesh/boundary
+sed -i 's/mapped/wall/g'  fluid_outer/constant/polyMesh/boundary
 
-fi
-
-if [ ! -z ${WRITETIME+x} ]; then
-    echo "Updating write interval time to $WRITETIME"
-
-    sed -i "30s/.*/writeInterval $WRITETIME;/" fluid_outer/system/controlDict
-    sed -i "28s/.*/writeInterval       $WRITETIME;/" fluid_inner/system/controlDict
-
-fi
+decomposePar -case fluid_inner
+decomposePar -case fluid_outer

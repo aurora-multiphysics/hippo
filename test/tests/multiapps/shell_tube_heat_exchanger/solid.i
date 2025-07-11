@@ -109,7 +109,7 @@
 [Executioner]
     type = Transient
     start_time = 0
-    end_time = 500
+    end_time = 10
     dt = 2.
 
     solve_type = 'NEWTON'
