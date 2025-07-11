@@ -20,18 +20,21 @@ internalField   uniform (0 0 0);
 
 boundaryField
 {
-    topAndBottom
-    {
-        type            noSlip;
-    }
     frontAndBack
     {
         type            noSlip;
     }
+
+    topAndBottom
+    {
+        type            noSlip;
+    }
+
     hot
     {
         type            noSlip;
     }
+
     cold
     {
         type            noSlip;
