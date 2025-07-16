@@ -72,6 +72,7 @@ public:
   }
   // Set the solver to the given time.
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
+  void setCurrentTimeIdx(int timeIdx) { runTime().setTime(runTime().userTimeValue(), timeIdx); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
   // Run the presolve from MOOSE objects.
