@@ -13,7 +13,7 @@ downloadMesh()
         echo "Download failed"
         exit 1
     fi
-    echo $HASH | sha256sum -c --status
+    echo "$HASH $FILE" | sha256sum -c --status
     if [ $? -ne 0 ]; then
         echo "checksum $HASH failed"
         exit 1
@@ -33,14 +33,14 @@ echo "Downloading and extracting the Inner-Fluid mesh..."
 
 #download file and check hash of files before extracting and decompressing them
 inner_mesh_url=https://syncandshare.lrz.de/dl/fiNsYGC1DKzgio4jS5NhsXg7/polyMesh.org.tar.gz
-inner_mesh_hash="cb367fb24caf5de07da5610fd01e492995ef040c6f684ed1b5e3f6139dd5a39c  polyMesh.org.tar.gz"
+inner_mesh_hash="cb367fb24caf5de07da5610fd01e492995ef040c6f684ed1b5e3f6139dd5a39c"
 downloadMesh fluid_inner $inner_mesh_url "$inner_mesh_hash"
 
 
 echo "Downloading and extracting the Outer-Fluid mesh..."
 # repeat for outer mesh
 outer_mesh_url=https://syncandshare.lrz.de/dl/fiEZRQ8rcVWRkoyZvANim1R1/polyMesh.org.tar.gz
-outer_mesh_hash="aed51e0f4e198fed716694dc3e74231fdd6a9a10fbac530fb3ff4ac41895cc12  polyMesh.org.tar.gz"
+outer_mesh_hash="aed51e0f4e198fed716694dc3e74231fdd6a9a10fbac530fb3ff4ac41895cc12"
 downloadMesh fluid_outer $outer_mesh_url "$outer_mesh_hash"
 
 #Update boundary types as original mesh is for preCICE tutorial
