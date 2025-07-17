@@ -27,9 +27,9 @@
 
 [Problem]
     type = FoamProblem
-    # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
+    # Assign heat flux computed in OpenFOAM to a MOOSE variable for imposition as BC in MOOSE.
     foam_heat_flux = fluid_heat_flux
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
+    # Take the boundary temperature from MOOSE and set it in OpenFOAM.
     temp = solid_wall_temp
 []
 
