@@ -1,14 +1,19 @@
 #!/bin/bash
 
+set -e -u -o pipefail
+
 # Downloads mesh file and check the hash against known reference
 downloadMesh()
 {
     DIRECTORY=$1
     URL=$2
     HASH=$3
-    FILE=$(basename ${URL})
+    FILE=${DIRECTORY}_mesh.tar.gz
 
-    wget -O $FILE -nv ${URL}
+    if [ ! -f $FILE ]; then
+        wget -O $FILE -nv ${URL}
+    fi
+
     if [ $? -ne 0 ]; then
         echo "Download failed"
         exit 1
@@ -21,9 +26,7 @@ downloadMesh()
 
     tar -xvf $FILE
     mv polyMesh.org $DIRECTORY/constant/polyMesh
-    rm -f $FILE
     gzip -d -q $DIRECTORY/constant/polyMesh/*
-    return 0
 }
 
 foamCleanCase -case fluid_inner

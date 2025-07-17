@@ -87,13 +87,7 @@
     []
 []
 [Materials]
-    # The example specifies that the thermal diffusivity of the solid should
-    # be α = 1 m2/s, and the thermal conductivity should be k = 100 W/(m.K).
-    #
-    # We know α = k/(Cp.ρ), where k is thermal conductivity, Cp is specific
-    # heat capacity, and ρ is density.
-    #
-    # Hence we require that Cp.ρ = k = 100.
+    # Solid material properties for copper
     [thermal-conduction]
         type = ADGenericConstantMaterial
         prop_names = 'thermal_conductivity density'
