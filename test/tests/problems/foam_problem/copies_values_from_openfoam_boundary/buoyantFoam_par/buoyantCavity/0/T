@@ -20,12 +20,11 @@ internalField   uniform 293;
 
 boundaryField
 {
-    frontAndBack
+    topAndBottom
     {
         type            zeroGradient;
     }
-
-    topAndBottom
+    frontAndBack
     {
         type            zeroGradient;
     }
@@ -33,13 +32,13 @@ boundaryField
     hot
     {
         type            fixedValue;
-        value           uniform 307.75; // 34.6 degC
+        value           uniform 307.75;
     }
 
     cold
     {
         type            fixedValue;
-        value           uniform 288.15; // 15 degC
+        value           uniform 288.15;
     }
 }
 

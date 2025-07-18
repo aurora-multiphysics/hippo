@@ -1,0 +1,18 @@
+[Tests]
+  [setup]
+    type = RunCommand
+    command = "bash -c './prep.sh'"
+  []
+  [run]
+    type = Exodiff
+    input = solid.i
+    prereq = setup
+    min_parallel = 2
+    max_parallel = 2
+    exodiff = solid_out.e
+  []
+  [cleanup]
+    type = RunCommand
+    command = "bash -c 'foamCleanCase -case fluid_inner && foamCleanCase -case fluid_outer'"
+  []
+[]

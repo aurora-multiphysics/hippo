@@ -151,6 +151,9 @@ moose/include/base/Precompiled.h.gch
 # OpenFOAM mesh object files
 test/**/*.obj
 
+# downloaded mesh tarballs
+test/tests/**/*.tar.gz
+
 framework/contrib/exodiff/exodiff
 
 # Mac garbage
