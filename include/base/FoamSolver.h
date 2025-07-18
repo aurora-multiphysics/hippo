@@ -3,7 +3,12 @@
 #include "solver.H"
 #include "functionObject.H"
 
+#include <Time.H>
+#include <TimeState.H>
+#include <filesystem>
 #include <vector>
+
+namespace fs = std::filesystem;
 
 namespace Foam
 {
@@ -58,6 +63,13 @@ public:
   std::size_t wallHeatFlux(int patch_id, std::vector<double> & fill_vector);
   // Set the solver's time step size.
   void setTimeDelta(double dt) { runTime().setDeltaTNoAdjust(dt); }
+  // Get the current time from the solver.
+  double currentTime() { return _solver->time().userTimeValue(); }
+  // Get the current time index from the solver.
+  int currentTimeIdx()
+  {
+    return _solver->time().findClosestTimeIndex(runTime().times(), currentTime());
+  }
   // Set the solver to the given time.
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
   // Set the time at which the solver should terminate.
@@ -74,12 +86,24 @@ public:
   // time step is.
   void appendDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
-  Foam::scalar getTimeDelta() { return runTime().deltaTValue(); };
+  Foam::scalar getTimeDelta() { return runTime().deltaTValue(); }
+  // Get the path to the current time directory, this may or may not exist.
+  fs::path currentTimePath() const { return fs::path(runTime().timePath()); }
+  // Write the current OpenFOAM timestep to its time directory.
+  void write() const { _solver->mesh.write(); }
+  // Reset the solver to the given time.
+  void readTime(const double time)
+  {
+    auto idx = _solver->time().findClosestTimeIndex(runTime().times(), time);
+    runTime().setTime(time, idx);
+    runTime().readModifiedObjects();
+  }
 
 private:
   Foam::solver * _solver = nullptr;
 
   Foam::Time & runTime() { return const_cast<Foam::Time &>(_solver->runTime); }
+  const Foam::Time & runTime() const { return const_cast<Foam::Time &>(_solver->runTime); }
 };
 
 } // namespace Hippo
