@@ -5,6 +5,7 @@
 #include <fvPatchField.H>
 #include <pimpleSingleRegionControl.H>
 #include <scalarField.H>
+#include <unistd.h>
 #include <volFieldsFwd.H>
 
 #include <algorithm>
@@ -101,6 +102,8 @@ FoamSolver::run()
   // Adjust the time-step according to the solver maxDeltaT
   adjustDeltaT(time, solver);
   time++;
+
+  _data_backup.loadOldFields();
 
   // TODO: replace std::cout with MOOSE output or a dependency-injected stream.
   std::cout << "Time = " << time.userTimeName() << "\n" << std::endl;
@@ -247,3 +250,209 @@ FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
       new Foam::functionObjects::mooseDeltaT("Moose time step", runTime(), dt));
 }
 } // namespace Hippo
+
+FoamDataStore::FoamDataStore(Foam::fvMesh & mesh) : _mesh(mesh) {}
+
+inline int64_t
+FoamDataStore::_get_field_size() const
+{
+  int64_t size = _mesh.nCells();
+  for (const auto & patch : _mesh.boundary())
+  {
+    size += patch.size();
+  }
+  return size;
+}
+
+void
+FoamDataStore::storeOneScalarField(const Foam::volScalarField & field)
+{
+  auto it = _scalar_map[field.name()].begin();
+  auto const & values = field.internalField();
+  for (auto i = 0; i < _mesh.nCells(); ++i)
+  {
+    *it = values[i];
+    it++;
+  }
+
+  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
+  {
+    auto const & patch_values = field.boundaryField()[patchID];
+    for (auto i = 0.; i < patch_values.size(); ++i)
+    {
+      *it = patch_values[i];
+      it++;
+    }
+  }
+}
+
+void
+FoamDataStore::storeOneVectorField(const Foam::volVectorField & field)
+{
+  auto it = _vector_map[field.name()].begin();
+  auto const & values = field.internalField();
+  for (auto i = 0; i < _mesh.nCells(); ++i)
+  {
+    *it = values[i];
+    it++;
+  }
+
+  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
+  {
+    auto const & patch_values = field.boundaryField()[patchID];
+    for (auto i = 0.; i < patch_values.size(); ++i)
+    {
+      *it = patch_values[i];
+      it++;
+    }
+  }
+}
+
+void
+FoamDataStore::loadOneScalarField(Foam::volScalarField & field)
+{
+  if (_scalar_map.find(field.name()) == _scalar_map.end())
+    return;
+
+  auto it = _scalar_map[field.name()].begin();
+  auto & values = field.internalFieldRef();
+  for (auto i = 0; i < _mesh.nCells(); ++i)
+  {
+    values[i] = *it;
+    it++;
+  }
+
+  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
+  {
+    auto & patch_values = field.boundaryFieldRef()[patchID];
+    for (auto i = 0.; i < patch_values.size(); ++i)
+    {
+      patch_values[i] = *it;
+      it++;
+    }
+  }
+}
+
+void
+FoamDataStore::loadOneVectorField(Foam::volVectorField & field)
+{
+  if (_vector_map.find(field.name()) == _vector_map.end())
+    return;
+
+  auto it = _vector_map[field.name()].begin();
+  auto & values = field.internalFieldRef();
+  for (auto i = 0; i < _mesh.nCells(); ++i)
+  {
+    values[i] = *it;
+    it++;
+  }
+
+  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
+  {
+    auto & patch_values = field.boundaryFieldRef()[patchID];
+    for (auto i = 0.; i < patch_values.size(); ++i)
+    {
+      patch_values[i] = *it;
+      it++;
+    }
+  }
+}
+
+void
+FoamDataStore::storeFields()
+{
+
+  for (auto & field : _mesh.fields<Foam::volScalarField>())
+  {
+    _scalar_map[field.name()].resize(_get_field_size());
+    std::cout << "Saved scalar fields: " << field.name() << std::endl;
+    storeOneScalarField(field);
+  }
+
+  for (auto & field : _mesh.fields<Foam::volVectorField>())
+  {
+    _vector_map[field.name()].resize(_get_field_size());
+    std::cout << "Saved vector fields: " << field.name() << std::endl;
+    storeOneVectorField(field);
+  }
+}
+
+void
+FoamDataStore::loadCurrentFields()
+{
+  if (_current_loaded)
+    return;
+
+  std::cout << "Time: " << _mesh.time().userTimeValue()
+            << ". Time index: " << _mesh.time().timeIndex() << std::endl;
+  for (auto & field : _mesh.fields<Foam::volScalarField>())
+  {
+    if (!field.isOldTime())
+    {
+      std::cout << "Loading current scalar field: " << field.name() << std::endl;
+      loadOneScalarField(field);
+    }
+  }
+
+  for (auto & field : _mesh.fields<Foam::volVectorField>())
+  {
+    if (!field.isOldTime())
+    {
+      std::cout << "Loading current vector field: " << field.name() << std::endl;
+      loadOneVectorField(field);
+    }
+  }
+  _current_loaded = true;
+}
+
+void
+FoamDataStore::loadOldFields()
+{
+  std::cout << "Loading old fields: " << !_old_loaded << std::endl;
+  if (_old_loaded)
+    return;
+
+  std::cout << "Time: " << _mesh.time().userTimeValue()
+            << ". Time index: " << _mesh.time().timeIndex() << std::endl;
+  for (auto & field : _mesh.fields<Foam::volScalarField>())
+  {
+    if (field.isOldTime())
+    {
+      std::cout << "Loading old scalar field: " << field.name() << std::endl;
+      loadOneScalarField(field);
+    }
+  }
+
+  for (auto & field : _mesh.fields<Foam::volVectorField>())
+  {
+    if (field.isOldTime())
+    {
+      std::cout << "Loading old vector field: " << field.name() << std::endl;
+      loadOneVectorField(field);
+    }
+  }
+  _old_loaded = true;
+}
+
+void
+FoamDataStore::storeTime(Foam::Time & time)
+{
+  _cur_time.timeIndex = time.findClosestTimeIndex(time.times(), time.userTimeValue() - 1);
+  _cur_time.deltaT = time.deltaTValue();
+  _cur_time.time = time.userTimeValue();
+  printf("Saved time: %d, %lf, %lf.\n", _cur_time.timeIndex, _cur_time.time, _cur_time.deltaT);
+  fflush(stdout);
+}
+
+void
+FoamDataStore::loadTime(Foam::Time & time)
+{
+  time.setTime(time, _cur_time.timeIndex);
+  time.setDeltaTNoAdjust(_cur_time.deltaT);
+  time.setTime(_cur_time.time, _cur_time.timeIndex - 1);
+  printf("Loaded time: %d, %lf, %lf.\n",
+         time.findClosestTimeIndex(time.times(), time.userTimeValue()),
+         time.userTimeValue(),
+         time.userDeltaTValue());
+  fflush(stdout);
+}

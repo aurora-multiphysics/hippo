@@ -65,8 +65,7 @@ FoamProblem::validParams()
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
-    _solver(Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr()),
-    _mem_buff(declareRestartableData<FoamDataStore>("foam_data", _foam_mesh->fvMesh()))
+    _solver(Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr())
 {
   assert(_foam_mesh);
 
@@ -126,15 +125,13 @@ FoamProblem::externalSolve()
 void
 FoamProblem::saveState()
 {
-  _mem_buff.storeTime(_solver);
-  _mem_buff.storeFields();
+  _solver.backupData();
 }
 
 void
 FoamProblem::loadState()
 {
-  _mem_buff.loadTime(_solver);
-  _mem_buff.loadFields();
+  _solver.restoreData();
 }
 
 void
@@ -350,167 +347,4 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
                "  order = CONSTANT\n");
   }
   return var;
-}
-
-FoamDataStore::FoamDataStore(Foam::fvMesh & mesh) : _mesh(mesh) {}
-
-inline int64_t
-FoamDataStore::_get_field_size() const
-{
-  int64_t size = _mesh.nCells();
-  for (const auto & patch : _mesh.boundary())
-  {
-    size += patch.size();
-  }
-  return size;
-}
-
-void
-FoamDataStore::storeOneScalarField(const Foam::volScalarField & field)
-{
-  auto it = _scalar_map[field.name()].begin();
-  auto const & values = field.internalField();
-  for (auto i = 0; i < _mesh.nCells(); ++i)
-  {
-    *it = values[i];
-    it++;
-  }
-
-  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
-  {
-    auto const & patch_values = field.boundaryField()[patchID];
-    for (auto i = 0.; i < patch_values.size(); ++i)
-    {
-      *it = patch_values[i];
-      it++;
-    }
-  }
-}
-
-void
-FoamDataStore::storeOneVectorField(const Foam::volVectorField & field)
-{
-  auto it = _vector_map[field.name()].begin();
-  auto const & values = field.internalField();
-  for (auto i = 0; i < _mesh.nCells(); ++i)
-  {
-    *it = values[i];
-    it++;
-  }
-
-  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
-  {
-    auto const & patch_values = field.boundaryField()[patchID];
-    for (auto i = 0.; i < patch_values.size(); ++i)
-    {
-      *it = patch_values[i];
-      it++;
-    }
-  }
-}
-
-void
-FoamDataStore::loadOneScalarField(Foam::volScalarField & field)
-{
-  if (_scalar_map.find(field.name()) == _scalar_map.end())
-    return;
-
-  auto it = _scalar_map[field.name()].begin();
-  auto & values = field.internalFieldRef();
-  for (auto i = 0; i < _mesh.nCells(); ++i)
-  {
-    values[i] = *it;
-    it++;
-  }
-
-  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
-  {
-    auto & patch_values = field.boundaryFieldRef()[patchID];
-    for (auto i = 0.; i < patch_values.size(); ++i)
-    {
-      patch_values[i] = *it;
-      it++;
-    }
-  }
-}
-
-void
-FoamDataStore::loadOneVectorField(Foam::volVectorField & field)
-{
-  if (_vector_map.find(field.name()) == _vector_map.end())
-    return;
-
-  auto it = _vector_map[field.name()].begin();
-  auto & values = field.internalFieldRef();
-  for (auto i = 0; i < _mesh.nCells(); ++i)
-  {
-    values[i] = *it;
-    it++;
-  }
-
-  for (int patchID = 0; patchID < field.boundaryField().size(); ++patchID)
-  {
-    auto & patch_values = field.boundaryFieldRef()[patchID];
-    for (auto i = 0.; i < patch_values.size(); ++i)
-    {
-      patch_values[i] = *it;
-      it++;
-    }
-  }
-}
-
-void
-FoamDataStore::storeFields()
-{
-
-  for (auto & field : _mesh.lookupClass<Foam::volScalarField>())
-  {
-    _scalar_map[field->name()].resize(_get_field_size());
-    std::cout << "Scalar fields: " << field->name() << std::endl;
-    storeOneScalarField(*field);
-  }
-
-  for (auto & field : _mesh.lookupClass<Foam::volVectorField>())
-  {
-    _vector_map[field->name()].resize(_get_field_size());
-    std::cout << "Vector fields: " << field->name() << std::endl;
-    storeOneVectorField(*field);
-  }
-}
-
-void
-FoamDataStore::loadFields()
-{
-  for (auto & field : _mesh.lookupClass<Foam::volScalarField>())
-  {
-    loadOneScalarField(*field);
-  }
-
-  for (auto & field : _mesh.lookupClass<Foam::volVectorField>())
-  {
-    loadOneVectorField(*field);
-  }
-}
-
-void
-FoamDataStore::storeTime(Hippo::FoamSolver & solver)
-{
-  _cur_time.timeIndex = solver.currentTimeIdx();
-  _cur_time.deltaT = solver.getTimeDelta();
-  _cur_time.time = solver.currentTime();
-  printf("Saved time: %d, %lf, %lf.", _cur_time.timeIndex, _cur_time.time, _cur_time.deltaT);
-  fflush(stdout);
-}
-
-void
-FoamDataStore::loadTime(Hippo::FoamSolver & solver)
-{
-  solver.setCurrentTime(_cur_time.time);
-  solver.setTimeDelta(_cur_time.deltaT);
-  solver.setCurrentTimeIdx(_cur_time.timeIndex);
-  printf("Loaded time: %d, %lf, %lf.",
-         solver.currentTimeIdx(),
-         solver.currentTime(),
-         solver.getTimeDelta());
-  fflush(stdout);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DataIO.h"
+#include "fvMesh.H"
 #include "solver.H"
 #include "functionObject.H"
 
@@ -7,6 +9,7 @@
 #include <TimeState.H>
 #include <filesystem>
 #include <vector>
+#include <map>
 
 namespace fs = std::filesystem;
 
@@ -39,13 +42,76 @@ public:
 }
 }
 
+struct FoamTimeState
+{
+  Foam::label timeIndex;
+  Foam::scalar time;
+  Foam::scalar deltaT;
+};
+
+class FoamSolver;
+
+class FoamDataStore
+{
+public:
+  FoamDataStore() = delete;
+  FoamDataStore(Foam::fvMesh & mesh);
+  void storeFields();
+  void loadCurrentFields();
+  void loadOldFields();
+  void storeTime(Foam::Time & time);
+  void loadTime(Foam::Time & time);
+  void invalidateFields()
+  {
+    _current_loaded = false;
+    _old_loaded = false;
+  }
+  bool checkInternalField(const Foam::volScalarField & field)
+  {
+    if (_scalar_map.find(field.name()) == _scalar_map.end())
+      return true;
+
+    std::vector<Foam::scalar> copy_internal_field(field.internalField().size());
+    std::vector<Foam::scalar> internal_field(field.internalField().size());
+
+    std::copy(
+        field.internalField().begin(), field.internalField().end(), copy_internal_field.begin());
+    std::copy(_scalar_map[field.name()].begin(),
+              _scalar_map[field.name()].begin() + field.internalField().size(),
+              internal_field.begin());
+
+    return internal_field == copy_internal_field;
+  }
+
+private:
+  Foam::fvMesh & _mesh;
+
+  inline int64_t _get_field_size() const;
+  inline int64_t _get_buffer_size() const;
+  void storeOneScalarField(const Foam::volScalarField & field);
+  void storeOneVectorField(const Foam::volVectorField & field);
+
+  void loadOneScalarField(Foam::volScalarField & field);
+  void loadOneVectorField(Foam::volVectorField & field);
+
+  FoamTimeState _cur_time;
+  std::map<std::string, std::vector<Foam::scalar>> _scalar_map;
+  std::map<std::string, std::vector<Foam::Vector<Foam::scalar>>> _vector_map;
+  bool _current_loaded = true;
+  bool _old_loaded = true;
+  friend inline void dataStore(std::ostream & stream, FoamDataStore & s, void * context);
+  friend inline void dataLoad(std::istream & stream, FoamDataStore & s, void * context);
+};
+
 namespace Hippo
 {
-
 class FoamSolver
 {
 public:
-  explicit FoamSolver(Foam::solver * solver) : _solver(solver) {}
+  explicit FoamSolver(Foam::solver * solver)
+    : _solver(solver), _data_backup(const_cast<Foam::fvMesh &>(_solver->mesh))
+  {
+  }
 
   // Run a timestep of the OpenFOAM solver.
   void run();
@@ -99,12 +165,74 @@ public:
     runTime().setTime(time, idx);
     runTime().readModifiedObjects();
   }
+  void backupData()
+  {
+    _data_backup.storeTime(runTime());
+    _data_backup.storeFields();
+  }
+  void restoreData()
+  {
+    _data_backup.loadTime(runTime());
+    _data_backup.invalidateFields();
+    _data_backup.loadCurrentFields();
+  }
 
 private:
   Foam::solver * _solver = nullptr;
 
   Foam::Time & runTime() { return const_cast<Foam::Time &>(_solver->runTime); }
   const Foam::Time & runTime() const { return const_cast<Foam::Time &>(_solver->runTime); }
+  FoamDataStore _data_backup;
 };
 
 } // namespace Hippo
+
+template <typename T>
+inline void
+dataStore(std::ostream & stream, Foam::Vector<T> & s, void * context)
+{
+  storeHelper(stream, s.x(), context);
+  storeHelper(stream, s.y(), context);
+  storeHelper(stream, s.z(), context);
+}
+
+template <typename T>
+inline void
+dataLoad(std::ostream & stream, Foam::Vector<T> & s, void * context)
+{
+  loadHelper(stream, s.x(), context);
+  loadHelper(stream, s.y(), context);
+  loadHelper(stream, s.z(), context);
+}
+
+inline void
+dataStore(std::ostream & stream, FoamTimeState & s, void * context)
+{
+  storeHelper(stream, s.time, context);
+  storeHelper(stream, s.deltaT, context);
+  storeHelper(stream, s.timeIndex, context);
+}
+
+inline void
+dataLoad(std::istream & stream, FoamTimeState & s, void * context)
+{
+  loadHelper(stream, s.time, context);
+  loadHelper(stream, s.deltaT, context);
+  loadHelper(stream, s.timeIndex, context);
+}
+
+inline void
+dataStore(std::ostream & stream, FoamDataStore & s, void * context)
+{
+  storeHelper(stream, s._scalar_map, context);
+  storeHelper(stream, s._vector_map, context);
+  storeHelper(stream, s._cur_time, context);
+}
+
+inline void
+dataLoad(std::istream & stream, FoamDataStore & s, void * context)
+{
+  loadHelper(stream, s._scalar_map, context);
+  loadHelper(stream, s._vector_map, context);
+  loadHelper(stream, s._cur_time, context);
+}
