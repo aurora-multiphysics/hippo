@@ -104,6 +104,8 @@ FoamSolver::run()
   time++;
 
   _data_backup.loadOldFields();
+  if (time.timeIndex() > 1)
+    assert(_data_backup.checkField(_solver->mesh.lookupObject<Foam::volScalarField>("h")));
 
   // TODO: replace std::cout with MOOSE output or a dependency-injected stream.
   std::cout << "Time = " << time.userTimeName() << "\n" << std::endl;
@@ -129,6 +131,9 @@ FoamSolver::run()
             << "  ClockTime = " << time.elapsedClockTime() << " s"
             << "\n"
             << std::endl;
+
+  if (time.timeIndex() > 1)
+    assert(_data_backup.checkField(_solver->mesh.lookupObject<Foam::volScalarField>("h_0")));
 }
 
 std::size_t
@@ -265,9 +270,9 @@ FoamDataStore::_get_field_size() const
 }
 
 void
-FoamDataStore::storeOneScalarField(const Foam::volScalarField & field)
+FoamDataStore::storeOneScalarField(const Foam::volScalarField & field,
+                                   std::vector<Foam::scalar>::iterator & it)
 {
-  auto it = _scalar_map[field.name()].begin();
   auto const & values = field.internalField();
   for (auto i = 0; i < _mesh.nCells(); ++i)
   {
@@ -287,9 +292,9 @@ FoamDataStore::storeOneScalarField(const Foam::volScalarField & field)
 }
 
 void
-FoamDataStore::storeOneVectorField(const Foam::volVectorField & field)
+FoamDataStore::storeOneVectorField(const Foam::volVectorField & field,
+                                   std::vector<Foam::Vector<Foam::scalar>>::iterator & it)
 {
-  auto it = _vector_map[field.name()].begin();
   auto const & values = field.internalField();
   for (auto i = 0; i < _mesh.nCells(); ++i)
   {
@@ -366,15 +371,20 @@ FoamDataStore::storeFields()
   {
     _scalar_map[field.name()].resize(_get_field_size());
     std::cout << "Saved scalar fields: " << field.name() << std::endl;
-    storeOneScalarField(field);
+    auto it = _scalar_map[field.name()].begin();
+    storeOneScalarField(field, it);
   }
 
   for (auto & field : _mesh.fields<Foam::volVectorField>())
   {
     _vector_map[field.name()].resize(_get_field_size());
     std::cout << "Saved vector fields: " << field.name() << std::endl;
-    storeOneVectorField(field);
+    auto it = _vector_map[field.name()].begin();
+
+    storeOneVectorField(field, it);
   }
+  _current_loaded = false;
+  _old_loaded = false;
 }
 
 void
@@ -412,8 +422,12 @@ FoamDataStore::loadOldFields()
   if (_old_loaded)
     return;
 
-  std::cout << "Time: " << _mesh.time().userTimeValue()
-            << ". Time index: " << _mesh.time().timeIndex() << std::endl;
+  for (auto & field : _mesh.fields<Foam::volScalarField>())
+  {
+    if (!field.isOldTime())
+      field.storeOldTimes();
+  }
+
   for (auto & field : _mesh.fields<Foam::volScalarField>())
   {
     if (field.isOldTime())
@@ -423,6 +437,11 @@ FoamDataStore::loadOldFields()
     }
   }
 
+  for (auto & field : _mesh.fields<Foam::volVectorField>())
+  {
+    if (!field.isOldTime())
+      field.storeOldTimes();
+  }
   for (auto & field : _mesh.fields<Foam::volVectorField>())
   {
     if (field.isOldTime())

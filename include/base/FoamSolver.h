@@ -2,6 +2,7 @@
 
 #include "DataIO.h"
 #include "fvMesh.H"
+#include "scalar.H"
 #include "solver.H"
 #include "functionObject.H"
 
@@ -66,21 +67,16 @@ public:
     _current_loaded = false;
     _old_loaded = false;
   }
-  bool checkInternalField(const Foam::volScalarField & field)
+  bool checkField(const Foam::volScalarField & field)
   {
     if (_scalar_map.find(field.name()) == _scalar_map.end())
       return true;
 
-    std::vector<Foam::scalar> copy_internal_field(field.internalField().size());
-    std::vector<Foam::scalar> internal_field(field.internalField().size());
+    std::vector<Foam::scalar> copy_field(_get_field_size());
+    auto it = copy_field.begin();
+    storeOneScalarField(field, it);
 
-    std::copy(
-        field.internalField().begin(), field.internalField().end(), copy_internal_field.begin());
-    std::copy(_scalar_map[field.name()].begin(),
-              _scalar_map[field.name()].begin() + field.internalField().size(),
-              internal_field.begin());
-
-    return internal_field == copy_internal_field;
+    return copy_field == _scalar_map[field.name()];
   }
 
 private:
@@ -88,8 +84,10 @@ private:
 
   inline int64_t _get_field_size() const;
   inline int64_t _get_buffer_size() const;
-  void storeOneScalarField(const Foam::volScalarField & field);
-  void storeOneVectorField(const Foam::volVectorField & field);
+  void storeOneScalarField(const Foam::volScalarField & field,
+                           std::vector<Foam::scalar>::iterator & it);
+  void storeOneVectorField(const Foam::volVectorField & field,
+                           std::vector<Foam::Vector<Foam::scalar>>::iterator & it);
 
   void loadOneScalarField(Foam::volScalarField & field);
   void loadOneVectorField(Foam::volVectorField & field);
