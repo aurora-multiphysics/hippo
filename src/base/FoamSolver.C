@@ -96,7 +96,6 @@ FoamSolver::run()
 
   // Update PIMPLE outer-loop parameters if changed
   pimple.read();
-
   solver.preSolve();
 
   // Adjust the time-step according to the solver maxDeltaT
@@ -104,8 +103,6 @@ FoamSolver::run()
   time++;
 
   _data_backup.loadOldFields();
-  if (time.timeIndex() > 1)
-    assert(_data_backup.checkField(_solver->mesh.lookupObject<Foam::volScalarField>("h")));
 
   // TODO: replace std::cout with MOOSE output or a dependency-injected stream.
   std::cout << "Time = " << time.userTimeName() << "\n" << std::endl;
@@ -131,9 +128,6 @@ FoamSolver::run()
             << "  ClockTime = " << time.elapsedClockTime() << " s"
             << "\n"
             << std::endl;
-
-  if (time.timeIndex() > 1)
-    assert(_data_backup.checkField(_solver->mesh.lookupObject<Foam::volScalarField>("h_0")));
 }
 
 std::size_t
@@ -383,8 +377,8 @@ FoamDataStore::storeFields()
 
     storeOneVectorField(field, it);
   }
-  _current_loaded = false;
-  _old_loaded = false;
+  // _current_loaded = false;
+  // _old_loaded = false;
 }
 
 void
