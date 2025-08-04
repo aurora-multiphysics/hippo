@@ -27,9 +27,9 @@
 
 [FoamBCs]
     [foam_heat_flux_bc]
+        type = FoamFixedGradientBC
         # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
         moose_variable = solid_heat_flux
-        foam_bc_type = fixedGradient
     []
 []
 
