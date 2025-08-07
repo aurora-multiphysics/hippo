@@ -6,13 +6,11 @@
 #include "solver.H"
 #include "functionObject.H"
 #include "volFieldsFwd.H"
-#include "surfaceMesh.H"
 
 #include <Time.H>
 #include <TimeState.H>
 #include <filesystem>
 #include <vector>
-#include <map>
 
 namespace fs = std::filesystem;
 
@@ -60,16 +58,9 @@ public:
   FoamDataStore() = delete;
   FoamDataStore(Foam::fvMesh & mesh);
   void storeFields();
-  void loadCurrentFields();
-  void loadOldFields();
+  void loadFields();
   void storeTime(Foam::Time & time);
   void loadTime(Foam::Time & time);
-
-  void invalidateFields()
-  {
-    _current_loaded = false;
-    _old_loaded = false;
-  }
 
   bool checkField(const Foam::volScalarField & field1, const Foam::volScalarField & field2)
   {
@@ -100,9 +91,6 @@ private:
                            std::vector<Foam::scalar>::iterator & it);
   void storeOneVectorField(const Foam::volVectorField & field,
                            std::vector<Foam::Vector<Foam::scalar>>::iterator & it);
-
-  void loadOneScalarField(Foam::volScalarField & field);
-  void loadOneVectorField(Foam::volVectorField & field);
   template <typename T>
   void loadField(std::vector<T *> & field_vector, std::vector<T *> & field_vector_copy);
   template <typename T>
@@ -118,8 +106,6 @@ private:
   std::vector<Foam::volTensorField *> volTensorFieldsCopy_;
   std::vector<Foam::volSymmTensorField *> volSymmTensorFieldsCopy_;
 
-  bool _current_loaded = true;
-  bool _old_loaded = true;
   friend inline void dataStore(std::ostream & stream, FoamDataStore & s, void * context);
   friend inline void dataLoad(std::istream & stream, FoamDataStore & s, void * context);
 };
@@ -194,8 +180,7 @@ public:
   void restoreData()
   {
     _data_backup.loadTime(runTime());
-    _data_backup.invalidateFields();
-    _data_backup.loadCurrentFields();
+    _data_backup.loadFields();
   }
 
 private:
