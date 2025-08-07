@@ -5,6 +5,8 @@
 #include "scalar.H"
 #include "solver.H"
 #include "functionObject.H"
+#include "volFieldsFwd.H"
+#include "surfaceMesh.H"
 
 #include <Time.H>
 #include <TimeState.H>
@@ -62,27 +64,37 @@ public:
   void loadOldFields();
   void storeTime(Foam::Time & time);
   void loadTime(Foam::Time & time);
+
   void invalidateFields()
   {
     _current_loaded = false;
     _old_loaded = false;
   }
-  bool checkField(const Foam::volScalarField & field)
+
+  bool checkField(const Foam::volScalarField & field1, const Foam::volScalarField & field2)
   {
-    if (_scalar_map.find(field.name()) == _scalar_map.end())
-      return true;
+    std::vector<Foam::scalar> copy_field1(_get_field_size());
+    std::vector<Foam::scalar> copy_field2(_get_field_size());
+    auto it1 = copy_field1.begin();
+    storeOneScalarField(field1, it1);
+    auto it2 = copy_field2.begin();
+    storeOneScalarField(field2, it2);
 
-    std::vector<Foam::scalar> copy_field(_get_field_size());
-    auto it = copy_field.begin();
-    storeOneScalarField(field, it);
-
-    return copy_field == _scalar_map[field.name()];
+    return copy_field1 == copy_field2;
   }
 
 private:
   Foam::fvMesh & _mesh;
 
-  inline int64_t _get_field_size() const;
+  inline int64_t _get_field_size() const
+  {
+    int64_t size = _mesh.nCells();
+    for (const auto & patch : _mesh.boundary())
+    {
+      size += patch.size();
+    }
+    return size;
+  }
   inline int64_t _get_buffer_size() const;
   void storeOneScalarField(const Foam::volScalarField & field,
                            std::vector<Foam::scalar>::iterator & it);
@@ -91,10 +103,21 @@ private:
 
   void loadOneScalarField(Foam::volScalarField & field);
   void loadOneVectorField(Foam::volVectorField & field);
+  template <typename T>
+  void loadField(std::vector<T *> & field_vector, std::vector<T *> & field_vector_copy);
+  template <typename T>
+  void storeField(std::vector<T *> & field_vector, std::vector<T *> & field_vector_copy);
 
   FoamTimeState _cur_time;
-  std::map<std::string, std::vector<Foam::scalar>> _scalar_map;
-  std::map<std::string, std::vector<Foam::Vector<Foam::scalar>>> _vector_map;
+  std::vector<Foam::volScalarField *> volScalarFields_;
+  std::vector<Foam::volVectorField *> volVectorFields_;
+  std::vector<Foam::volTensorField *> volTensorFields_;
+  std::vector<Foam::volSymmTensorField *> volSymmTensorFields_;
+  std::vector<Foam::volScalarField *> volScalarFieldsCopy_;
+  std::vector<Foam::volVectorField *> volVectorFieldsCopy_;
+  std::vector<Foam::volTensorField *> volTensorFieldsCopy_;
+  std::vector<Foam::volSymmTensorField *> volSymmTensorFieldsCopy_;
+
   bool _current_loaded = true;
   bool _old_loaded = true;
   friend inline void dataStore(std::ostream & stream, FoamDataStore & s, void * context);
@@ -219,18 +242,18 @@ dataLoad(std::istream & stream, FoamTimeState & s, void * context)
   loadHelper(stream, s.timeIndex, context);
 }
 
-inline void
-dataStore(std::ostream & stream, FoamDataStore & s, void * context)
-{
-  storeHelper(stream, s._scalar_map, context);
-  storeHelper(stream, s._vector_map, context);
-  storeHelper(stream, s._cur_time, context);
-}
+// inline void
+// dataStore(std::ostream & stream, FoamDataStore & s, void * context)
+// {
+//   storeHelper(stream, s._scalar_map, context);
+//   storeHelper(stream, s._vector_map, context);
+//   storeHelper(stream, s._cur_time, context);
+// }
 
-inline void
-dataLoad(std::istream & stream, FoamDataStore & s, void * context)
-{
-  loadHelper(stream, s._scalar_map, context);
-  loadHelper(stream, s._vector_map, context);
-  loadHelper(stream, s._cur_time, context);
-}
+// inline void
+// dataLoad(std::istream & stream, FoamDataStore & s, void * context)
+// {
+//   loadHelper(stream, s._scalar_map, context);
+//   loadHelper(stream, s._vector_map, context);
+//   loadHelper(stream, s._cur_time, context);
+// }
