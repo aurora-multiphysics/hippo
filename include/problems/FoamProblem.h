@@ -2,6 +2,7 @@
 
 #include "FoamMesh.h"
 #include "FoamSolver.h"
+#include "FoamDataStore.h"
 
 #include <ExternalProblem.h>
 #include <MooseTypes.h>
@@ -52,4 +53,5 @@ protected:
   Hippo::FoamSolver _solver;
   double _curr_time;
   int _curr_time_idx;
+  FoamDataStore _data_backup;
 };

@@ -69,7 +69,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
     _solver(Foam::solver::New(_foam_mesh->fvMesh().time().controlDict().lookupOrDefault<Foam::word>(
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
-                .ptr())
+                .ptr()),
+    _data_backup(_foam_mesh->fvMesh())
 {
   assert(_foam_mesh);
 
@@ -129,13 +130,15 @@ FoamProblem::externalSolve()
 void
 FoamProblem::saveState()
 {
-  _solver.backupData();
+  _data_backup.storeTime(const_cast<Foam::Time &>(_foam_mesh->fvMesh().time()));
+  _data_backup.storeFields();
 }
 
 void
 FoamProblem::loadState()
 {
-  _solver.restoreData();
+  _data_backup.loadTime(const_cast<Foam::Time &>(_foam_mesh->fvMesh().time()));
+  _data_backup.loadFields();
 }
 
 void
