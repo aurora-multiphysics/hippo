@@ -1,8 +1,12 @@
 #pragma once
 
 #include "DataIO.h"
+#include "IOstream.H"
+#include "IStringStream.H"
+#include "Istream.H"
 #include "fvMesh.H"
 #include "volFields.H"
+#include "volFieldsFwd.H"
 #include <vector>
 
 struct FoamTimeState
@@ -104,18 +108,71 @@ dataLoad(std::istream & stream, FoamTimeState & s, void * context)
   loadHelper(stream, s.timeIndex, context);
 }
 
-// inline void
-// dataStore(std::ostream & stream, FoamDataStore & s, void * context)
-// {
-//   storeHelper(stream, s._scalar_map, context);
-//   storeHelper(stream, s._vector_map, context);
-//   storeHelper(stream, s._cur_time, context);
-// }
+template <typename T>
+void
+dataStore(std::ostream & stream, std::vector<Foam::VolField<T> *> & s, void * context)
+{
+  Foam::OStringStream oss(Foam::IOstream::ASCII);
+  for (auto field : s)
+    oss << *field;
+  std::string data_str{oss.str()};
 
-// inline void
-// dataLoad(std::istream & stream, FoamDataStore & s, void * context)
-// {
-//   loadHelper(stream, s._scalar_map, context);
-//   loadHelper(stream, s._vector_map, context);
-//   loadHelper(stream, s._cur_time, context);
-// }
+  storeHelper(stream, data_str, context);
+}
+
+template <typename T>
+void
+dataLoad(std::istream & stream, std::vector<Foam::VolField<T> *> & s, void * context)
+{
+  std::string data_str;
+  loadHelper(stream, data_str, context);
+
+  Foam::IStringStream iss(data_str, Foam::IOstream::ASCII);
+  for (auto & field : s)
+    iss >> *field;
+}
+
+inline void
+dataStore(std::ostream & stream, FoamDataStore & s, void * context)
+{
+  Foam::OStringStream oss(Foam::IOstream::BINARY);
+  for (auto field : s.volScalarFields_)
+    oss << *field;
+  std::string data_str{oss.str()};
+
+  storeHelper(stream, data_str, context);
+  // storeHelper(stream, s.volScalarFields_, context);
+  // storeHelper(stream, s.volScalarFieldsCopy_, context);
+  // storeHelper(stream, s.volVectorFields_, context);
+  // storeHelper(stream, s.volVectorFieldsCopy_, context);
+  // storeHelper(stream, s.volTensorFields_, context);
+  // storeHelper(stream, s.volTensorFieldsCopy_, context);
+  // storeHelper(stream, s.volSymmTensorFields_, context);
+  // storeHelper(stream, s.volSymmTensorFieldsCopy_, context);
+  // storeHelper(stream, s._cur_time, context);
+}
+
+inline Foam::Istream &
+operator>>(Foam::Istream & is, Foam::volScalarField & field)
+{
+  return is;
+}
+inline void
+dataLoad(std::istream & stream, FoamDataStore & s, void * context)
+{
+  std::string data_str;
+  loadHelper(stream, data_str, context);
+
+  Foam::IStringStream iss{Foam::string(data_str), Foam::IOstream::BINARY};
+  for (auto & field : s.volScalarFields_)
+    iss >> *field;
+  // loadHelper(stream, s.volScalarFields_, context);
+  // loadHelper(stream, s.volScalarFieldsCopy_, context);
+  // loadHelper(stream, s.volVectorFields_, context);
+  // loadHelper(stream, s.volVectorFieldsCopy_, context);
+  // loadHelper(stream, s.volTensorFields_, context);
+  // loadHelper(stream, s.volTensorFieldsCopy_, context);
+  // loadHelper(stream, s.volSymmTensorFields_, context);
+  // loadHelper(stream, s.volSymmTensorFieldsCopy_, context);
+  // loadHelper(stream, s._cur_time, context);
+}

@@ -13,6 +13,7 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
+#include "Restartable.h"
 
 #include <IOobjectList.H>
 #include <volFields.H>
@@ -70,7 +71,7 @@ FoamProblem::FoamProblem(InputParameters const & params)
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
                 .ptr()),
-    _data_backup(_foam_mesh->fvMesh())
+    _data_backup(declareRecoverableData<FoamDataStore>("data_backup", _foam_mesh->fvMesh()))
 {
   assert(_foam_mesh);
 

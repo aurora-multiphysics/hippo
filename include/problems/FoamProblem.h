@@ -53,5 +53,5 @@ protected:
   Hippo::FoamSolver _solver;
   double _curr_time;
   int _curr_time_idx;
-  FoamDataStore _data_backup;
+  FoamDataStore & _data_backup;
 };
