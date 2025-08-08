@@ -114,26 +114,37 @@ dataLoad(std::istream & stream, FoamTimeState & s, void * context)
 
 template <typename T>
 void
-dataStore(std::ostream & stream, std::vector<Foam::VolField<T> *> & s, void * context)
+dataStore(std::ostream & stream, std::vector<Foam::VolField<T> *> & field_vec, void * context)
 {
-  Foam::OStringStream oss(Foam::IOstream::ASCII);
-  for (auto field : s)
+  std::vector<std::pair<std::string, std::string>> data_vec;
+  for (auto & field : field_vec)
+  {
+    Foam::OStringStream oss(Foam::IOstream::ASCII);
     oss << *field;
-  std::string data_str{oss.str()};
+    data_vec.push_back(std::pair(field->name(), oss.str()));
+  }
 
-  storeHelper(stream, data_str, context);
+  storeHelper(stream, data_vec, context);
 }
 
 template <typename T>
 void
-dataLoad(std::istream & stream, std::vector<Foam::VolField<T> *> & s, void * context)
+dataLoad(std::istream & stream, std::vector<Foam::VolField<T> *> & field_vec, void * context)
 {
-  std::string data_str;
-  loadHelper(stream, data_str, context);
+  std::vector<std::pair<std::string, std::string>> data_vec;
+  loadHelper(stream, data_vec, context);
+  std::vector<Foam::VolField<T> *> new_data;
+  for (auto & data : data_vec)
+  {
+    Foam::IStringStream iss{Foam::string(data.second), Foam::IOstream::ASCII};
+    new_data.push_back(new Foam::VolField<T>{
+        Foam::IOobject{data.first, field_vec[0]->mesh()},
+        field_vec[0]->mesh(),
+        Foam::dictionary(iss),
+    });
+  }
 
-  Foam::IStringStream iss(data_str, Foam::IOstream::ASCII);
-  for (auto & field : s)
-    iss >> *field;
+  field_vec = new_data;
 }
 
 inline void
@@ -143,30 +154,12 @@ dataStore(std::ostream & stream, FoamDataStore & s, void * context)
   fflush(stdout);
   storeHelper(stream, s._cur_time, context);
   std::vector<std::pair<std::string, std::string>> data_vec;
-  for (auto & field : s.volScalarFieldsCopy_)
-  {
-    Foam::OStringStream oss(Foam::IOstream::ASCII);
-    oss << *field;
-    data_vec.push_back(std::pair(field->name(), oss.str()));
-  }
 
-  storeHelper(stream, data_vec, context);
-  std::ofstream ofs("geometric_fields_in.txt", std::ios::out | std::ios::trunc);
-  for (auto & data : data_vec)
-  {
-    ofs << data.first << std::endl;
-    ofs << data.second << std::endl;
-  }
-  ofs.close();
   // storeHelper(stream, s.volScalarFields_, context);
-  // storeHelper(stream, s.volScalarFieldsCopy_, context);
-  // storeHelper(stream, s.volVectorFields_, context);
-  // storeHelper(stream, s.volVectorFieldsCopy_, context);
-  // storeHelper(stream, s.volTensorFields_, context);
-  // storeHelper(stream, s.volTensorFieldsCopy_, context);
-  // storeHelper(stream, s.volSymmTensorFields_, context);
-  // storeHelper(stream, s.volSymmTensorFieldsCopy_, context);
-  // storeHelper(stream, s._cur_time, context);
+  dataStore(stream, s.volScalarFieldsCopy_, context);
+  dataStore(stream, s.volVectorFieldsCopy_, context);
+  dataStore(stream, s.volTensorFieldsCopy_, context);
+  dataStore(stream, s.volSymmTensorFieldsCopy_, context);
 }
 
 inline void
@@ -176,43 +169,10 @@ dataLoad(std::istream & stream, FoamDataStore & s, void * context)
   fflush(stdout);
 
   loadHelper(stream, s._cur_time, context);
-  std::vector<std::pair<std::string, std::string>> data_vec;
-  loadHelper(stream, data_vec, context);
-  std::vector<Foam::volScalarField *> new_data;
-  for (auto & data : data_vec)
-  {
-    Foam::IStringStream iss{Foam::string(data.second), Foam::IOstream::ASCII};
-    new_data.push_back(new Foam::volScalarField{
-        Foam::IOobject{data.first, s._mesh},
-        s._mesh,
-        Foam::dictionary(iss),
-    });
-  }
-  // assert(s.volScalarFieldsCopy_ == new_data);
-  s.volScalarFieldsCopy_ = std::move(new_data);
-
-  std::vector<std::pair<std::string, std::string>> data_vec_;
-  for (auto & field : s.volScalarFieldsCopy_)
-  {
-    Foam::OStringStream oss(Foam::IOstream::ASCII);
-    oss << *field;
-    data_vec_.push_back(std::pair(field->name(), oss.str()));
-  }
-  std::ofstream ofs("geometric_fields_out.txt", std::ios::out | std::ios::trunc);
-  for (auto & data : data_vec_)
-  {
-    ofs << data.first << std::endl;
-    ofs << data.second << std::endl;
-  }
-  ofs.close();
 
   // loadHelper(stream, s.volScalarFields_, context);
-  // loadHelper(stream, s.volScalarFieldsCopy_, context);
-  // loadHelper(stream, s.volVectorFields_, context);
-  // loadHelper(stream, s.volVectorFieldsCopy_, context);
-  // loadHelper(stream, s.volTensorFields_, context);
-  // loadHelper(stream, s.volTensorFieldsCopy_, context);
-  // loadHelper(stream, s.volSymmTensorFields_, context);
-  // loadHelper(stream, s.volSymmTensorFieldsCopy_, context);
-  // loadHelper(stream, s._cur_time, context);
+  dataLoad(stream, s.volScalarFieldsCopy_, context);
+  dataLoad(stream, s.volVectorFieldsCopy_, context);
+  dataLoad(stream, s.volTensorFieldsCopy_, context);
+  dataLoad(stream, s.volSymmTensorFieldsCopy_, context);
 }
