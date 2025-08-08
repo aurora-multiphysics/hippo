@@ -2,6 +2,7 @@
 
 #include "FoamMesh.h"
 #include "FoamSolver.h"
+#include "FoamDataStore.h"
 
 #include <ExternalProblem.h>
 #include <MooseTypes.h>
@@ -22,6 +23,12 @@ public:
   using ExternalProblem::mesh;
   virtual FoamMesh const & mesh() const override { return *_foam_mesh; }
   virtual FoamMesh & mesh() override { return *_foam_mesh; }
+
+  /// Save the current state of the OpenFOAM solve.
+  void saveState();
+
+  /// Load the saved state of the OpenFOAM solve.
+  void loadState();
 
   enum class SyncVariables
   {
@@ -44,4 +51,7 @@ public:
 protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
+  double _curr_time;
+  int _curr_time_idx;
+  FoamDataStore & _data_backup;
 };

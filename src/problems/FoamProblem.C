@@ -1,6 +1,9 @@
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
+#include "TimeState.H"
+#include "volFieldsFwd.H"
+#include "word.H"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
@@ -10,6 +13,10 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
+#include "Restartable.h"
+
+#include <IOobjectList.H>
+#include <volFields.H>
 
 registerMooseObject("hippoApp", FoamProblem);
 
@@ -60,7 +67,11 @@ FoamProblem::validParams()
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
-    _solver(Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr())
+    _solver(Foam::solver::New(_foam_mesh->fvMesh().time().controlDict().lookupOrDefault<Foam::word>(
+                                  "solver", "fluid"),
+                              _foam_mesh->fvMesh())
+                .ptr()),
+    _data_backup(declareRecoverableData<FoamDataStore>("data_backup", _foam_mesh->fvMesh()))
 {
   assert(_foam_mesh);
 
@@ -115,6 +126,20 @@ FoamProblem::externalSolve()
     _solver.setTimeDelta(_dt); // Needed for constant deltaT cases
     _solver.run();
   }
+}
+
+void
+FoamProblem::saveState()
+{
+  _data_backup.storeTime(const_cast<Foam::Time &>(_foam_mesh->fvMesh().time()));
+  _data_backup.storeFields();
+}
+
+void
+FoamProblem::loadState()
+{
+  _data_backup.loadTime(const_cast<Foam::Time &>(_foam_mesh->fvMesh().time()));
+  _data_backup.loadFields();
 }
 
 void
@@ -196,7 +221,7 @@ FoamProblem::syncFromOpenFoam()
   // The number of elements in each subdomain of the mesh
   // Allocate an extra element as we'll accumulate these counts later
   std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
-  for (auto i = 0U; i < subdomains.size(); ++i)
+  for (auto i = 0.; i < subdomains.size(); ++i)
   {
     if constexpr (transfer_wall_temp)
     {
@@ -213,7 +238,7 @@ FoamProblem::syncFromOpenFoam()
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  for (auto i = 0U; i < subdomains.size(); ++i)
+  for (auto i = 0.; i < subdomains.size(); ++i)
   {
     // Set the face temperatures on the MOOSE mesh
     for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
@@ -275,7 +300,7 @@ FoamProblem::syncToOpenFoam()
   // The number of elements in each subdomain of the mesh
   // Allocate an extra element as we'll accumulate these counts later
   std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
-  for (auto i = 0U; i < subdomains.size(); ++i)
+  for (auto i = 0.; i < subdomains.size(); ++i)
   {
     patch_counts[i] = _solver.patchSize(subdomains[i]);
   }
@@ -284,7 +309,7 @@ FoamProblem::syncToOpenFoam()
   // Retrieve the values from MOOSE for each boundary we're transferring across.
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  for (auto i = 0U; i < subdomains.size(); ++i)
+  for (auto i = 0.; i < subdomains.size(); ++i)
   {
     // Vectors to hold quantities copied from MOOSE mesh.
     std::vector<double> moose_T;
