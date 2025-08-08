@@ -1,12 +1,16 @@
 #pragma once
 
 #include "DataIO.h"
+#include "IOobject.H"
 #include "IOstream.H"
 #include "IStringStream.H"
 #include "Istream.H"
+#include "dictionary.H"
 #include "fvMesh.H"
 #include "volFields.H"
 #include "volFieldsFwd.H"
+#include <fstream>
+#include <ostream>
 #include <vector>
 
 struct FoamTimeState
@@ -135,12 +139,25 @@ dataLoad(std::istream & stream, std::vector<Foam::VolField<T> *> & s, void * con
 inline void
 dataStore(std::ostream & stream, FoamDataStore & s, void * context)
 {
-  Foam::OStringStream oss(Foam::IOstream::BINARY);
-  for (auto field : s.volScalarFields_)
+  printf("Data store being called!\n");
+  fflush(stdout);
+  storeHelper(stream, s._cur_time, context);
+  std::vector<std::pair<std::string, std::string>> data_vec;
+  for (auto & field : s.volScalarFieldsCopy_)
+  {
+    Foam::OStringStream oss(Foam::IOstream::ASCII);
     oss << *field;
-  std::string data_str{oss.str()};
+    data_vec.push_back(std::pair(field->name(), oss.str()));
+  }
 
-  storeHelper(stream, data_str, context);
+  storeHelper(stream, data_vec, context);
+  std::ofstream ofs("geometric_fields_in.txt", std::ios::out | std::ios::trunc);
+  for (auto & data : data_vec)
+  {
+    ofs << data.first << std::endl;
+    ofs << data.second << std::endl;
+  }
+  ofs.close();
   // storeHelper(stream, s.volScalarFields_, context);
   // storeHelper(stream, s.volScalarFieldsCopy_, context);
   // storeHelper(stream, s.volVectorFields_, context);
@@ -152,20 +169,43 @@ dataStore(std::ostream & stream, FoamDataStore & s, void * context)
   // storeHelper(stream, s._cur_time, context);
 }
 
-inline Foam::Istream &
-operator>>(Foam::Istream & is, Foam::volScalarField & field)
-{
-  return is;
-}
 inline void
 dataLoad(std::istream & stream, FoamDataStore & s, void * context)
 {
-  std::string data_str;
-  loadHelper(stream, data_str, context);
+  printf("Data load being called!\n");
+  fflush(stdout);
 
-  Foam::IStringStream iss{Foam::string(data_str), Foam::IOstream::BINARY};
-  for (auto & field : s.volScalarFields_)
-    iss >> *field;
+  loadHelper(stream, s._cur_time, context);
+  std::vector<std::pair<std::string, std::string>> data_vec;
+  loadHelper(stream, data_vec, context);
+  std::vector<Foam::volScalarField *> new_data;
+  for (auto & data : data_vec)
+  {
+    Foam::IStringStream iss{Foam::string(data.second), Foam::IOstream::ASCII};
+    new_data.push_back(new Foam::volScalarField{
+        Foam::IOobject{data.first, s._mesh},
+        s._mesh,
+        Foam::dictionary(iss),
+    });
+  }
+  // assert(s.volScalarFieldsCopy_ == new_data);
+  s.volScalarFieldsCopy_ = std::move(new_data);
+
+  std::vector<std::pair<std::string, std::string>> data_vec_;
+  for (auto & field : s.volScalarFieldsCopy_)
+  {
+    Foam::OStringStream oss(Foam::IOstream::ASCII);
+    oss << *field;
+    data_vec_.push_back(std::pair(field->name(), oss.str()));
+  }
+  std::ofstream ofs("geometric_fields_out.txt", std::ios::out | std::ios::trunc);
+  for (auto & data : data_vec_)
+  {
+    ofs << data.first << std::endl;
+    ofs << data.second << std::endl;
+  }
+  ofs.close();
+
   // loadHelper(stream, s.volScalarFields_, context);
   // loadHelper(stream, s.volScalarFieldsCopy_, context);
   // loadHelper(stream, s.volVectorFields_, context);
