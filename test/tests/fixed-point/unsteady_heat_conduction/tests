@@ -1,0 +1,21 @@
+[Tests]
+  [unsteady_1d_fixed_point]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
+    []
+    [run]
+      type = Exodiff
+      input = run.i
+      prereq = unsteady_1d_fixed_point/setup
+      exodiff = 'run_out.e'
+      requirement = 'Compare against reference results without fixed point iteration'
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = unsteady_1d_fixed_point/run
+      requirement = 'Compare against analytical solution'
+    []
+  []
+[]

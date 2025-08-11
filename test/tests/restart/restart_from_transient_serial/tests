@@ -5,7 +5,7 @@
     # 2 seconds, whereas each stage of this tests runs 1 second.
     [setup]
       type = RunCommand
-      command = '(cd buoyantCavity && ./Allclean && blockMesh)'
+      command = 'bash -c "cd buoyantCavity && ./Allclean && blockMesh"'
     []
     [first]
       type = Exodiff
