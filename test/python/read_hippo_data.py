@@ -18,7 +18,7 @@ def read_moose_exodus_data(exo_file,
         reader.node_sets.enable_all_arrays()
         reader.side_sets.enable_all_arrays()
 
-    data: pv.UnstructuredGrid = reader.read()[block].combine(True)
+    data: pv.UnstructuredGrid = reader.read()[block].combine(merge_points=True)
 
     if variable in data.point_data.keys():
         coords = data.points
