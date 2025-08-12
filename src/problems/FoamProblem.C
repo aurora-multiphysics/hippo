@@ -2,7 +2,6 @@
 #include "FoamProblem.h"
 #include "FoamSolver.h"
 #include "TimeState.H"
-#include "volFieldsFwd.H"
 #include "word.H"
 
 #include <AuxiliarySystem.h>
@@ -70,8 +69,7 @@ FoamProblem::FoamProblem(InputParameters const & params)
     _solver(Foam::solver::New(_foam_mesh->fvMesh().time().controlDict().lookupOrDefault<Foam::word>(
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
-                .ptr()),
-    _data_backup(declareRecoverableData<FoamDataStore>("data_backup", _foam_mesh->fvMesh()))
+                .ptr())
 {
   assert(_foam_mesh);
 
@@ -131,15 +129,11 @@ FoamProblem::externalSolve()
 void
 FoamProblem::saveState()
 {
-  _data_backup.storeTime(const_cast<Foam::Time &>(_foam_mesh->fvMesh().time()));
-  _data_backup.storeFields();
 }
 
 void
 FoamProblem::loadState()
 {
-  _data_backup.loadTime(const_cast<Foam::Time &>(_foam_mesh->fvMesh().time()));
-  _data_backup.loadFields();
 }
 
 void

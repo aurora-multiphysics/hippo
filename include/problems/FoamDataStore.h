@@ -1,14 +1,9 @@
 #pragma once
 
 #include "DataIO.h"
-#include "IOobject.H"
-#include "IOstream.H"
-#include "IStringStream.H"
-#include "Istream.H"
-#include "dictionary.H"
-#include "fvMesh.H"
-#include "volFields.H"
-#include "volFieldsFwd.H"
+
+#include "fvCFD_moose.h"
+
 #include <fstream>
 #include <ostream>
 #include <vector>
@@ -96,25 +91,9 @@ dataLoad(std::ostream & stream, Foam::Vector<T> & s, void * context)
   loadHelper(stream, s.z(), context);
 }
 
+template <template <typename> class FieldType, typename T>
 inline void
-dataStore(std::ostream & stream, FoamTimeState & s, void * context)
-{
-  storeHelper(stream, s.time, context);
-  storeHelper(stream, s.deltaT, context);
-  storeHelper(stream, s.timeIndex, context);
-}
-
-inline void
-dataLoad(std::istream & stream, FoamTimeState & s, void * context)
-{
-  loadHelper(stream, s.time, context);
-  loadHelper(stream, s.deltaT, context);
-  loadHelper(stream, s.timeIndex, context);
-}
-
-template <typename T>
-inline void
-outputField(std::string fname, Foam::VolField<T> & field)
+outputField(std::string fname, FieldType<T> & field)
 {
   Foam::OStringStream oss(Foam::IOstream::ASCII);
   oss << field;
@@ -134,90 +113,154 @@ outputField(std::string fname, Foam::VolField<T> & field)
   ofs.close();
 }
 
-template <typename T>
-void
-dataStore(std::ostream & stream, std::vector<Foam::VolField<T> *> & field_vec, void * context)
+template <template <typename> class FieldType, typename T>
+inline void
+dataStore(std::ostream & stream, FieldType<T> & field, void * context)
 {
-  std::vector<std::pair<std::string, std::string>> data_vec;
-  for (auto & field : field_vec)
-  {
-    Foam::OStringStream oss(Foam::IOstream::ASCII);
-    oss << *field;
-    data_vec.push_back(std::pair(field->name(), oss.str()));
+  auto nOldTimes{field.nOldTimes()};
+  storeHelper(stream, nOldTimes, context);
 
-    for (int n = 1; n <= field->nOldTimes(); ++n)
-    {
-      Foam::OStringStream oss_old(Foam::IOstream::ASCII);
-      Foam::VolField<T> old_field{field->oldTime(n)};
-      oss_old << old_field;
-      data_vec.push_back(std::pair(old_field.name(), oss_old.str()));
-    }
+  Foam::OStringStream oss(Foam::IOstream::ASCII);
+  oss << field;
+  auto store_pair{std::pair(std::string(field.name()), std::string(oss.str()))};
+  storeHelper(stream, store_pair, context);
+
+  for (int n = 1; n <= field.nOldTimes(); ++n)
+  {
+    Foam::OStringStream oss_old(Foam::IOstream::ASCII);
+    FieldType<T> old_field{field.oldTime(n)};
+    oss_old << old_field;
+    auto old_store_pair = std::pair(std::string(old_field.name()), std::string(oss_old.str()));
+    storeHelper(stream, old_store_pair, context);
+  }
+}
+
+template <template <typename> class FieldType, typename T>
+inline FieldType<T>
+dataLoad(std::istream & stream, Foam::fvMesh & foam_mesh)
+{
+
+  Foam::label nOldTimes;
+  loadHelper(stream, nOldTimes, nullptr);
+
+  std::pair<std::string, std::string> field_data;
+  loadHelper(stream, field_data, nullptr);
+
+  std::cout << "Deserialising " << field_data.first << std::endl;
+  Foam::IStringStream iss{Foam::string(field_data.second), Foam::IOstream::ASCII};
+  FieldType<T> field{
+      Foam::IOobject{field_data.first, foam_mesh},
+      foam_mesh,
+      Foam::dictionary(iss),
+  };
+
+  for (int nOld = 1; nOld <= nOldTimes; ++nOld)
+  {
+    std::pair<std::string, std::string> old_field_data;
+    loadHelper(stream, old_field_data, nullptr);
+    Foam::IStringStream iss_0{Foam::string(old_field_data.second), Foam::IOstream::ASCII};
+    field.oldTimeRef(nOld) == FieldType<T>{Foam::IOobject{old_field_data.first, foam_mesh},
+                                           foam_mesh,
+                                           Foam::dictionary(iss_0)};
+    std::cout << "-Deserialising " << old_field_data.first << ". nOld: " << nOld << std::endl;
   }
 
-  storeHelper(stream, data_vec, context);
+  return field;
 }
 
-template <typename T>
-void
-dataLoad(std::istream & stream, std::vector<Foam::VolField<T> *> & field_vec, void * context)
+template <template <typename> class FieldType, typename T>
+inline void
+storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
 {
-  std::vector<std::pair<std::string, std::string>> data_vec;
-  loadHelper(stream, data_vec, context);
-  std::vector<Foam::VolField<T> *> new_data;
-  auto it = data_vec.begin();
-  while (it != data_vec.end())
+  auto && cur_fields{mesh.curFields<FieldType<T>>()};
+  auto nFields{cur_fields.size()};
+
+  storeHelper(stream, nFields, context);
+  for (FieldType<T> & field : cur_fields)
   {
-    std::cout << "Deserialising " << it->first << std::endl;
-    Foam::IStringStream iss{Foam::string(it->second), Foam::IOstream::ASCII};
-    auto new_field = new Foam::VolField<T>{
-        Foam::IOobject{it->first, field_vec[0]->mesh()},
-        field_vec[0]->mesh(),
-        Foam::dictionary(iss),
-    };
-    new_data.push_back(new_field);
-
-    it++;
-    int nOld = 0;
-    while (it != data_vec.end() && it->first.size() > 2 &&
-           it->first.substr(it->first.size() - 2, 2) == "_0")
-    {
-      Foam::IStringStream iss_0{Foam::string(it->second), Foam::IOstream::ASCII};
-      new_field->oldTimeRef(++nOld) ==
-          Foam::VolField<T>{Foam::IOobject{it->first, field_vec[0]->mesh()},
-                            field_vec[0]->mesh(),
-                            Foam::dictionary(iss_0)};
-      std::cout << "-Deserialising " << it->first << ". nOld: " << nOld << std::endl;
-      it++;
-    }
+    outputField<FieldType, T>(field.name() + "_out.txt", field);
+    dataStore<FieldType, T>(stream, field, context);
   }
-  field_vec = new_data;
 }
 
+template <template <typename> class FieldType, typename T>
 inline void
-dataStore(std::ostream & stream, FoamDataStore & s, void * context)
+loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
 {
-  printf("Data store being called!\n");
-  fflush(stdout);
-  storeHelper(stream, s._cur_time, context);
-
-  // storeHelper(stream, s.volScalarFields_, context);
-  dataStore(stream, s.volScalarFieldsCopy_, context);
-  dataStore(stream, s.volVectorFieldsCopy_, context);
-  dataStore(stream, s.volTensorFieldsCopy_, context);
-  dataStore(stream, s.volSymmTensorFieldsCopy_, context);
+  int nFields{};
+  loadHelper(stream, nFields, context);
+  for (int i = 0; i < nFields; ++i)
+  {
+    FieldType<T> field{dataLoad<FieldType, T>(stream, mesh)};
+    outputField<FieldType, T>(field.name() + "_in.txt", field);
+    auto field_ref = mesh.lookupObject<FieldType<T>>(field.name());
+    field_ref == field;
+  }
 }
 
+template <>
 inline void
-dataLoad(std::istream & stream, FoamDataStore & s, void * context)
+dataStore(std::ostream & stream, const Foam::Time & time, void * context)
 {
-  printf("Data load being called!\n");
+  auto timeIndex = time.findClosestTimeIndex(time.times(), time.userTimeValue());
+  auto deltaT = time.deltaTValue();
+  auto timeValue = time.userTimeValue();
+  storeHelper(stream, timeIndex, context);
+  storeHelper(stream, deltaT, context);
+  storeHelper(stream, timeValue, context);
+}
+
+template <>
+inline void
+dataLoad(std::istream & stream, Foam::Time & time, void * context)
+{
+  Foam::label timeIndex;
+  Foam::scalar deltaT, timeValue;
+
+  loadHelper(stream, timeIndex, context);
+  loadHelper(stream, deltaT, context);
+  loadHelper(stream, timeValue, context);
+
+  time.setTime(time, timeIndex);
+  time.setDeltaTNoAdjust(deltaT);
+  time.setTime(timeValue, timeIndex);
+  printf("Loaded time: %d, %lf, %lf.\n",
+         time.findClosestTimeIndex(time.times(), time.userTimeValue()),
+         time.userTimeValue(),
+         time.userDeltaTValue());
   fflush(stdout);
+}
 
-  loadHelper(stream, s._cur_time, context);
-  s.loadTime(const_cast<Foam::Time &>(s._mesh.time()));
+template <>
+inline void
+dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
+{
+  storeHelper(stream, mesh.time(), context);
 
-  dataLoad(stream, s.volScalarFieldsCopy_, context);
-  dataLoad(stream, s.volVectorFieldsCopy_, context);
-  dataLoad(stream, s.volTensorFieldsCopy_, context);
-  dataLoad(stream, s.volSymmTensorFieldsCopy_, context);
+  storeFields<Foam::VolField, Foam::scalar>(stream, mesh, context);
+  storeFields<Foam::VolField, Foam::vector>(stream, mesh, context);
+  storeFields<Foam::VolField, Foam::tensor>(stream, mesh, context);
+  storeFields<Foam::VolField, Foam::symmTensor>(stream, mesh, context);
+
+  storeFields<Foam::SurfaceField, Foam::scalar>(stream, mesh, context);
+  storeFields<Foam::SurfaceField, Foam::vector>(stream, mesh, context);
+  storeFields<Foam::SurfaceField, Foam::tensor>(stream, mesh, context);
+  storeFields<Foam::SurfaceField, Foam::symmTensor>(stream, mesh, context);
+}
+
+template <>
+inline void
+dataLoad(std::istream & stream, Foam::fvMesh & mesh, void * context)
+{
+  loadHelper(stream, const_cast<Foam::Time &>(mesh.time()), context);
+
+  loadFields<Foam::VolField, Foam::scalar>(stream, mesh, context);
+  loadFields<Foam::VolField, Foam::vector>(stream, mesh, context);
+  loadFields<Foam::VolField, Foam::tensor>(stream, mesh, context);
+  loadFields<Foam::VolField, Foam::symmTensor>(stream, mesh, context);
+
+  loadFields<Foam::SurfaceField, Foam::scalar>(stream, mesh, context);
+  loadFields<Foam::SurfaceField, Foam::vector>(stream, mesh, context);
+  loadFields<Foam::SurfaceField, Foam::tensor>(stream, mesh, context);
+  loadFields<Foam::SurfaceField, Foam::symmTensor>(stream, mesh, context);
 }

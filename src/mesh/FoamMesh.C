@@ -1,4 +1,5 @@
 #include "FoamMesh.h"
+
 #include "Foam2MooseMeshGen.h"
 #include "libmesh/elem.h"
 #include "libmesh/enum_elem_type.h"
@@ -14,6 +15,7 @@
 #include <mpi.h>
 
 #include <memory>
+#include "FoamDataStore.h"
 
 registerMooseObject("hippoApp", FoamMesh);
 
@@ -21,13 +23,6 @@ namespace
 {
 static std::map<int, int> subdomain_id_map{
     {libMesh::TRI3, 1}, {libMesh::QUAD4, 2}, {libMesh::C0POLYGON, 3}};
-Foam::fvMesh
-read_polymesh(const Foam::Time & run_time)
-{
-  Foam::IOobject mesh_header(
-      Foam::fvMesh::defaultRegion, run_time.name(), run_time, Foam::IOobject::MUST_READ);
-  return Foam::fvMesh(mesh_header);
-}
 }
 
 InputParameters
@@ -44,7 +39,11 @@ FoamMesh::FoamMesh(InputParameters const & params)
   : MooseMesh(params),
     _foam_patch(params.get<std::vector<std::string>>("foam_patch")),
     _foam_runtime(params.get<std::string>("case"), _communicator.get()),
-    _foam_mesh(read_polymesh(_foam_runtime.runTime()))
+    _foam_mesh(declareRecoverableData<Foam::fvMesh>("foam_mesh",
+                                                    Foam::IOobject(Foam::fvMesh::defaultRegion,
+                                                                   _foam_runtime.runTime().name(),
+                                                                   _foam_runtime.runTime(),
+                                                                   Foam::IOobject::MUST_READ)))
 {
   int size = 1;
   MPI_Comm_size(_communicator.get(), &size);
@@ -55,7 +54,7 @@ FoamMesh::FoamMesh(const FoamMesh & other_mesh)
   : MooseMesh(other_mesh),
     _foam_patch(other_mesh._foam_patch),
     _foam_runtime(other_mesh._foam_runtime),
-    _foam_mesh(other_mesh._foam_mesh.clone())
+    _foam_mesh(other_mesh._foam_mesh)
 {
   int size = 1;
   MPI_Comm_size(_communicator.get(), &size);

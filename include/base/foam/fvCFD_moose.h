@@ -33,4 +33,12 @@
 #include <argList.H>
 #include <fvMesh.H>
 
+// FoamDataStore.h
+#include "symmTensor.H"
+#include "tensor.H"
+#include "vector.H"
+#include <error.H>
+#include <surfaceFields.H>
+#include <volFields.H>
+
 #undef NotImplemented
