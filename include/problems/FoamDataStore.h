@@ -2,7 +2,9 @@
 
 #include "DataIO.h"
 
+#include "IOobject.H"
 #include "fvCFD_moose.h"
+#include "tmp.H"
 
 #include <fstream>
 #include <ostream>
@@ -93,7 +95,7 @@ dataLoad(std::ostream & stream, Foam::Vector<T> & s, void * context)
 
 template <template <typename> class FieldType, typename T>
 inline void
-outputField(std::string fname, FieldType<T> & field)
+outputField(std::string fname, const FieldType<T> & field)
 {
   Foam::OStringStream oss(Foam::IOstream::ASCII);
   oss << field;
@@ -105,9 +107,8 @@ outputField(std::string fname, FieldType<T> & field)
   for (int n = 1; n <= field.nOldTimes(); ++n)
   {
     Foam::OStringStream oss_old(Foam::IOstream::ASCII);
-    oss_old << field.oldTimeRef(n);
-    ofs << field.oldTimeRef(n).name() << " " << field.oldTimeRef(n).time().userTimeValue()
-        << std::endl;
+    oss_old << field.oldTime(n);
+    ofs << field.oldTime(n).name() << " " << field.oldTime(n).time().userTimeValue() << std::endl;
     ofs << oss_old.str();
   }
   ofs.close();
@@ -115,7 +116,7 @@ outputField(std::string fname, FieldType<T> & field)
 
 template <template <typename> class FieldType, typename T>
 inline void
-dataStore(std::ostream & stream, FieldType<T> & field, void * context)
+dataStore(std::ostream & stream, const FieldType<T> & field, void * context)
 {
   auto nOldTimes{field.nOldTimes()};
   storeHelper(stream, nOldTimes, context);
@@ -136,7 +137,7 @@ dataStore(std::ostream & stream, FieldType<T> & field, void * context)
 }
 
 template <template <typename> class FieldType, typename T>
-inline FieldType<T>
+inline void
 dataLoad(std::istream & stream, Foam::fvMesh & foam_mesh)
 {
 
@@ -145,27 +146,35 @@ dataLoad(std::istream & stream, Foam::fvMesh & foam_mesh)
 
   std::pair<std::string, std::string> field_data;
   loadHelper(stream, field_data, nullptr);
+  auto & field = foam_mesh.lookupObjectRef<FieldType<T>>(field_data.first);
 
   std::cout << "Deserialising " << field_data.first << std::endl;
   Foam::IStringStream iss{Foam::string(field_data.second), Foam::IOstream::ASCII};
-  FieldType<T> field{
-      Foam::IOobject{field_data.first, foam_mesh},
-      foam_mesh,
-      Foam::dictionary(iss),
-  };
+  field == FieldType<T>{
+               Foam::IOobject{field_data.first,
+                              foam_mesh,
+                              Foam::IOobject::NO_READ,
+                              Foam::IOobject::NO_WRITE,
+                              false},
+               foam_mesh,
+               Foam::dictionary(iss),
+           };
 
   for (int nOld = 1; nOld <= nOldTimes; ++nOld)
   {
     std::pair<std::string, std::string> old_field_data;
     loadHelper(stream, old_field_data, nullptr);
     Foam::IStringStream iss_0{Foam::string(old_field_data.second), Foam::IOstream::ASCII};
-    field.oldTimeRef(nOld) == FieldType<T>{Foam::IOobject{old_field_data.first, foam_mesh},
-                                           foam_mesh,
-                                           Foam::dictionary(iss_0)};
+    FieldType<T> old_field{
+        Foam::IOobject{
+            field_data.first, foam_mesh, Foam::IOobject::NO_READ, Foam::IOobject::NO_WRITE, false},
+        foam_mesh,
+        Foam::dictionary(iss_0),
+    };
+    field.oldTimeRef(nOld) == old_field;
     std::cout << "-Deserialising " << old_field_data.first << ". nOld: " << nOld << std::endl;
+    outputField<FieldType, T>(field.name() + "_in.txt", field);
   }
-
-  return field;
 }
 
 template <template <typename> class FieldType, typename T>
@@ -191,10 +200,7 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
   loadHelper(stream, nFields, context);
   for (int i = 0; i < nFields; ++i)
   {
-    FieldType<T> field{dataLoad<FieldType, T>(stream, mesh)};
-    outputField<FieldType, T>(field.name() + "_in.txt", field);
-    auto field_ref = mesh.lookupObject<FieldType<T>>(field.name());
-    field_ref == field;
+    dataLoad<FieldType, T>(stream, mesh);
   }
 }
 
