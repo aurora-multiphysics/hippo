@@ -113,21 +113,28 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
     field.oldTimeRef(nOld) == old_field;
     std::cout << "  - Deserialising " << old_field_data.first << ". nOld: " << nOld << std::endl;
   }
-  outputField<T>(field.name() + "_in.txt", field);
 }
 
 template <typename T>
 inline void
 storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
 {
-  auto && cur_fields{mesh.lookupClass<T>(true)};
-  auto nFields{cur_fields.size()};
+  auto && fields{mesh.fields<T>(true)};
+  int nFields = 0;
+  for (auto & field : fields)
+  {
+    if (!field.isOldTime())
+      ++nFields;
+  }
 
   storeHelper(stream, nFields, context);
-  for (auto & key : cur_fields.toc())
+  for (auto & field : fields)
   {
-    outputField<T>(cur_fields(key)->name() + "_out.txt", *cur_fields(key));
-    dataStoreField<T>(stream, *cur_fields(key), context);
+    if (!field.isOldTime())
+    {
+      outputField<T>(field.name() + "_out.txt", field);
+      dataStoreField<T>(stream, field, context);
+    }
   }
 }
 
@@ -140,6 +147,11 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
   for (int i = 0; i < nFields; ++i)
   {
     dataLoadField<T>(stream, mesh);
+  }
+  for (auto & field : mesh.fields<T>(true))
+  {
+    if (!field.isOldTime())
+      outputField<T>(field.name() + "_in.txt", field);
   }
 }
 
