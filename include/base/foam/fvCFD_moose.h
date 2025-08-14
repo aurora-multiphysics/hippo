@@ -38,6 +38,7 @@
 #include <surfaceFields.H>
 #include <volFields.H>
 #include <pointFields.H>
+#include <typeInfo.H>
 #include "symmTensorField.H"
 #include "DimensionedField.H"
 #undef NotImplemented
