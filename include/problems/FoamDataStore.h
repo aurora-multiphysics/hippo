@@ -119,22 +119,14 @@ template <typename T>
 inline void
 storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
 {
-  auto && fields{mesh.fields<T>(true)};
-  int nFields = 0;
-  for (auto & field : fields)
-  {
-    if (!field.isOldTime())
-      ++nFields;
-  }
+  auto && cur_fields{mesh.curFields<T>()};
+  auto nFields{cur_fields.size()};
 
   storeHelper(stream, nFields, context);
-  for (auto & field : fields)
+  for (T & field : cur_fields)
   {
-    if (!field.isOldTime())
-    {
-      outputField<T>(field.name() + "_out.txt", field);
-      dataStoreField<T>(stream, field, context);
-    }
+    outputField<T>(field.name() + "_out.txt", field);
+    dataStoreField<T>(stream, field, context);
   }
 }
 
@@ -204,7 +196,7 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
   storeFields<Foam::surfaceTensorField>(stream, mesh, context);
   storeFields<Foam::surfaceSymmTensorField>(stream, mesh, context);
 
-  storeFields<Foam::volScalarField::Internal>(stream, mesh, context);
+  // storeFields<Foam::volScalarField::Internal>(stream, mesh, context);
 }
 
 template <>
@@ -230,5 +222,5 @@ dataLoad(std::istream & stream, Foam::fvMesh & mesh, void * context)
   loadFields<Foam::surfaceTensorField>(stream, mesh, context);
   loadFields<Foam::surfaceSymmTensorField>(stream, mesh, context);
 
-  loadFields<Foam::volScalarField::Internal>(stream, mesh, context);
+  // loadFields<Foam::volScalarField::Internal>(stream, mesh, context);
 }
