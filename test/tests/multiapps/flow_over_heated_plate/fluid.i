@@ -14,9 +14,9 @@
 
 [AuxVariables]
     [fluid_wall_temp]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 300
+        type = FoamBoundaryScalarField
+        foam_variable = T
+        boundary = 'interface'
     []
     [solid_heat_flux]
         family = MONOMIAL
@@ -30,15 +30,9 @@
         type = FoamFixedGradientBC
         # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
         moose_variable = solid_heat_flux
-    []
-[]
-
-[FoamTransfer]
-    [wall_temp]
-        type = FromFoamBoundaryTransfer
-        target_variable = fluid_wall_temp
-        # Take the boundary temperature from OpenFOAM for setting on the MOOSE mesh.
         foam_variable = T
+        diffusivity_coefficient = 'kappa'
+        boundary = 'interface'
     []
 []
 
