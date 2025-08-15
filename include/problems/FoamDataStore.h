@@ -53,7 +53,7 @@ dataStoreField(std::ostream & stream, const T & field, void * context)
 {
   auto nOldTimes{field.nOldTimes()};
   storeHelper(stream, nOldTimes, context);
-  std::cout << "Serialising " << abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL) << " "
+  std::cout << "Serialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL) << " "
             << field.name() << std::endl;
 
   Foam::OStringStream oss(Foam::IOstream::ASCII);
@@ -68,7 +68,7 @@ dataStoreField(std::ostream & stream, const T & field, void * context)
     oss_old << old_field;
     auto old_store_pair = std::pair(std::string(old_field.name()), std::string(oss_old.str()));
     storeHelper(stream, old_store_pair, context);
-    std::cout << "  - Serialising " << abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL)
+    std::cout << "  - Serialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
               << " " << old_field.name() << std::endl;
   }
 }
@@ -85,8 +85,8 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
   loadHelper(stream, field_data, nullptr);
   auto & field = foam_mesh.lookupObjectRef<T>(field_data.first);
 
-  std::cout << "Deserialising " << abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL) << " "
-            << field_data.first << std::endl;
+  std::cout << "Deserialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
+            << " " << field_data.first << std::endl;
 
   Foam::IStringStream iss{Foam::string(field_data.second), Foam::IOstream::ASCII};
   field == T{
@@ -123,14 +123,14 @@ storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
   auto nFields{0};
   for (auto & field : cur_fields)
   {
-    if ((Foam::isType<T>(field) && strict) || Foam::isA<T>(field) && !strict)
+    if ((Foam::isType<T>(field) && strict) || (Foam::isA<T>(field) && !strict))
       ++nFields;
   }
 
   storeHelper(stream, nFields, context);
   for (T & field : cur_fields)
   {
-    if ((Foam::isType<T>(field) && strict) || Foam::isA<T>(field) && !strict)
+    if ((Foam::isType<T>(field) && strict) || (Foam::isA<T>(field) && !strict))
     {
       outputField<T>(field.name() + "_out.txt", field);
       dataStoreField<T>(stream, field, context);
