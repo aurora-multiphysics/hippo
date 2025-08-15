@@ -1,0 +1,3 @@
+functionTestSolver.C
+
+LIB = $(FOAM_LIBBIN)/libfunctionTestSolver

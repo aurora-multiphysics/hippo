@@ -267,3 +267,7 @@ conf_vars.mk
 # GPerf performance
 *.prof
 *.heap
+
+#OpenFOAM wmake build files
+**/lnInclude
+**/Make/linux*

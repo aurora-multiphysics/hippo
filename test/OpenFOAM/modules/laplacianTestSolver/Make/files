@@ -1,0 +1,3 @@
+laplacianTestSolver.C
+
+LIB = $(FOAM_LIBBIN)/liblaplacianTestSolver
