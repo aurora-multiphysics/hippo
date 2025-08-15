@@ -57,6 +57,7 @@ dataStoreField(std::ostream & stream, const T & field, void * context)
             << field.name() << std::endl;
 
   Foam::OStringStream oss(Foam::IOstream::ASCII);
+  oss.precision(17);
   oss << field;
   auto store_pair{std::pair(std::string(field.name()), std::string(oss.str()))};
   storeHelper(stream, store_pair, context);
@@ -64,6 +65,7 @@ dataStoreField(std::ostream & stream, const T & field, void * context)
   for (int n = 1; n <= field.nOldTimes(); ++n)
   {
     Foam::OStringStream oss_old(Foam::IOstream::ASCII);
+    oss_old.precision(17);
     T old_field{field.oldTime(n)};
     oss_old << old_field;
     auto old_store_pair = std::pair(std::string(old_field.name()), std::string(oss_old.str()));
