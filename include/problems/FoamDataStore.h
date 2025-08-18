@@ -56,8 +56,9 @@ dataStoreField(std::ostream & stream, const T & field, void * context)
   std::cout << "Serialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL) << " "
             << field.name() << std::endl;
 
+  auto precision = std::max(field.time().controlDict().lookupOrDefault("writePrecision", 17), 17);
   Foam::OStringStream oss(Foam::IOstream::ASCII);
-  oss.precision(17);
+  oss.precision(precision);
   oss << field;
   auto store_pair{std::pair(std::string(field.name()), std::string(oss.str()))};
   storeHelper(stream, store_pair, context);
@@ -65,7 +66,7 @@ dataStoreField(std::ostream & stream, const T & field, void * context)
   for (int n = 1; n <= field.nOldTimes(); ++n)
   {
     Foam::OStringStream oss_old(Foam::IOstream::ASCII);
-    oss_old.precision(17);
+    oss_old.precision(precision);
     T old_field{field.oldTime(n)};
     oss_old << old_field;
     auto old_store_pair = std::pair(std::string(old_field.name()), std::string(oss_old.str()));
@@ -87,9 +88,6 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
   loadHelper(stream, field_data, nullptr);
   auto & field = foam_mesh.lookupObjectRef<T>(field_data.first);
 
-  std::cout << "Deserialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
-            << " " << field_data.first << std::endl;
-
   Foam::IStringStream iss{Foam::string(field_data.second), Foam::IOstream::ASCII};
   field == T{
                Foam::IOobject{field_data.first,
@@ -100,6 +98,9 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
                foam_mesh,
                Foam::dictionary(iss),
            };
+
+  std::cout << "Deserialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
+            << " " << field_data.first << " timeindex: " << field.timeIndex() << std::endl;
 
   for (int nOld = 1; nOld <= nOldTimes; ++nOld)
   {
@@ -161,12 +162,18 @@ template <>
 inline void
 dataStore(std::ostream & stream, const Foam::Time & time, void * context)
 {
-  auto timeIndex = time.findClosestTimeIndex(time.times(), time.userTimeValue());
+  auto timeIndex = time.timeIndex();
   auto deltaT = time.deltaTValue();
   auto timeValue = time.userTimeValue();
   storeHelper(stream, timeIndex, context);
   storeHelper(stream, deltaT, context);
   storeHelper(stream, timeValue, context);
+
+  std::cout << "Saved time:\n"
+            << "\ttimeIndex: " << timeIndex << "\n"
+            << "\ttimeValue: " << timeValue << "\n"
+            << "\tdeltaT0: " << deltaT0 << "\n"
+            << "\tdeltaT: " << deltaT << std::endl;
 }
 
 template <>
@@ -180,14 +187,16 @@ dataLoad(std::istream & stream, Foam::Time & time, void * context)
   loadHelper(stream, deltaT, context);
   loadHelper(stream, timeValue, context);
 
-  time.setTime(time, timeIndex);
   time.setDeltaTNoAdjust(deltaT);
+  time++;
+
+  time.setTime(time, timeIndex);
   time.setTime(timeValue, timeIndex);
-  printf("Loaded time: %d, %lf, %lf.\n",
-         time.findClosestTimeIndex(time.times(), time.userTimeValue()),
-         time.userTimeValue(),
-         time.userDeltaTValue());
-  fflush(stdout);
+
+  std::cout << "Loaded time:\n"
+            << "\ttimeIndex: " << time.timeIndex() << "\n"
+            << "\ttimeValue: " << time.userTimeValue() << "\n"
+            << "\tdeltaT: " << time.deltaTValue() << std::endl;
 }
 
 template <>
