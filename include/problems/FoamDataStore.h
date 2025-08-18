@@ -172,7 +172,6 @@ dataStore(std::ostream & stream, const Foam::Time & time, void * context)
   std::cout << "Saved time:\n"
             << "\ttimeIndex: " << timeIndex << "\n"
             << "\ttimeValue: " << timeValue << "\n"
-            << "\tdeltaT0: " << deltaT0 << "\n"
             << "\tdeltaT: " << deltaT << std::endl;
 }
 
