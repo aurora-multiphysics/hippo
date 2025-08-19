@@ -153,6 +153,7 @@ test/**/*.obj
 
 # downloaded mesh tarballs
 test/tests/**/*.tar.gz
+!**/gold/*.tar.gz
 
 framework/contrib/exodiff/exodiff
 
