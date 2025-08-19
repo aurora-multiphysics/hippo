@@ -1,0 +1,29 @@
+[Tests]
+    [laplacian_serilaplacian_fixed_valueal]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = laplacian_fixed_value/setup
+            allow_warnings = true
+        []
+        [prep_verify]
+            type = RunCommand
+            command = 'bash -c "tar xvf gold/laplacian_reference.tar.gz -C gold/"'
+            prereq = laplacian_fixed_value/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = laplacian_fixed_value/prep_verify
+        []
+        [prep_clean]
+            type = RunCommand
+            command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
+            prereq = laplacian_fixed_value/prep_verify
+        []
+    []
+[]
