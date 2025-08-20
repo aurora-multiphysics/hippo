@@ -2,20 +2,28 @@
   [unsteady_1d_fixed_point]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
+      command = 'bash -c "cd foam && ./Allclean && blockMesh"'
     []
     [run]
-      type = Exodiff
-      input = run.i
+      type = RunApp
+      input = main.i
       prereq = unsteady_1d_fixed_point/setup
-      exodiff = 'run_out.e'
-      requirement = 'Compare against reference results without fixed point iteration'
+    []
+    [prep_verify]
+      type = RunCommand
+      command = 'bash -c "tar xvf gold/unsteady_reference.tar.gz -C gold/"'
+      prereq = unsteady_1d_fixed_point/run
     []
     [verify]
       type = PythonUnitTest
       input = test.py
       prereq = unsteady_1d_fixed_point/run
-      requirement = 'Compare against analytical solution'
+      requirement = 'Compare against reference results without fixed point iteration'
+    []
+    [prep_clean]
+      type = RunCommand
+      command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
+      prereq = unsteady_1d_fixed_point/prep_verify
     []
   []
 []

@@ -148,9 +148,7 @@
         boundary=right
         execute_on = 'TIMESTEP_END'
     []
-
 []
-
 
 [Outputs]
     exodus = true

@@ -9,47 +9,40 @@ FoamFile
 {
     format      ascii;
     class       dictionary;
-    object      fvSolution;
+    object      fvSchemes;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solvers
+ddtSchemes
 {
-    rho
-    {
-        solver          diagonal;
-    }
-
-    rhoFinal
-    {
-        $rho;
-    }
-
-
-    "e|eFinal"
-    {
-        solver           PBiCGStab;
-        preconditioner   DIC;
-        tolerance        1e-8;
-        relTol           1e-8;
-    }
+    default         CrankNicolson 1;
 }
 
-PIMPLE
+gradSchemes
 {
-    momentumPredictor   yes;
-    pRefCell            0;
-    pRefValue           0;
+    default         Gauss linear;
 }
 
-relaxationFactors
+divSchemes
 {
-    equations
-    {
-        h               1;
-        e               1;
-        U               1;
-    }
+    default         none;
+
+    div(phi,e)      Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;
 }
 
 // ************************************************************************* //

@@ -1,6 +1,6 @@
 [Mesh]
     type = FoamMesh
-    case = 'fluid-openfoam'
+    case = 'foam'
     foam_patch = 'left'
 []
 
