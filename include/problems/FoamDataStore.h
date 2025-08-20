@@ -151,6 +151,16 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
   {
     dataLoadField<T>(stream, mesh);
   }
+
+  for (auto & field : mesh.fields<T>(false))
+  {
+    // Remove fields that haven't been stored. Important for subcycling to prevent the old
+    // fields being which haven't been stored being used on the first time step. Could
+    // restrict this to first step but shouldn't matter
+    if (mesh.time().timeIndex() != field.timeIndex())
+      mesh.checkOut(field);
+  }
+
   for (auto & field : mesh.fields<T>(true))
   {
     if (!field.isOldTime())
