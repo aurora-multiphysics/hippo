@@ -148,6 +148,9 @@ moose/include/base/Precompiled.h.gch
 # clang
 .clangd
 
+#direnv
+.envrc
+
 # OpenFOAM mesh object files
 test/**/*.obj
 
