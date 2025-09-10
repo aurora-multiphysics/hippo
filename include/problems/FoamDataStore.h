@@ -10,24 +10,6 @@
 
 template <typename T>
 inline void
-dataStore(std::ostream & stream, Foam::Vector<T> & s, void * context)
-{
-  storeHelper(stream, s.x(), context);
-  storeHelper(stream, s.y(), context);
-  storeHelper(stream, s.z(), context);
-}
-
-template <typename T>
-inline void
-dataLoad(std::ostream & stream, Foam::Vector<T> & s, void * context)
-{
-  loadHelper(stream, s.x(), context);
-  loadHelper(stream, s.y(), context);
-  loadHelper(stream, s.z(), context);
-}
-
-template <typename T>
-inline void
 outputField(std::string fname, const T & field, bool old_fields = true)
 {
   Foam::OStringStream oss(Foam::IOstream::ASCII);
@@ -101,22 +83,6 @@ writeField(ostream & stream, const Foam::string & name, const Type & field)
   std::pair store_pair{std::string(name), std::string(oss.str())};
   storeHelper(stream, store_pair, nullptr);
 }
-
-// template<>
-// inline Foam::slicedSurfaceScalarField
-// readField(std::istream& stream, const Foam::fvMesh& mesh)
-// {
-//   auto geom_field = readField<Foam::surfaceScalarField>(stream, mesh);
-//   return Foam::slicedSurfaceScalarField
-//               {
-//                 Foam::IOobject{geom_field.name(),
-//                               mesh,
-//                               Foam::IOobject::NO_READ,
-//                               Foam::IOobject::NO_WRITE,
-//                               false},
-//                 geom_field
-//               };
-// }
 
 template <>
 inline std::pair<std::string, Foam::uniformDimensionedScalarField>
@@ -212,79 +178,6 @@ dataLoad(std::istream & stream, Foam::dimensionSet & s, void * context)
   }
 }
 
-template <typename T>
-inline void
-dataStoreUniformDimensionedField(std::ostream & stream,
-                                 std::string name,
-                                 const Foam::UniformDimensionedField<T> & field,
-                                 void * context)
-{
-
-  storeHelper(stream, name, context);
-  auto nOldTimes{field.nOldTimes()};
-  storeHelper(stream, nOldTimes, context);
-  storeHelper(stream, field.dimensions(), context);
-
-  std::cout << "Serialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL) << " "
-            << name << std::endl;
-
-  auto store_pair{std::pair(std::string(field.name()), field.value())};
-  storeHelper(stream, store_pair, context);
-
-  auto nOldFields(field.nOldTimes());
-  for (int n = 1; n <= nOldFields; ++n)
-  {
-    auto & old_field{field.oldTime(n)};
-    auto old_store_pair{std::pair(std::string(old_field.name()), old_field.value())};
-    storeHelper(stream, old_store_pair, context);
-    std::cout << "  - Serialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
-              << " " << name << std::endl;
-  }
-}
-
-template <typename T>
-inline void
-dataLoadUniformDimensionedField(std::istream & stream, Foam::fvMesh & foam_mesh)
-{
-  std::string name;
-  loadHelper(stream, name, nullptr);
-  Foam::label nOldTimes;
-  loadHelper(stream, nOldTimes, nullptr);
-  Foam::dimensionSet dimSet{Foam::dimless};
-  loadHelper(stream, dimSet, nullptr);
-
-  std::pair<std::string, Foam::scalar> field_data;
-  loadHelper(stream, field_data, nullptr);
-  auto & field = foam_mesh.lookupObjectRef<Foam::UniformDimensionedField<T>>(Foam::word(name));
-
-  field == Foam::UniformDimensionedField<T>{
-               Foam::IOobject{field_data.first,
-                              foam_mesh,
-                              Foam::IOobject::NO_READ,
-                              Foam::IOobject::NO_WRITE,
-                              false},
-               Foam::dimensioned<T>(dimSet, field_data.second),
-           };
-
-  std::cout << "Deserialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
-            << " " << name << " timeindex: " << field.timeIndex() << std::endl;
-
-  for (int nOld = 1; nOld <= nOldTimes; ++nOld)
-  {
-    std::pair<std::string, Foam::scalar> old_field_data;
-    loadHelper(stream, old_field_data, nullptr);
-    field.oldTimeRef(nOld) == Foam::UniformDimensionedField<T>{
-                                  Foam::IOobject{field_data.first,
-                                                 foam_mesh,
-                                                 Foam::IOobject::NO_READ,
-                                                 Foam::IOobject::NO_WRITE,
-                                                 false},
-                                  Foam::dimensioned<T>(dimSet, old_field_data.second),
-                              };
-    std::cout << "  - Deserialising " << name << ". nOld: " << nOld << std::endl;
-  }
-}
-
 template <typename T, bool strict>
 inline void
 storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
@@ -356,49 +249,6 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
       }
     }
     outputField(field.name() + "_in.txt", field, false);
-  }
-}
-
-template <typename T, bool strict>
-inline void
-storeUniformedDimensionedFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
-{
-  std::vector<Foam::string> fieldKeyList;
-  std::vector<Foam::UniformDimensionedField<T> *> fieldList;
-
-  for (auto key : mesh.toc())
-  {
-    if (mesh.foundObject<Foam::UniformDimensionedField<T>>(key))
-    {
-      auto & field = mesh.lookupObjectRef<Foam::UniformDimensionedField<T>>(key);
-      if (!field.isOldTime() &&
-          ((Foam::isType<Foam::UniformDimensionedField<T>>(field) && strict) ||
-           (Foam::isA<Foam::UniformDimensionedField<T>>(field) && !strict)))
-      {
-        fieldList.push_back(&field);
-        fieldKeyList.push_back(key);
-        std::cout << "Field: " << key << std::endl;
-      }
-    }
-  }
-  int nFields{static_cast<int>(fieldList.size())};
-  storeHelper(stream, nFields, context);
-
-  for (int i = 0; i < nFields; ++i)
-  {
-    dataStoreUniformDimensionedField(stream, fieldKeyList[i], *fieldList[i], context);
-  }
-}
-
-template <typename T>
-inline void
-loadUniformDimensionedFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
-{
-  int nFields{};
-  loadHelper(stream, nFields, context);
-  for (int i = 0; i < nFields; ++i)
-  {
-    dataLoadUniformDimensionedField<T>(stream, mesh);
   }
 }
 
