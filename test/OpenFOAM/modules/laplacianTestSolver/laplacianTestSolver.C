@@ -143,6 +143,8 @@ Foam::solvers::laplacianTestSolver::thermophysicalPredictor()
   dimensionedScalar C(dimensionSet(0, -2, 0, 0, 0), 1.);
   while (pimple.correctNonOrthogonal())
   {
+    // creates time dependent Poisson equation to check fixed-point when a
+    // boundary value problem is solved
     fvScalarMatrix TEqn(Foam::fvm::laplacian(T_, "T") + C * T_.oldTime());
 
     fvConstraints().constrain(TEqn);

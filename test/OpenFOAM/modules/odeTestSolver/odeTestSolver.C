@@ -143,6 +143,7 @@ Foam::solvers::odeTestSolver::thermophysicalPredictor()
 
   while (pimple.correctNonOrthogonal())
   {
+    // solved ODE where T' = 1000t to verify different time schemes
     dimensionedScalar C{dimensionSet(0, 0, -1, 1, 0), 1000 * mesh_.time().userTimeValue()};
     fvScalarMatrix TEqn(Foam::fvm::ddt(T_) - C);
 

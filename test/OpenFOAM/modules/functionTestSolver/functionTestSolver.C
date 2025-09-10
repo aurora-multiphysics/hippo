@@ -135,9 +135,12 @@ Foam::solvers::functionTestSolver::momentumPredictor()
 void
 Foam::solvers::functionTestSolver::thermophysicalPredictor()
 {
+  // Set T to the current time
   dimensioned<Foam::scalar> T0("T0", dimTemperature, mesh_.time().userTimeValue());
   T_ = T0;
 
+  // compute time derivative will be 0 on the first step (even if this is stupid)
+  // and 1 on all others
   dTdt_ = fvc::ddt(T_);
 }
 
