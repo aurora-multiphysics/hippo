@@ -62,7 +62,7 @@ protected:
 
   volScalarField T_;
 
-  volScalarField T2_;
+  volScalarField dTdt_;
 
   volScalarField kappa_;
 
@@ -80,7 +80,7 @@ public:
   //- Reference to the temperature field
   const volScalarField & T;
 
-  const volScalarField & T2;
+  const volScalarField & dTdt;
 
   const volScalarField & kappa;
 

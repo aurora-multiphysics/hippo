@@ -23,12 +23,10 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "dimensionedType.H"
 #include "functionTestSolver.H"
-#include "fvcSurfaceIntegrate.H"
 #include "fvMeshMover.H"
-#include "localEulerDdtScheme.H"
 #include "addToRunTimeSelectionTable.H"
+#include "fvcDdt.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -68,12 +66,14 @@ Foam::solvers::functionTestSolver::read()
 Foam::solvers::functionTestSolver::functionTestSolver(fvMesh & mesh)
   : solver(mesh),
     T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
-    T2_(IOobject("T2", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
+    dTdt_(IOobject("dTdt", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
+          mesh,
+          dimensionedScalar{dimTemperature / dimTime, 0.}),
     kappa_(IOobject("kappa", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
            mesh,
            1.),
     T(T_),
-    T2(T2_),
+    dTdt(dTdt_),
     kappa(kappa_)
 
 {
@@ -136,9 +136,9 @@ void
 Foam::solvers::functionTestSolver::thermophysicalPredictor()
 {
   dimensioned<Foam::scalar> T0("T0", dimTemperature, mesh_.time().userTimeValue());
-  T_.storeOldTimes();
-  T_.internalFieldRef() = T0;
-  T2_ == T_.oldTime();
+  T_ = T0;
+
+  dTdt_ = fvc::ddt(T_);
 }
 
 void
