@@ -1,5 +1,5 @@
 [Tests]
-    [laplacian_serilaplacian_fixed_valueal]
+    [laplacian_fixed_value]
         [setup]
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'

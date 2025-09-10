@@ -27,18 +27,39 @@ class TestFunctionSolver(TestCase):
 
         # read from openfoam file
         case_dir = 'foam/'
-        time_dirs = get_foam_times(case_dir)
-        for i, time in enumerate(time_dirs):
+        time_dirs = get_foam_times(case_dir)[1:]
+        for time in time_dirs:
             # set time and read internal field
             T = ff.readof.readscalar(
                 case_dir, time_name=f"{time:g}", name='T', verbose=False)
+            dTdt = ff.readof.readscalar(
+                case_dir, time_name=f"{time:g}", name='dTdt', verbose=False)
+
             # check T array equals the time
             assert np.allclose(T, time,
-                                   atol=0, rtol=1e-16), f"Max diff: {abs(T-time).max()}"
+                                   atol=0, rtol=1e-16), f"Max diff ({time}): {abs(T-time).max()}"
 
-            # check that next `old time' is equal to the present time
-            if i < len(time_dirs) - 1:
-                T2 = ff.readof.readscalar(
-                    case_dir, time_name=f"{time_dirs[i+1]:g}", name='T2', verbose=False)
-                assert np.allclose(T2, time,
-                                   atol=0, rtol=1e-16), f"Max diff: {abs(T2-time).max()}"
+            ref = 1. if time > time_dirs[0] else 0.
+            assert np.allclose(dTdt, ref,
+                                   atol=0, rtol=1e-14), f"Max diff ({time}): {abs(dTdt-1).max()}"
+
+    def test_compare_reference(self):
+        case_dir = 'foam/'
+        ref_dir = 'gold'
+        time_dirs = get_foam_times(case_dir)[1:]
+
+        for time in time_dirs:
+            # set time and read internal field
+            T = ff.readof.readscalar(
+                case_dir, time_name=f"{time:g}", name='T', verbose=False)
+            dTdt = ff.readof.readscalar(
+                case_dir, time_name=f"{time:g}", name='dTdt', verbose=False)
+
+            T_ref = ff.readof.readscalar(
+                ref_dir, time_name=f"{time:g}", name='T', verbose=False)
+            dTdt_ref = ff.readof.readscalar(
+                ref_dir, time_name=f"{time:g}", name='dTdt', verbose=False)
+
+
+            assert np.array_equal(T_ref, T), f"Max diff ({time}): {abs(T-T_ref).max()}"
+            assert np.array_equal(dTdt, dTdt_ref), f"Max diff ({time}): {abs(dTdt-dTdt_ref).max()}"
