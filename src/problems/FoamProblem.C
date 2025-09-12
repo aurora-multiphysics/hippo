@@ -1,6 +1,7 @@
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
+#include "FoamVariableField.h"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
@@ -63,7 +64,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
     _solver(Foam::solver::New(_foam_mesh->fvMesh().time().controlDict().lookupOrDefault<Foam::word>(
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
-                .ptr())
+                .ptr()),
+    _shadow_variables()
 {
   assert(_foam_mesh);
 
@@ -145,6 +147,11 @@ FoamProblem::syncSolutions(Direction dir)
     else if (transfer_wall_heat_flux)
     {
       syncFromOpenFoam<SyncVariables::WallHeatFlux>();
+    }
+
+    for (auto & var : _shadow_variables)
+    {
+      var->transferVariable();
     }
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
@@ -333,4 +340,11 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
                "  order = CONSTANT\n");
   }
   return var;
+}
+
+void
+FoamProblem::addShadowVariable(FoamVariableField * var)
+{
+  assert(var);
+  _shadow_variables.push_back(var);
 }
