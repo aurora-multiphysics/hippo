@@ -25,11 +25,40 @@ FoamVariableField::FoamVariableField(const InputParameters & params)
   if (!problem)
     mooseError("This Variable can only be used with FoamProblem");
 
-  auto & mesh = problem->mesh().fvMesh();
-  _field_shadow = &mesh.lookupObject<Foam::volScalarField>(_foam_variable);
+  _mesh = &problem->mesh();
+  _field_shadow = &_mesh->fvMesh().lookupObject<Foam::volScalarField>(_foam_variable);
+
+  problem->addShadowVariable(this);
 }
 
 void
 FoamVariableField::transferVariable()
 {
+  auto subdomains = _mesh->getSubdomainList();
+  auto & foam_mesh = _mesh->fvMesh();
+  std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
+  std::vector<Foam::scalar> data;
+
+  for (auto i = 0U; i < subdomains.size(); ++i)
+  {
+    auto patch_id = subdomains[i];
+    auto & var = foam_mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>(
+        _foam_variable);
+    std::copy(var.begin(), var.end(), std::back_inserter(data));
+    patch_counts[i] = var.size();
+  }
+
+  std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
+  for (auto i = 0U; i < subdomains.size(); ++i)
+  {
+    for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+    {
+      auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
+      assert(elem_ptr);
+      auto dof_t = elem_ptr->dof_number(sys().number(), number(), 0);
+      sys().solution().set(dof_t, data[elem]);
+    }
+  }
+
+  sys().solution().close();
 }

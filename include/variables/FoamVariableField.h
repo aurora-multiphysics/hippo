@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FoamMesh.h"
 #include "MooseVariableConstMonomial.h"
 
 #include <volFields.H>
@@ -16,4 +17,5 @@ public:
 private:
   Foam::volScalarField const * _field_shadow = nullptr;
   std::string _foam_variable;
+  FoamMesh * _mesh;
 };
