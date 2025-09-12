@@ -25,13 +25,10 @@
 
 [Executioner]
     type = Transient
-    start_time = 0
-    end_time = 0.01
-    dt = 0.0003125
-
+    end_time = 0.32
     [TimeSteppers]
         [foam]
-            type = FoamTimeStepper
+            type = FoamControlledTimeStepper
         []
     []
 []

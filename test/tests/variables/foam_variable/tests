@@ -10,5 +10,10 @@
             prereq = transfer_test/setup
             allow_warnings = true
         []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = transfer_test/run
+        []
     []
 []
