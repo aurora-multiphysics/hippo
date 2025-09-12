@@ -1,0 +1,14 @@
+[Tests]
+    [transfer_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = transfer_test/setup
+            allow_warnings = true
+        []
+    []
+[]
