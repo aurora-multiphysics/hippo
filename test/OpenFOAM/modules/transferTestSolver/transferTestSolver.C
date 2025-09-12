@@ -137,7 +137,8 @@ Foam::solvers::transferTestSolver::thermophysicalPredictor()
   dimensioned<Foam::scalar> t(
       "t", dimTemperature / (dimLength * dimLength * dimLength), mesh_.time().userTimeValue());
   auto & coords = mesh_.C();
-  T_ == coords.component(0) * coords.component(1) * coords.component(2) * t;
+  T_ == dimensionedScalar(T_.dimensions(), 0.01) +
+            coords.component(0) * coords.component(1) * coords.component(2) * t;
 }
 
 void

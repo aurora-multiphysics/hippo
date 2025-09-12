@@ -4,6 +4,10 @@ from typing import Literal
 import numpy as np
 import pyvista as pv
 
+def get_exodus_times(exo_file):
+    reader: pv.ExodusIIReader = pv.get_reader(exo_file)
+    return reader.time_values
+
 def read_moose_exodus_data(exo_file,
                         time,
                         variable,
