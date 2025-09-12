@@ -12,6 +12,12 @@
     []
 []
 
+[AuxVariables]
+    [T_shadow]
+        type = FoamVariableField
+        foam_variable = 'T'
+    []
+[]
 [Problem]
     type = FoamProblem
     # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
