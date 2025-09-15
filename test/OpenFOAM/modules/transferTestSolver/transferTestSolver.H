@@ -25,9 +25,8 @@ Class
     Foam::solvers::transferTestSolver
 
 Description
-    Solver module for thermal transport in solid domains and regions for
-    conjugate heat transfer, HVAC and similar applications, with optional mesh
-    motion and mesh topology changes.
+    Solver module for to test transfers between OpenFOAM and MOOSE. Based on Solid
+    solver
 
 SourceFiles
     transferTestSolver.C
@@ -58,10 +57,13 @@ protected:
   scalar maxDeltaT_;
 
   // Thermophysical properties
+  autoPtr<solidThermo> thermoPtr_;
+
+  solidThermo & thermo_;
 
   volScalarField T_;
 
-  volScalarField kappa_;
+  autoPtr<solidThermophysicalTransportModel> thermophysicalTransport;
 
   // Protected Member Functions
 
@@ -73,11 +75,11 @@ protected:
 
 public:
   // Public Data
+  // reference to thermophysical properties
+  const solidThermo & thermo;
 
   //- Reference to the temperature field
   const volScalarField & T;
-
-  const volScalarField & kappa;
 
   //- Runtime type information
   TypeName("transferTestSolver");
@@ -85,6 +87,8 @@ public:
   // Constructors
 
   //- Construct from region mesh
+  transferTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr);
+
   transferTestSolver(fvMesh & mesh);
 
   //- Disallow default bitwise copy construction

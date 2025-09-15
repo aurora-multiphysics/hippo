@@ -28,7 +28,6 @@ License
 #include "transferTestSolver.H"
 #include "fvMeshMover.H"
 #include "addToRunTimeSelectionTable.H"
-#include "fvcDdt.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -64,16 +63,24 @@ Foam::solvers::transferTestSolver::read()
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+// Solver based on solid.C module
+Foam::solvers::transferTestSolver::transferTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr)
+  : solver(mesh),
+
+    thermoPtr_(thermoPtr),
+    thermo_(thermoPtr_()),
+
+    T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
+
+    thermophysicalTransport(solidThermophysicalTransportModel::New(thermo_)),
+    thermo(thermo_),
+    T(T_)
+{
+  thermo.validate("solid", "h", "e");
+}
 
 Foam::solvers::transferTestSolver::transferTestSolver(fvMesh & mesh)
-  : solver(mesh),
-    T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
-    kappa_(IOobject("kappa", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
-           mesh,
-           1.),
-    T(T_),
-    kappa(kappa_)
-
+  : transferTestSolver(mesh, solidThermo::New(mesh))
 {
   // Read the controls
   read();
@@ -133,12 +140,20 @@ Foam::solvers::transferTestSolver::momentumPredictor()
 void
 Foam::solvers::transferTestSolver::thermophysicalPredictor()
 {
-  // Set T to the current time
-  dimensioned<Foam::scalar> t(
-      "t", dimTemperature / (dimLength * dimLength * dimLength), mesh_.time().userTimeValue());
+  // To set temperature for testing, internal energy must be set. The
+  // thermo_.correct() call calculates Temperature.
+
+  // Get e and Cv
+  volScalarField & e = thermo_.he();
+  const volScalarField & Cv = thermo_.Cv();
+
+  // Set e to (x + y + z)t which gives wall heat flux of t.
+  dimensioned<Foam::scalar> t("t", T_.dimensions() / (dimLength), mesh_.time().userTimeValue());
   auto & coords = mesh_.C();
-  T_ == dimensionedScalar(T_.dimensions(), 0.01) +
-            coords.component(0) * coords.component(1) * coords.component(2) * t;
+  e = Cv * (dimensionedScalar(T.dimensions(), 0.01) +
+            (coords.component(0) + coords.component(1) + coords.component(2)) * t);
+
+  thermo_.correct();
 }
 
 void
