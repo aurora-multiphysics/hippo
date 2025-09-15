@@ -1,7 +1,6 @@
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
-#include "FoamVariableField.h"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
@@ -343,7 +342,7 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
 }
 
 void
-FoamProblem::addShadowVariable(FoamVariableField * var)
+FoamProblem::addShadowVariable(FoamVariableBase * var)
 {
   assert(var);
   _shadow_variables.push_back(var);
