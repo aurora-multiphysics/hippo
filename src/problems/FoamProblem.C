@@ -148,6 +148,7 @@ FoamProblem::syncSolutions(Direction dir)
       syncFromOpenFoam<SyncVariables::WallHeatFlux>();
     }
 
+    // Loop of shadowed variables and perform transfer
     for (auto & var : _shadow_variables)
     {
       var->transferVariable();
@@ -344,6 +345,7 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
 void
 FoamProblem::addShadowVariable(FoamVariableBase * var)
 {
+  // add shadowed variable to private/protected list
   assert(var);
   _shadow_variables.push_back(var);
 }

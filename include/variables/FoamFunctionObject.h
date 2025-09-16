@@ -5,16 +5,23 @@
 
 #include <volFields.H>
 
+// Class for mirroring functionObjects
 class FoamFunctionObject : public FoamVariableBase
 {
 public:
   explicit FoamFunctionObject(const InputParameters & params);
 
+  // function that executes functionObject and transfers variable from
+  // OpenFOAM variable to MOOSE
   virtual void transferVariable();
-  ~FoamFunctionObject();
+
+  // Destroys functionObject pointer
+  ~FoamFunctionObject() { delete _shadow_fo; };
 
 private:
+  // function to construct the functionObject
   Foam::functionObject * _getFunctionObject(Foam::dictionary fo_dict);
-  Foam::volScalarField const * _field_shadow = nullptr;
+
+  // The function object pointer
   Foam::functionObject * _shadow_fo;
 };
