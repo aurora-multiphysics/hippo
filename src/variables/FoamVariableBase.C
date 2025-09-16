@@ -6,13 +6,15 @@ InputParameters
 FoamVariableBase::validParams()
 {
   InputParameters params = MooseVariableConstMonomial::validParams();
-  params.addRequiredParam<std::string>("foam_variable", "Foam variable to be shadowed");
+  params.addRequiredParam<std::string>("foam_variable",
+                                       "OpenFOAM variable or functionObject to be shadowed");
   return params;
 }
 
 FoamVariableBase::FoamVariableBase(const InputParameters & params)
   : MooseVariableConstMonomial(params), _foam_variable(params.get<std::string>("foam_variable"))
 {
+  // Check problem types and that variable is declared in AuxVariables
   if (kind() != Moose::VarKindType::VAR_AUXILIARY)
     mooseError("FoamVariables can only be instantiated as AuxVariables");
 
@@ -33,6 +35,7 @@ FoamVariableBase::transferVariable()
   std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
   std::vector<Foam::scalar> data;
 
+  // loop over subdomains and construct vector with boundary values
   for (auto i = 0U; i < subdomains.size(); ++i)
   {
     auto patch_id = subdomains[i];
@@ -42,6 +45,7 @@ FoamVariableBase::transferVariable()
     patch_counts[i] = var.size();
   }
 
+  // assign values to each element
   std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
   for (auto i = 0U; i < subdomains.size(); ++i)
   {
