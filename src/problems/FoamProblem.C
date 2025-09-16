@@ -343,7 +343,7 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
 }
 
 void
-FoamProblem::addShadowVariable(FoamVariableBase * var)
+FoamProblem::addShadowVariable(FoamVariableField * var)
 {
   // add shadowed variable to private/protected list
   assert(var);
