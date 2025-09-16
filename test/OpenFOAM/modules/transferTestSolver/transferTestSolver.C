@@ -147,11 +147,15 @@ Foam::solvers::transferTestSolver::thermophysicalPredictor()
   volScalarField & e = thermo_.he();
   const volScalarField & Cv = thermo_.Cv();
 
-  // Set e to (x + y + z)t which gives wall heat flux of t.
-  dimensioned<Foam::scalar> t("t", T_.dimensions() / (dimLength), mesh_.time().userTimeValue());
+  // Set e to Cv*(xy + yz + xz)t which gives a non-uniform be first order value of wall heat flux at
+  // all boundaries.
+  dimensioned<Foam::scalar> t(
+      "t", T_.dimensions() / (dimLength * dimLength), mesh_.time().userTimeValue());
   auto & coords = mesh_.C();
   e = Cv * (dimensionedScalar(T.dimensions(), 0.01) +
-            (coords.component(0) + coords.component(1) + coords.component(2)) * t);
+            (coords.component(0) * coords.component(1) + coords.component(1) * coords.component(2) +
+             coords.component(2) * coords.component(0)) *
+                t);
 
   thermo_.correct();
 }
