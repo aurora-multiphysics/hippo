@@ -2,7 +2,7 @@
 
 #include "FoamMesh.h"
 #include "FoamSolver.h"
-#include "FoamVariableBase.h"
+#include "FoamVariableField.h"
 
 #include <ExternalProblem.h>
 #include <MooseTypes.h>
@@ -42,10 +42,10 @@ public:
 
   Hippo::FoamSolver & solver() { return _solver; }
 
-  void addShadowVariable(FoamVariableBase * var);
+  void addShadowVariable(FoamVariableField * var);
 
 protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
-  std::vector<FoamVariableBase *> _shadow_variables;
+  std::vector<FoamVariableField *> _shadow_variables;
 };

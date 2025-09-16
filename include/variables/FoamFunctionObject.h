@@ -1,12 +1,12 @@
 #pragma once
 
-#include "FoamVariableBase.h"
+#include "FoamVariableField.h"
 #include "functionObject.H"
 
 #include <volFields.H>
 
 // Class for mirroring functionObjects
-class FoamFunctionObject : public FoamVariableBase
+class FoamFunctionObject : public FoamVariableField
 {
 public:
   explicit FoamFunctionObject(const InputParameters & params);

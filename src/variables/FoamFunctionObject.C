@@ -1,4 +1,4 @@
-#include "FoamVariableBase.h"
+#include "FoamVariableField.h"
 #include "FoamFunctionObject.h"
 #include "InputParameters.h"
 #include "Registry.h"
@@ -10,7 +10,7 @@
 
 registerMooseObject("hippoApp", FoamFunctionObject);
 
-FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamVariableBase(params)
+FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamVariableField(params)
 {
   auto & mesh = _mesh->fvMesh();
 
@@ -54,5 +54,5 @@ FoamFunctionObject::transferVariable()
 {
   // execute functionObject before transfer
   _shadow_fo->execute();
-  FoamVariableBase::transferVariable();
+  FoamVariableField::transferVariable();
 }
