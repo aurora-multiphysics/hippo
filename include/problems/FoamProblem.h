@@ -3,6 +3,7 @@
 #include "FoamMesh.h"
 #include "FoamSolver.h"
 #include "FoamVariableField.h"
+#include "FoamBCBase.h"
 
 #include <ExternalProblem.h>
 #include <MooseTypes.h>
@@ -21,6 +22,7 @@ public:
   virtual bool converged(const unsigned int /* nl_sys_num */) override { return true; }
   virtual void addExternalVariables() override {};
   virtual void initialSetup() override;
+
   using ExternalProblem::mesh;
   virtual FoamMesh const & mesh() const override { return *_foam_mesh; }
   virtual FoamMesh & mesh() override { return *_foam_mesh; }
@@ -50,4 +52,5 @@ protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
   std::vector<FoamVariableField *> _foam_variables;
+  std::vector<FoamBCBase *> _foam_bcs;
 };

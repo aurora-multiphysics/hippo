@@ -1,3 +1,4 @@
+#include "ExternalProblem.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
@@ -67,7 +68,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
                 .ptr()),
-    _foam_variables()
+    _foam_variables(),
+    _foam_bcs()
 {
   assert(_foam_mesh);
 
@@ -112,6 +114,15 @@ FoamProblem::FoamProblem(InputParameters const & params)
                foam_t_var_name,
                "'.");
   }
+}
+
+void
+FoamProblem::initialSetup()
+{
+  ExternalProblem::initialSetup();
+
+  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamBC");
+  query.queryInto(_foam_bcs);
 }
 
 void
@@ -187,6 +198,11 @@ FoamProblem::syncSolutions(Direction dir)
     else if (transfer_wall_heat_flux)
     {
       syncToOpenFoam<SyncVariables::WallHeatFlux>();
+    }
+
+    for (auto & foam_bc : _foam_bcs)
+    {
+      foam_bc->imposeBoundaryCondition();
     }
   }
 }
