@@ -23,6 +23,6 @@ AddFoamBCAction::act()
     if (!foam_problem)
       mooseError("[FoamBC] can only be used with FoamProblem.");
 
-    std::cout << "FoamBC action placeholder\n";
+    auto foam_bc = foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false)[0];
   }
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "InputParameters.h"
 #include "MooseObjectAction.h"
 
