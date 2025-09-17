@@ -44,7 +44,9 @@ FoamMesh::FoamMesh(InputParameters const & params)
   : MooseMesh(params),
     _foam_patch(params.get<std::vector<std::string>>("foam_patch")),
     _foam_runtime(params.get<std::string>("case"), _communicator.get()),
-    _foam_mesh(read_polymesh(_foam_runtime.runTime()))
+    _foam_mesh(read_polymesh(_foam_runtime.runTime())),
+    _patch_counts(_foam_patch.size(), 0),
+    _patch_offsets(_foam_patch.size(), 0)
 {
   int size = 1;
   MPI_Comm_size(_communicator.get(), &size);
@@ -191,6 +193,12 @@ FoamMesh::buildMesh()
   _mesh->recalculate_n_partitions();
   libMesh::Partitioner::set_node_processor_ids(*_mesh);
   _mesh->prepare_for_use();
+
+  for (auto i = 0U; i < _subdomain_list.size(); ++i)
+  {
+    _patch_counts[i] = _foam_mesh.boundary()[_subdomain_list[i]].size();
+  }
+  std::exclusive_scan(_patch_counts.begin(), _patch_counts.end(), _patch_offsets.begin(), 0);
 }
 
 libMesh::Elem *
