@@ -39,8 +39,8 @@ public:
   std::unique_ptr<Elem> createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
                                       const Hippo::FoamFace & face);
 
-  int64_t getPatchCount(int subdomainId) const { return _patch_counts[subdomainId]; };
-  int64_t getPatchOffset(int subdomainId) const { return _patch_offsets[subdomainId]; };
+  int64_t getPatchCount(int subdomainId) const { return _patch_counts.at(subdomainId); };
+  int64_t getPatchOffset(int subdomainId) const { return _patch_offsets.at(subdomainId); };
   std::vector<int32_t> n_faces{0};
   // The index offset into the MOOSE element array, for the current rank.
   // This can be used with `getElemPtr` like so:
@@ -55,8 +55,8 @@ protected:
   std::vector<int32_t> _patch_id;
   std::vector<int> _subdomain_list;
   bool _serial = true;
-  std::vector<int64_t> _patch_counts;
-  std::vector<int64_t> _patch_offsets;
+  std::map<int, int64_t> _patch_counts;
+  std::map<int, int64_t> _patch_offsets;
 };
 // Local Variables:
 // mode: c++
