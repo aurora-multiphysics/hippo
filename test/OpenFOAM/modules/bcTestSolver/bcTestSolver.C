@@ -142,11 +142,12 @@ Foam::solvers::bcTestSolver::momentumPredictor()
 void
 Foam::solvers::bcTestSolver::thermophysicalPredictor()
 {
-  fvScalarMatrix TEqn(fvm::laplacian(thermo_.kappa(), T));
+  fvScalarMatrix eEqn(fvm::laplacian(thermo_.kappa(), thermo.he()));
 
-  fvConstraints().constrain(TEqn);
-  TEqn.solve();
-  fvConstraints().constrain(T_);
+  eEqn.solve();
+
+  thermo.he().write();
+  thermo_.correct();
 }
 
 void
