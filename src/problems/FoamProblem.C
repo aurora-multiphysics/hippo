@@ -78,15 +78,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
 
   auto t_var_name = params.get<std::string>(PARAM_VAR_T);
   auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
-  if (t_var_name.empty() && hf_var_name.empty())
-  {
-    mooseWarning("Neither parameters '",
-                 PARAM_VAR_T,
-                 "' or '",
-                 PARAM_VAR_HF,
-                 "' are set. No quantities are being transferred to OpenFOAM.");
-  }
-  else if (t_var_name == hf_var_name)
+
+  if (t_var_name == hf_var_name && !t_var_name.empty())
   {
     mooseError("Parameters '",
                PARAM_VAR_T,
@@ -99,15 +92,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
 
   auto foam_t_var_name = params.get<std::string>(PARAM_VAR_FOAM_T);
   auto foam_hf_var_name = params.get<std::string>(PARAM_VAR_FOAM_HF);
-  if (foam_t_var_name.empty() && foam_hf_var_name.empty())
-  {
-    mooseWarning("Neither parameters '",
-                 PARAM_VAR_FOAM_T,
-                 "', or '",
-                 PARAM_VAR_FOAM_HF,
-                 "' are set. No quantities are being copied from OpenFOAM.");
-  }
-  else if (foam_t_var_name == foam_hf_var_name)
+
+  if (foam_t_var_name == foam_hf_var_name && !foam_t_var_name.empty())
   {
     mooseError("Parameters '",
                PARAM_VAR_FOAM_T,
@@ -402,23 +388,39 @@ FoamProblem::verifyFoamBCs()
     variables.push_back(bc->foamVariable());
 
   std::set<std::string> unique_vars(variables.begin(), variables.end());
+
   for (auto var : unique_vars)
   {
-    std::vector<SubdomainName> bc_names;
+    if (var.empty())
+      continue;
+
+    std::vector<SubdomainID> bc_ids;
     for (auto & bc : _foam_bcs)
     {
       if (bc->foamVariable() == var)
       {
         for (auto boundary : bc->boundary())
-          bc_names.push_back(boundary);
+          bc_ids.push_back(_mesh.getSubdomainID(boundary));
       }
     }
-    auto unique_bc = std::unique(bc_names.begin(), bc_names.end());
-    if (unique_bc != bc_names.end())
+    auto unique_bc = std::unique(bc_ids.begin(), bc_ids.end());
+    if (unique_bc != bc_ids.end())
       mooseError("Imposed FoamBC has duplicated boundary '",
-                 *unique_bc,
+                 _mesh.getSubdomainName(*unique_bc),
                  "' for foam variable '",
                  var,
                  "'");
+
+    std::vector<SubdomainID> unused_ids;
+    for (auto id : _mesh.meshSubdomains())
+    {
+      auto it = std::find(bc_ids.begin(), bc_ids.end(), id);
+      if (it == bc_ids.end())
+        mooseWarning("FoamBC not imposed on boundary '",
+                     _mesh.getSubdomainName(id),
+                     "' for foam variable '",
+                     var,
+                     "'");
+    }
   }
 }
