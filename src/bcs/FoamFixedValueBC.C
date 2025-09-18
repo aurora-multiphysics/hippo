@@ -30,7 +30,8 @@ FoamFixedValueBC::imposeBoundaryCondition()
 
     // Get underlying field from OpenFOAM boundary patch
     auto & foam_var = const_cast<Foam::fvPatchField<double> &>(
-        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>("T"));
+        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
+            _foam_variable));
 
     assert(moose_t.size() == static_cast<std::size_t>(temp.size()));
 

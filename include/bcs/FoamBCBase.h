@@ -17,6 +17,9 @@ public:
   virtual void imposeBoundaryCondition() = 0;
 
 protected:
+  // OpenFOAM variable which this BC is to be imposed on
+  std::string _foam_variable;
+
   // Get a constant reference to the underlying MOOSE field
   // in the parameters object
   const MooseVariableFieldBase & getVariable(const InputParameters & params);

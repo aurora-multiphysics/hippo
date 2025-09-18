@@ -15,13 +15,13 @@
 [FoamBCs]
     [temp1]
         type=FoamFixedValueBC
-        foam_field = T
+        foam_variable = T
         v = T_bc1
         boundary = 'left right top' # test boundary restrictions
     []
     [temp2]
         type=FoamFixedValueBC
-        foam_field = T
+        foam_variable = T
         v = T_bc2
         boundary = 'bottom front back' # test boundary restrictions
     []
