@@ -2,11 +2,13 @@
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
+#include "word.H"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include <algorithm>
 #include "FoamVariableField.h"
 #include "InputParameters.h"
 #include "VariadicTable.h"
@@ -14,6 +16,7 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
+#include <string>
 
 registerMooseObject("hippoApp", FoamProblem);
 
@@ -123,6 +126,8 @@ FoamProblem::initialSetup()
 
   TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamBC");
   query.queryInto(_foam_bcs);
+
+  verifyFoamBCs();
 }
 
 void
@@ -387,4 +392,33 @@ FoamProblem::verifyFoamVariables()
     vt.addRow(var->name(), var->type(), var->foamVariable());
   }
   vt.print(_console);
+}
+
+void
+FoamProblem::verifyFoamBCs()
+{
+  std::vector<std::string> variables(_foam_bcs.size());
+  for (auto & bc : _foam_bcs)
+    variables.push_back(bc->foamVariable());
+
+  std::set<std::string> unique_vars(variables.begin(), variables.end());
+  for (auto var : unique_vars)
+  {
+    std::vector<SubdomainName> bc_names;
+    for (auto & bc : _foam_bcs)
+    {
+      if (bc->foamVariable() == var)
+      {
+        for (auto boundary : bc->boundary())
+          bc_names.push_back(boundary);
+      }
+    }
+    auto unique_bc = std::unique(bc_names.begin(), bc_names.end());
+    if (unique_bc != bc_names.end())
+      mooseError("Imposed FoamBC has duplicated boundary '",
+                 *unique_bc,
+                 "' for foam variable '",
+                 var,
+                 "'");
+  }
 }

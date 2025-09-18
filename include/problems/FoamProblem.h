@@ -45,6 +45,8 @@ public:
 
   Hippo::FoamSolver & solver() { return _solver; }
 
+  void verifyFoamBCs();
+
 protected:
   // check FoamVariables and print summarising table
   void verifyFoamVariables();
