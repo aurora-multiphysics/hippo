@@ -25,12 +25,7 @@ gradSchemes
 
 divSchemes
 {
-    default         none;
-
-    div(phi,U)      Gauss linear;
-    div(phi,K)      Gauss linear;
-    div(phi,h)      Gauss linear;
-    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+    default         Gauss linear;
 }
 
 laplacianSchemes
