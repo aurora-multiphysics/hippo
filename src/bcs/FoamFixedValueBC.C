@@ -7,7 +7,10 @@ registerMooseObject("hippoApp", FoamFixedValueBC);
 InputParameters
 FoamFixedValueBC::validParams()
 {
-  return FoamBCBase::validParams();
+  auto params = FoamBCBase::validParams();
+  params.addClassDescription("A FoamBC that imposes a fixed value dirichlet boundary condition "
+                             "on the OpenFOAM simulation");
+  return params;
 }
 
 FoamFixedValueBC::FoamFixedValueBC(const InputParameters & parameters) : FoamBCBase(parameters) {}
@@ -15,18 +18,17 @@ FoamFixedValueBC::FoamFixedValueBC(const InputParameters & parameters) : FoamBCB
 void
 FoamFixedValueBC::imposeBoundaryCondition()
 {
-  auto subdomains = _mesh->getSubdomainList();
   auto & foam_mesh = _mesh->fvMesh();
+
+  // Get subdomains this FoamBC acts on
+  // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
+  auto subdomains =
+      (_boundary.size() == 0) ? _mesh->getSubdomainList() : _mesh->getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    // replace with BoundaryRestriction member functions once FoamMesh improved
-    if (_boundary.size() != 0 &&
-        std::find(_boundary.begin(), _boundary.end(), _mesh->getSubdomainName(subdomain)) ==
-            _boundary.end())
-      continue;
+    std::vector<Real> && var_array = getMooseVariableArray(subdomain);
 
-    std::vector<Real> && var_array = getVariableArray(subdomain);
-
+    // Get underlying field from OpenFOAM boundary patch
     auto & foam_var = const_cast<Foam::fvPatchField<double> &>(
         foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>("T"));
 
