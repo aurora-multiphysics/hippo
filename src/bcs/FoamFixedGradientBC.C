@@ -23,7 +23,8 @@ FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
     _diffusivity_coefficient(parameters.get<std::string>("diffusivity_coefficient"))
 {
   // check that the diffusivity coefficient is a OpenFOAM scalar field
-  if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity_coefficient))
+  if (!_diffusivity_coefficient.empty() &&
+      !_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity_coefficient))
     mooseError(
         "Diffusivity coefficient '", _diffusivity_coefficient, "' not a Foam volScalarField.");
 }
@@ -47,7 +48,7 @@ FoamFixedGradientBC::imposeBoundaryCondition()
             _foam_variable));
 
     // Get the gradient associated with the field
-    Foam::scalarField & var_gradient(
+    Foam::scalarField & foam_gradient(
         Foam::refCast<Foam::fixedGradientFvPatchScalarField>(var).gradient());
 
     // If diffusivity_coefficient is specified grad array is a flux, so result
@@ -60,14 +61,14 @@ FoamFixedGradientBC::imposeBoundaryCondition()
 
       assert(temp_gradient.size() == coeff.size());
       // set gradient
-      for (auto i = 0; i < var_gradient.size(); ++i)
+      for (auto i = 0; i < foam_gradient.size(); ++i)
       {
-        var_gradient[i] = grad_array[i] / coeff[i];
+        foam_gradient[i] = grad_array[i] / coeff[i];
       }
     }
     else // if no diffusivity coefficient grad_array is just the gradient so copy
     {
-      std::copy(grad_array.begin(), grad_array.end(), var_gradient.begin());
+      std::copy(grad_array.begin(), grad_array.end(), foam_gradient.begin());
     }
   }
 }

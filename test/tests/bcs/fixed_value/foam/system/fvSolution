@@ -26,7 +26,7 @@ solvers
     }
 
 
-    T
+    e
     {
         solver           PBiCGStab;
         preconditioner   DIC;
@@ -34,9 +34,9 @@ solvers
         relTol           1e-8;
     }
 
-    TFinal
+    eFinal
     {
-        $T;
+        $e;
         tolerance        1e-8;
         relTol           1e-8;
     }
