@@ -19,6 +19,12 @@ FoamFixedValueBC::imposeBoundaryCondition()
   auto & foam_mesh = _mesh->fvMesh();
   for (auto subdomain : subdomains)
   {
+    // replace with BoundaryRestriction member functions once FoamMesh improved
+    if (_boundary.size() != 0 &&
+        std::find(_boundary.begin(), _boundary.end(), _mesh->getSubdomainName(subdomain)) ==
+            _boundary.end())
+      continue;
+
     std::vector<Real> && var_array = getVariableArray(subdomain);
 
     auto & foam_var = const_cast<Foam::fvPatchField<double> &>(

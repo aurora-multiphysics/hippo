@@ -4,10 +4,7 @@
 #include "InputParameters.h"
 #include "MooseObject.h"
 #include "MooseTypes.h"
-#include "MooseVariableConstMonomial.h"
-#include "MooseVariableFE.h"
 #include "MooseVariableFieldBase.h"
-#include "volFieldsFwd.H"
 #include "FoamMesh.h"
 
 class FoamBCBase : public MooseObject, public Coupleable
@@ -28,4 +25,7 @@ protected:
 
   const MooseVariableFieldBase & _v;
   FoamMesh * _mesh;
+
+  // Replace with inherited from BoundaryRestricted once FoamMesh is updated
+  std::vector<std::string> _boundary;
 };

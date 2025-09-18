@@ -23,8 +23,10 @@ FoamBCBase::validParams()
 {
   InputParameters params = MooseObject::validParams();
   params.addRequiredParam<std::string>("foam_field",
-                                       "Name of a Foam field. e.g. T (temperature) U (velocity)");
-  params.addRequiredCoupledVar("v", "MOOSE variable to impose as the boundary condition");
+                                       "Name of a Foam field. e.g. T (temperature) U (velocity).");
+  params.addRequiredCoupledVar("v", "MOOSE variable to impose as the boundary condition.");
+  params.addParam<std::vector<std::string>>("boundary",
+                                            "Boundaries that the boundary condition applies to.");
 
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
@@ -33,7 +35,10 @@ FoamBCBase::validParams()
 }
 
 FoamBCBase::FoamBCBase(const InputParameters & params)
-  : MooseObject(params), Coupleable(this, false), _v(getVariable())
+  : MooseObject(params),
+    Coupleable(this, false),
+    _v(getVariable()),
+    _boundary(params.get<std::vector<std::string>>("boundary"))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
   if (!problem)
