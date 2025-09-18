@@ -33,7 +33,7 @@ FoamFixedValueBC::imposeBoundaryCondition()
         foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
             _foam_variable));
 
-    assert(moose_t.size() == static_cast<std::size_t>(temp.size()));
+    assert(var_array.size() == static_cast<std::size_t>(foam_var.size()));
 
     std::copy(var_array.begin(), var_array.end(), foam_var.begin());
   }
