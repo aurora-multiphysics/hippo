@@ -51,6 +51,8 @@ FoamFixedGradientBC::imposeBoundaryCondition()
     Foam::scalarField & foam_gradient(
         Foam::refCast<Foam::fixedGradientFvPatchScalarField>(var).gradient());
 
+    assert(grad_array.size() == static_cast<size_t>(foam_gradient.size()));
+
     // If diffusivity_coefficient is specified grad array is a flux, so result
     // must be divided by it
     if (!_diffusivity_coefficient.empty())
@@ -59,7 +61,7 @@ FoamFixedGradientBC::imposeBoundaryCondition()
       auto & coeff = foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
           _diffusivity_coefficient);
 
-      assert(temp_gradient.size() == coeff.size());
+      assert(foam_gradient.size() == coeff.size());
       // set gradient
       for (auto i = 0; i < foam_gradient.size(); ++i)
       {
