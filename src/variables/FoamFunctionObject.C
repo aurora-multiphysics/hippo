@@ -20,7 +20,7 @@ FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamVar
   // create patch names where functionObject applies
   // TODO: when volumetric mirror is implemented some of this may need to be
   // put in the _getFunctionObject function.
-  std::vector<int> patch_ids{_mesh->getSubdomainList()};
+  auto patch_ids{_mesh->getSubdomainList()};
   Foam::wordList patch_names;
   for (auto id : patch_ids)
     patch_names.append(mesh.boundaryMesh()[id].name());

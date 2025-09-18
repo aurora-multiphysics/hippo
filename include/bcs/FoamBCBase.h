@@ -17,15 +17,23 @@ public:
   virtual void imposeBoundaryCondition() = 0;
 
 protected:
-  const MooseVariableFieldBase & getVariable();
+  // Get a constant reference to the underlying MOOSE field
+  // in the parameters object
+  const MooseVariableFieldBase & getVariable(const InputParameters & params);
 
+  // Get the value of the MOOSE variable at an element
   Real variableValueAtElement(const libMesh::Elem * elem);
 
-  std::vector<Real> getVariableArray(int subdomainId);
+  // Get the data vector of the MOOSE field on a subdomain
+  std::vector<Real> getMooseVariableArray(int subdomainId);
 
+  // Underlying MOOSE field
   const MooseVariableFieldBase & _v;
+
+  // Pointer to the FoamMesh object
   FoamMesh * _mesh;
 
-  // Replace with inherited from BoundaryRestricted once FoamMesh is updated
-  std::vector<std::string> _boundary;
+  // Boundaries that this object applies to
+  // TODO: Replace with inherited from BoundaryRestricted once FoamMesh is updated
+  std::vector<SubdomainName> _boundary;
 };

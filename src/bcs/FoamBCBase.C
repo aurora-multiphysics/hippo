@@ -1,7 +1,9 @@
 #include "Coupleable.h"
 #include "FoamBCBase.h"
 #include "FoamProblem.h"
+#include "InputParameters.h"
 #include "MooseObject.h"
+#include "MooseTypes.h"
 #include "MooseVariableFieldBase.h"
 #include "Registry.h"
 #include <vector>
@@ -11,6 +13,7 @@
 
 namespace
 {
+// Private function to check if variables are constant monomials
 inline bool
 is_constant_monomial(const MooseVariableFieldBase & var)
 {
@@ -25,8 +28,8 @@ FoamBCBase::validParams()
   params.addRequiredParam<std::string>("foam_field",
                                        "Name of a Foam field. e.g. T (temperature) U (velocity).");
   params.addRequiredCoupledVar("v", "MOOSE variable to impose as the boundary condition.");
-  params.addParam<std::vector<std::string>>("boundary",
-                                            "Boundaries that the boundary condition applies to.");
+  params.addParam<std::vector<SubdomainName>>("boundary",
+                                              "Boundaries that the boundary condition applies to.");
 
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
@@ -37,8 +40,8 @@ FoamBCBase::validParams()
 FoamBCBase::FoamBCBase(const InputParameters & params)
   : MooseObject(params),
     Coupleable(this, false),
-    _v(getVariable()),
-    _boundary(params.get<std::vector<std::string>>("boundary"))
+    _v(getVariable(params)),
+    _boundary(params.get<std::vector<SubdomainName>>("boundary"))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
   if (!problem)
@@ -47,10 +50,9 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
 }
 
 const MooseVariableFieldBase &
-FoamBCBase::getVariable()
+FoamBCBase::getVariable(const InputParameters & params)
 {
-
-  auto variable_name = *parameters().getCoupledVariableParamNames().begin();
+  auto variable_name = *params.getCoupledVariableParamNames().begin();
   auto * var = getFieldVar(variable_name, 0);
   if (!is_constant_monomial(*var))
   {
@@ -74,7 +76,7 @@ FoamBCBase::variableValueAtElement(const libMesh::Elem * elem)
 }
 
 std::vector<Real>
-FoamBCBase::getVariableArray(int subdomainId)
+FoamBCBase::getMooseVariableArray(int subdomainId)
 {
   size_t patch_count = _mesh->getPatchCount(subdomainId);
   size_t patch_offset = _mesh->getPatchOffset(subdomainId);

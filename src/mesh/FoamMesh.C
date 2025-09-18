@@ -72,7 +72,7 @@ FoamMesh::safeClone() const
   return std::make_unique<FoamMesh>(*this);
 }
 
-std::vector<int> &
+std::vector<SubdomainID> &
 FoamMesh::getSubdomainList()
 {
   return _subdomain_list;

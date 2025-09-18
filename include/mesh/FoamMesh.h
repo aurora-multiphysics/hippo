@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FoamRuntime.h"
+#include "MooseTypes.h"
 #include "libmesh/elem.h"
 #include "Foam2MooseMeshGen.h"
 
@@ -31,7 +32,7 @@ public:
   ~FoamMesh() = default;
   virtual std::unique_ptr<MooseMesh> safeClone() const override;
   virtual void buildMesh() override;
-  std::vector<int> & getSubdomainList();
+  std::vector<SubdomainID> & getSubdomainList();
   bool isSerial() const { return _serial; }
   libMesh::Elem * getElemPtr(int local) const;
   Foam::fvMesh & fvMesh() { return _foam_mesh; }
@@ -53,7 +54,7 @@ protected:
   Hippo::FoamRuntime _foam_runtime;
   Foam::fvMesh _foam_mesh;
   std::vector<int32_t> _patch_id;
-  std::vector<int> _subdomain_list;
+  std::vector<SubdomainID> _subdomain_list;
   bool _serial = true;
   std::map<int, int64_t> _patch_counts;
   std::map<int, int64_t> _patch_offsets;
