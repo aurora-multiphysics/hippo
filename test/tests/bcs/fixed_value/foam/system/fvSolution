@@ -26,17 +26,17 @@ solvers
     }
 
 
-    "(U|h|p_rgh)"
+    T
     {
         solver           PBiCGStab;
-        preconditioner   DILU;
+        preconditioner   DIC;
         tolerance        1e-8;
         relTol           1e-8;
     }
 
-    "(U|h|p_rgh)Final"
+    TFinal
     {
-        $U;
+        $T;
         tolerance        1e-8;
         relTol           1e-8;
     }

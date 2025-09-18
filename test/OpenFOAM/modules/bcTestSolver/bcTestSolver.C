@@ -28,6 +28,8 @@ License
 #include "bcTestSolver.H"
 #include "fvMeshMover.H"
 #include "addToRunTimeSelectionTable.H"
+#include "fvConstraints.H"
+#include "fvmLaplacian.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -140,6 +142,11 @@ Foam::solvers::bcTestSolver::momentumPredictor()
 void
 Foam::solvers::bcTestSolver::thermophysicalPredictor()
 {
+  fvScalarMatrix TEqn(fvm::laplacian(thermo_.kappa(), T));
+
+  fvConstraints().constrain(TEqn);
+  TEqn.solve();
+  fvConstraints().constrain(T_);
 }
 
 void

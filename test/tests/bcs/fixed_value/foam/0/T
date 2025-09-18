@@ -22,32 +22,32 @@ boundaryField
 {
     left
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
     right
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
     top
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
     bottom
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
     back
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
     front
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
 }
