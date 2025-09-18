@@ -63,7 +63,7 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   {
     auto it = std::find(all_subdomain_names.begin(), all_subdomain_names.end(), subdomain);
     if (it == all_subdomain_names.end())
-      mooseError("Boundary '", subdomain, "' not found in FoamMesh.");
+      mooseError("Boundary '", subdomain, "' not found in FoamMesh");
   }
 }
 
