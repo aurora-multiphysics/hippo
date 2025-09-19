@@ -17,10 +17,13 @@ public:
   virtual void imposeBoundaryCondition() = 0;
 
   // returns foam variable BC applies to
-  std::string foamVariable() { return _foam_variable; };
+  std::string foamVariable() const { return _foam_variable; };
 
   // returns foam variable BC applies to
-  std::vector<SubdomainName> boundary() { return _boundary; };
+  std::vector<SubdomainName> boundary() const { return _boundary; };
+
+  // returns MOOSE variable used by BC
+  std::string mooseVariable() const { return _v.name(); };
 
 protected:
   // OpenFOAM variable which this BC is to be imposed on

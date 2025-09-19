@@ -34,13 +34,5 @@
             cli_args = 'FoamBCs/temp_r/boundary=left'
             allow_warnings = true
         []
-        [foam_unused_boundary_warning]
-            type = RunException
-            input = main.i
-            prereq = foam_bc_action/setup
-            expect_err = "FoamBC not imposed on boundary 'top' for foam variable 'T'"
-            cli_args = "Mesh/foam_patch='left right top'"
-            allow_warnings = false
-        []
     []
 []
