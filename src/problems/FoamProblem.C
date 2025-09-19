@@ -6,6 +6,7 @@
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include "VariadicTable.h"
 #include <finiteVolume/solver/solver.H>
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
@@ -119,6 +120,14 @@ FoamProblem::externalSolve()
     _solver.setTimeDelta(_dt); // Needed for constant deltaT cases
     _solver.run();
   }
+}
+
+void
+FoamProblem::initialSetup()
+{
+  ExternalProblem::initialSetup();
+
+  verifyFoamVariables();
 }
 
 void
@@ -343,9 +352,25 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
 }
 
 void
-FoamProblem::addShadowVariable(FoamVariableField * var)
+FoamProblem::addFoamVariable(FoamVariableField * var)
 {
   // add shadowed variable to private/protected list
   assert(var);
   _shadow_variables.push_back(var);
+}
+
+void
+FoamProblem::verifyFoamVariables()
+{
+  // Create table summarising FoamVariables
+  VariadicTable<std::string, std::string, std::string> vt({
+      "FoamVariable name",
+      "Type",
+      "Foam variable",
+  });
+  for (auto & var : _shadow_variables)
+  {
+    vt.addRow(var->name(), var->type(), var->foamVariable());
+  }
+  vt.print(_console);
 }

@@ -26,7 +26,7 @@ FoamVariableField::FoamVariableField(const InputParameters & params)
 
   _mesh = &problem->mesh();
 
-  problem->addShadowVariable(this);
+  problem->addFoamVariable(this);
 }
 
 void
