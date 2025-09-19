@@ -381,6 +381,7 @@ FoamProblem::verifyFoamVariables()
   vt.print(_console);
 }
 
+// Create comma separated list from vector
 template <typename StrType>
 inline std::string
 listFromVector(std::vector<StrType> vec, StrType sep = ", ")
@@ -399,12 +400,14 @@ listFromVector(std::vector<StrType> vec, StrType sep = ", ")
 void
 FoamProblem::verifyFoamBCs()
 {
+  // Get list of all variables used by all BCs
   std::vector<std::string> variables(_foam_bcs.size());
   for (auto & bc : _foam_bcs)
     variables.push_back(bc->foamVariable());
 
   std::set<std::string> unique_vars(variables.begin(), variables.end());
 
+  // Create table for printing BC information
   VariadicTable<std::string, std::string, std::string, std::string, std::string> vt({
       "FoamBC name",
       "Type",
@@ -412,11 +415,13 @@ FoamProblem::verifyFoamBCs()
       "MOOSE field",
       "Boundaries",
   });
+
   for (auto var : unique_vars)
   {
     if (var.empty())
       continue;
 
+    // create list of all boundaries where bc has been applied for var
     std::vector<SubdomainName> used_bcs;
     for (auto & bc : _foam_bcs)
     {
@@ -424,6 +429,7 @@ FoamProblem::verifyFoamBCs()
       {
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
+        // List info about BC
         vt.addRow(bc->name(),
                   bc->type(),
                   bc->foamVariable(),
@@ -431,6 +437,8 @@ FoamProblem::verifyFoamBCs()
                   listFromVector(boundary));
       }
     }
+
+    // Find duplicates
     auto unique_bc = std::unique(used_bcs.begin(), used_bcs.end());
     if (unique_bc != used_bcs.end())
       mooseError("Imposed FoamBC has duplicated boundary '",
@@ -439,6 +447,7 @@ FoamProblem::verifyFoamBCs()
                  var,
                  "'");
 
+    // Add table entry for boundaries which do no have BC for variable
     std::vector<SubdomainName> unused_bcs;
     for (auto bc : _mesh.getSubdomainNames(_foam_mesh->getSubdomainList()))
     {
