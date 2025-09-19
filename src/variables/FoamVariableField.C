@@ -32,6 +32,9 @@ FoamVariableField::FoamVariableField(const InputParameters & params)
 void
 FoamVariableField::transferVariable()
 {
+  // TODO: some recent  changes to FoamMesh can improve this
+  // TODO: may be useful to create a base class for getting data to and from MOOSE/OpenFOAM
+
   auto subdomains = _mesh->getSubdomainList();
   auto & foam_mesh = _mesh->fvMesh();
   std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
