@@ -26,7 +26,7 @@ FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
   if (!_diffusivity_coefficient.empty() &&
       !_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity_coefficient))
     mooseError(
-        "Diffusivity coefficient '", _diffusivity_coefficient, "' not a Foam volScalarField.");
+        "Diffusivity coefficient '", _diffusivity_coefficient, "' not a Foam volScalarField");
 }
 
 void
