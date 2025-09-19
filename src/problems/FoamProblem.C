@@ -2,6 +2,7 @@
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
+#include "VariadicTable.h"
 #include "word.H"
 
 #include <AuxiliarySystem.h>
@@ -380,6 +381,21 @@ FoamProblem::verifyFoamVariables()
   vt.print(_console);
 }
 
+template <typename StrType>
+inline std::string
+listFromVector(std::vector<StrType> vec, StrType sep = ", ")
+{
+  if (vec.size() == 0)
+    return std::string();
+  else if (vec.size() == 1)
+    return vec.at(0);
+
+  std::string str;
+  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
+  std::accumulate(vec.begin(), vec.end(), str, binary_op);
+  return str;
+}
+
 void
 FoamProblem::verifyFoamBCs()
 {
@@ -389,38 +405,49 @@ FoamProblem::verifyFoamBCs()
 
   std::set<std::string> unique_vars(variables.begin(), variables.end());
 
+  VariadicTable<std::string, std::string, std::string, std::string, std::string> vt({
+      "FoamBC name",
+      "Type",
+      "Foam variable",
+      "MOOSE field",
+      "Boundaries",
+  });
   for (auto var : unique_vars)
   {
     if (var.empty())
       continue;
 
-    std::vector<SubdomainID> bc_ids;
+    std::vector<SubdomainName> used_bcs;
     for (auto & bc : _foam_bcs)
     {
       if (bc->foamVariable() == var)
       {
-        for (auto boundary : bc->boundary())
-          bc_ids.push_back(_mesh.getSubdomainID(boundary));
+        auto && boundary = bc->boundary();
+        used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
+        vt.addRow(bc->name(),
+                  bc->type(),
+                  bc->foamVariable(),
+                  bc->mooseVariable(),
+                  listFromVector(boundary));
       }
     }
-    auto unique_bc = std::unique(bc_ids.begin(), bc_ids.end());
-    if (unique_bc != bc_ids.end())
+    auto unique_bc = std::unique(used_bcs.begin(), used_bcs.end());
+    if (unique_bc != used_bcs.end())
       mooseError("Imposed FoamBC has duplicated boundary '",
-                 _mesh.getSubdomainName(*unique_bc),
+                 *unique_bc,
                  "' for foam variable '",
                  var,
                  "'");
 
-    std::vector<SubdomainID> unused_ids;
-    for (auto id : _mesh.meshSubdomains())
+    std::vector<SubdomainName> unused_bcs;
+    for (auto bc : _mesh.getSubdomainNames(_foam_mesh->getSubdomainList()))
     {
-      auto it = std::find(bc_ids.begin(), bc_ids.end(), id);
-      if (it == bc_ids.end())
-        mooseWarning("FoamBC not imposed on boundary '",
-                     _mesh.getSubdomainName(id),
-                     "' for foam variable '",
-                     var,
-                     "'");
+      auto it = std::find(used_bcs.begin(), used_bcs.end(), bc);
+      if (it == used_bcs.end())
+        unused_bcs.push_back(bc);
     }
+    if (unused_bcs.size() > 0)
+      vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
   }
+  vt.print(_console);
 }
