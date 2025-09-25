@@ -27,18 +27,10 @@
     []
 []
 
-[AuxVariables]
+[FoamVariables]
     [T_shadow]
         type = FoamVariableField
         foam_variable = 'T'
-    []
-    [T_bc1]
-        family = MONOMIAL
-        order = CONSTANT
-    []
-    [T_bc2]
-        family = MONOMIAL
-        order = CONSTANT
     []
     [e_shadow]
         type = FoamVariableField
@@ -47,6 +39,17 @@
     [whf_shadow]
         type = FoamFunctionObject
         foam_variable = 'wallHeatFlux'
+    []
+[]
+
+[AuxVariables]
+    [T_bc1]
+        family = MONOMIAL
+        order = CONSTANT
+    []
+    [T_bc2]
+        family = MONOMIAL
+        order = CONSTANT
     []
 []
 
