@@ -111,8 +111,15 @@ FoamProblem::initialSetup()
 {
   ExternalProblem::initialSetup();
 
-  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamBC");
-  query.queryInto(_foam_bcs);
+  // Get FoamVariables create by the action AddFoamVariableAction
+  TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
+  query_vars.queryInto(_foam_variables);
+
+  verifyFoamVariables();
+
+  // Get FoamBCs create by the action AddFoamBCAction
+  TheWarehouse::Query query_bcs = theWarehouse().query().condition<AttribSystem>("FoamBC");
+  query_bcs.queryInto(_foam_bcs);
 
   verifyFoamBCs();
 }
@@ -125,18 +132,6 @@ FoamProblem::externalSolve()
     _solver.setTimeDelta(_dt); // Needed for constant deltaT cases
     _solver.run();
   }
-}
-
-void
-FoamProblem::initialSetup()
-{
-  ExternalProblem::initialSetup();
-
-  // Get FoamVariables create by the action AddFoamVariableAction
-  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamVariable");
-  query.queryInto(_foam_variables);
-
-  verifyFoamVariables();
 }
 
 void
