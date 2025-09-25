@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Moose.h"
 #include "MooseTypes.h"
 #include "FoamMesh.h"
-#include "MooseVariableConstMonomial.h"
 
-class FoamVariableField : public MooseVariableConstMonomial
+class FoamVariableField : public MooseObject
 {
 public:
   static InputParameters validParams();
@@ -20,6 +20,10 @@ public:
 protected:
   // variable name or functionObject to be shadowed
   std::string _foam_variable;
+
+  MooseVariableFieldBase & _moose_var;
+
+  MooseVariableFieldBase & getVariable(std::string name, const InputParameters & params);
 
   // Pointer to the FoamMesh object
   FoamMesh * _mesh;

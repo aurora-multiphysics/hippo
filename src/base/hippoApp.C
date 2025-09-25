@@ -32,6 +32,9 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   Registry::registerActionsTo(af, {"hippoApp"});
 
   /* register custom execute flags, action syntax, etc. here */
+
+  registerSyntaxTask("AddFoamVariableAction", "FoamVariables/*", "add_foam_variable");
+  registerMooseObjectTask("add_foam_variable", FoamVariable, false);
 }
 
 void
