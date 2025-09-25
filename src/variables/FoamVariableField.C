@@ -1,32 +1,58 @@
 #include "FoamVariableField.h"
 #include "FoamProblem.h"
-#include "MooseVariableConstMonomial.h"
+#include "InputParameters.h"
+#include "MooseObject.h"
+#include "MooseTypes.h"
+#include "MooseVariableFieldBase.h"
+#include "MooseVariableFieldBase.h"
 
 registerMooseObject("hippoApp", FoamVariableField);
 
 InputParameters
 FoamVariableField::validParams()
 {
-  InputParameters params = MooseVariableConstMonomial::validParams();
+  auto params = MooseVariableFieldBase::validParams();
+  params.remove("family");
+  params.remove("type");
+
   params.addRequiredParam<std::string>("foam_variable",
                                        "OpenFOAM variable or functionObject to be shadowed");
+
+  params.registerBase("FoamVariable");
+  params.registerSystemAttributeName("FoamVariable");
   return params;
 }
 
-FoamVariableField::FoamVariableField(const InputParameters & params)
-  : MooseVariableConstMonomial(params), _foam_variable(params.get<std::string>("foam_variable"))
+MooseVariableFieldBase &
+FoamVariableField::getVariable(std::string name, const InputParameters & params)
 {
-  // Check problem types and that variable is declared in AuxVariables
-  if (kind() != Moose::VarKindType::VAR_AUXILIARY)
-    mooseError("FoamVariables can only be instantiated as AuxVariables");
+  auto & problem = getMooseApp().feProblem();
 
+  InputParameters var_params(params);
+  auto valid_params = _factory.getValidParams("MooseVariable");
+
+  for (auto & param : params)
+    if (!valid_params.isParamValid(param.first))
+      var_params.remove(param.first);
+
+  var_params.set<std::string>("order") = "CONSTANT";
+  var_params.set<std::string>("family") = "MONOMIAL";
+
+  problem.addAuxVariable("MooseVariable", _name, var_params);
+
+  return problem.getVariable(0, _name, Moose::VarKindType::VAR_AUXILIARY);
+}
+
+FoamVariableField::FoamVariableField(const InputParameters & params)
+  : MooseObject(params),
+    _foam_variable(params.get<std::string>("foam_variable")),
+    _moose_var(getVariable(_name, params))
+{
   auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
   if (!problem)
     mooseError("This Variable can only be used with FoamProblem");
 
   _mesh = &problem->mesh();
-
-  problem->addFoamVariable(this);
 }
 
 void
@@ -58,10 +84,10 @@ FoamVariableField::transferVariable()
     {
       auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
       assert(elem_ptr);
-      auto dof_t = elem_ptr->dof_number(sys().number(), number(), 0);
-      sys().solution().set(dof_t, data[elem]);
+      auto dof_t = elem_ptr->dof_number(_moose_var.sys().number(), _moose_var.number(), 0);
+      _moose_var.sys().solution().set(dof_t, data[elem]);
     }
   }
 
-  sys().solution().close();
+  _moose_var.sys().solution().close();
 }

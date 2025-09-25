@@ -9,6 +9,7 @@
 #include <MooseVariableFieldBase.h>
 #include <SystemBase.h>
 #include <libmesh/elem.h>
+#include <string>
 
 class FoamProblem : public ExternalProblem
 {
@@ -42,14 +43,11 @@ public:
 
   Hippo::FoamSolver & solver() { return _solver; }
 
-  // Add MOOSE variable that shadows a Foam counterpart
-  void addFoamVariable(FoamVariableField * var);
-
 protected:
   // check FoamVariables and print summarising table
   void verifyFoamVariables();
 
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
-  std::vector<FoamVariableField *> _shadow_variables;
+  std::vector<FoamVariableField *> _foam_variables;
 };

@@ -6,6 +6,8 @@
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include "FoamVariableField.h"
+#include "InputParameters.h"
 #include "VariadicTable.h"
 #include <finiteVolume/solver/solver.H>
 #include <fvMesh.H>
@@ -65,7 +67,7 @@ FoamProblem::FoamProblem(InputParameters const & params)
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
                 .ptr()),
-    _shadow_variables()
+    _foam_variables()
 {
   assert(_foam_mesh);
 
@@ -127,6 +129,9 @@ FoamProblem::initialSetup()
 {
   ExternalProblem::initialSetup();
 
+  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamVariable");
+  query.queryInto(_foam_variables);
+
   verifyFoamVariables();
 }
 
@@ -158,7 +163,7 @@ FoamProblem::syncSolutions(Direction dir)
     }
 
     // Loop of shadowed variables and perform transfer
-    for (auto & var : _shadow_variables)
+    for (auto & var : _foam_variables)
     {
       var->transferVariable();
     }
@@ -352,14 +357,6 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
 }
 
 void
-FoamProblem::addFoamVariable(FoamVariableField * var)
-{
-  // add shadowed variable to private/protected list
-  assert(var);
-  _shadow_variables.push_back(var);
-}
-
-void
 FoamProblem::verifyFoamVariables()
 {
   // Create table summarising FoamVariables
@@ -368,7 +365,7 @@ FoamProblem::verifyFoamVariables()
       "Type",
       "Foam variable",
   });
-  for (auto & var : _shadow_variables)
+  for (auto & var : _foam_variables)
   {
     vt.addRow(var->name(), var->type(), var->foamVariable());
   }
