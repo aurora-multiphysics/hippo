@@ -129,6 +129,7 @@ FoamProblem::initialSetup()
 {
   ExternalProblem::initialSetup();
 
+  // Get FoamVariables create by the action AddFoamVariableAction
   TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamVariable");
   query.queryInto(_foam_variables);
 
