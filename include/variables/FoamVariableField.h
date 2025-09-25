@@ -21,9 +21,11 @@ protected:
   // variable name or functionObject to be shadowed
   std::string _foam_variable;
 
+  // moose variable that shadows the OpenFOAM variable
   MooseVariableFieldBase & _moose_var;
 
-  MooseVariableFieldBase & getVariable(std::string name, const InputParameters & params);
+  // Create Auxilliary variable
+  MooseVariableFieldBase & createMooseVariable(std::string name, const InputParameters & params);
 
   // Pointer to the FoamMesh object
   FoamMesh * _mesh;
