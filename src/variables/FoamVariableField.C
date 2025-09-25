@@ -11,9 +11,7 @@ registerMooseObject("hippoApp", FoamVariableField);
 InputParameters
 FoamVariableField::validParams()
 {
-  auto params = MooseVariableFieldBase::validParams();
-  params.remove("family");
-  params.remove("type");
+  auto params = MooseObject::validParams();
 
   params.addRequiredParam<std::string>("foam_variable",
                                        "OpenFOAM variable or functionObject to be shadowed");
@@ -28,25 +26,21 @@ FoamVariableField::getVariable(std::string name, const InputParameters & params)
 {
   auto & problem = getMooseApp().feProblem();
 
-  InputParameters var_params(params);
-  auto valid_params = _factory.getValidParams("MooseVariable");
+  auto var_params = _factory.getValidParams("MooseVariable");
 
-  for (auto & param : params)
-    if (!valid_params.isParamValid(param.first))
-      var_params.remove(param.first);
+  var_params.set<MooseEnum>("order") = "CONSTANT";
+  var_params.set<MooseEnum>("family") = "MONOMIAL";
 
-  var_params.set<std::string>("order") = "CONSTANT";
-  var_params.set<std::string>("family") = "MONOMIAL";
+  problem.addAuxVariable("MooseVariable", name, var_params);
 
-  problem.addAuxVariable("MooseVariable", _name, var_params);
-
-  return problem.getVariable(0, _name, Moose::VarKindType::VAR_AUXILIARY);
+  THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
+  return problem.getVariable(tid, name, Moose::VarKindType::VAR_AUXILIARY);
 }
 
 FoamVariableField::FoamVariableField(const InputParameters & params)
   : MooseObject(params),
     _foam_variable(params.get<std::string>("foam_variable")),
-    _moose_var(getVariable(_name, params))
+    _moose_var(getVariable(name(), params))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
   if (!problem)

@@ -35,6 +35,7 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 
   registerSyntaxTask("AddFoamVariableAction", "FoamVariables/*", "add_foam_variable");
   registerMooseObjectTask("add_foam_variable", FoamVariable, false);
+  addTaskDependency("add_external_aux_variables", "add_foam_variable");
 }
 
 void
