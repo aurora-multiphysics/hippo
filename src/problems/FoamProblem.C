@@ -51,17 +51,22 @@ FoamProblem::validParams()
   // Parameters to set variables to read from/write to.
   // Note that these can be omitted or point to the same variable to save
   // memory.
-  params.addParam<std::string>(PARAM_VAR_FOAM_HF,
-                               "The name of the aux variable to write the "
-                               "OpenFOAM wall heat flux into.");
-  params.addParam<std::string>(PARAM_VAR_FOAM_T,
-                               "The name of the aux variable to write the "
-                               "OpenFOAM boundary temperature into.");
-  params.addParam<std::string>(
-      PARAM_VAR_HF, "The name of the aux variable to set the OpenFOAM wall heat flux from.");
-  params.addParam<std::string>(PARAM_VAR_T,
-                               "The name of the aux variable to set the "
-                               "OpenFOAM boundary temperature from.");
+  params.addDeprecatedParam<std::string>(PARAM_VAR_FOAM_HF,
+                                         "The name of the aux variable to write the "
+                                         "OpenFOAM wall heat flux into.",
+                                         "Use FoamFunctionObject in the new [FoamVariables] block");
+  params.addDeprecatedParam<std::string>(PARAM_VAR_FOAM_T,
+                                         "The name of the aux variable to write the "
+                                         "OpenFOAM boundary temperature into.",
+                                         "Use FoamVariableField in the new [FoamVariables] block");
+  params.addDeprecatedParam<std::string>(
+      PARAM_VAR_HF,
+      "The name of the aux variable to set the OpenFOAM wall heat flux from.",
+      "Use FoamFixedGradientBC in the new [FoamBCs] block");
+  params.addDeprecatedParam<std::string>(PARAM_VAR_T,
+                                         "The name of the aux variable to set the "
+                                         "OpenFOAM boundary temperature from.",
+                                         "Use FoamFixedValueBC in the new [FoamBCs] block");
   return params;
 }
 
@@ -80,29 +85,17 @@ FoamProblem::FoamProblem(InputParameters const & params)
   auto t_var_name = params.get<std::string>(PARAM_VAR_T);
   auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
 
-  if (t_var_name == hf_var_name && !t_var_name.empty())
+  if (!t_var_name.empty() || !hf_var_name.empty())
   {
-    mooseError("Parameters '",
-               PARAM_VAR_T,
-               "' and '",
-               PARAM_VAR_HF,
-               "' cannot refer to the same variable: '",
-               t_var_name,
-               "'.");
+    mooseError("BCs should no longer be specified using the old syntax");
   }
 
   auto foam_t_var_name = params.get<std::string>(PARAM_VAR_FOAM_T);
   auto foam_hf_var_name = params.get<std::string>(PARAM_VAR_FOAM_HF);
 
-  if (foam_t_var_name == foam_hf_var_name && !foam_t_var_name.empty())
+  if (!foam_hf_var_name.empty() || !foam_t_var_name.empty())
   {
-    mooseError("Parameters '",
-               PARAM_VAR_FOAM_T,
-               "' and '",
-               PARAM_VAR_FOAM_HF,
-               "' cannot refer to the same variable: '",
-               foam_t_var_name,
-               "'.");
+    mooseError("Variable shadowing should no longer be specified using the old syntax");
   }
 }
 
@@ -138,29 +131,10 @@ void
 FoamProblem::syncSolutions(Direction dir)
 {
   if (!parameters().get<bool>("solve"))
-  {
     return;
-  }
+
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
-    auto transfer_wall_temp = !parameters().get<std::string>(PARAM_VAR_FOAM_T).empty();
-    auto transfer_wall_heat_flux = !parameters().get<std::string>(PARAM_VAR_FOAM_HF).empty();
-    if (transfer_wall_temp)
-    {
-      if (transfer_wall_heat_flux)
-      {
-        syncFromOpenFoam<SyncVariables::Both>();
-      }
-      else
-      {
-        syncFromOpenFoam<SyncVariables::WallTemperature>();
-      }
-    }
-    else if (transfer_wall_heat_flux)
-    {
-      syncFromOpenFoam<SyncVariables::WallHeatFlux>();
-    }
-
     // Loop of shadowed variables and perform transfer
     for (auto & var : _foam_variables)
     {
@@ -169,24 +143,6 @@ FoamProblem::syncSolutions(Direction dir)
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
   {
-    auto transfer_wall_temp = !parameters().get<std::string>(PARAM_VAR_T).empty();
-    auto transfer_wall_heat_flux = !parameters().get<std::string>(PARAM_VAR_HF).empty();
-    if (transfer_wall_temp)
-    {
-      if (transfer_wall_heat_flux)
-      {
-        syncToOpenFoam<SyncVariables::Both>();
-      }
-      else
-      {
-        syncToOpenFoam<SyncVariables::WallTemperature>();
-      }
-    }
-    else if (transfer_wall_heat_flux)
-    {
-      syncToOpenFoam<SyncVariables::WallHeatFlux>();
-    }
-
     for (auto & foam_bc : _foam_bcs)
     {
       foam_bc->imposeBoundaryCondition();
