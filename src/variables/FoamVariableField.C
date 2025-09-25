@@ -22,25 +22,30 @@ FoamVariableField::validParams()
 }
 
 MooseVariableFieldBase &
-FoamVariableField::getVariable(std::string name, const InputParameters & params)
+FoamVariableField::createMooseVariable(std::string name, const InputParameters & params)
 {
+  // TODO: Add other parameters from variable instantiations such as Boundary restrictions
   auto & problem = getMooseApp().feProblem();
 
   auto var_params = _factory.getValidParams("MooseVariable");
 
+  // The MOOSE variable has to be constant monomial
   var_params.set<MooseEnum>("order") = "CONSTANT";
   var_params.set<MooseEnum>("family") = "MONOMIAL";
 
+  // Create the Aux variable
   problem.addAuxVariable("MooseVariable", name, var_params);
 
   THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
+
+  // return reference to moose variable
   return problem.getVariable(tid, name, Moose::VarKindType::VAR_AUXILIARY);
 }
 
 FoamVariableField::FoamVariableField(const InputParameters & params)
   : MooseObject(params),
     _foam_variable(params.get<std::string>("foam_variable")),
-    _moose_var(getVariable(name(), params))
+    _moose_var(createMooseVariable(name(), params))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
   if (!problem)
