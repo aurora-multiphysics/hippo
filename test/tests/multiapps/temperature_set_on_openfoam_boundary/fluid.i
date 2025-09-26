@@ -28,11 +28,27 @@
   []
 []
 
+[FoamBCs]
+  [T]
+    type = FoamFixedValueBC
+    foam_variable = T
+    v = T
+  []
+[]
+
+[FoamVariables]
+  [foam_T]
+    type = FoamVariableField
+    foam_variable = T
+  []
+  [foam_hf]
+    type = FoamFunctionObject
+    foam_variable = wallHeatFlux
+  []
+[]
+
 [Problem]
   type=FoamProblem
-  temp = T
-  foam_temp = foam_T
-  foam_heat_flux = foam_hf
 []
 
 [Executioner]
