@@ -22,8 +22,7 @@ FoamFixedValueBC::imposeBoundaryCondition()
 
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
-  auto subdomains =
-      (_boundary.size() == 0) ? _mesh->getSubdomainList() : _mesh->getSubdomainIDs(_boundary);
+  auto subdomains = _mesh->getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
     std::vector<Real> && var_array = getMooseVariableArray(subdomain);
