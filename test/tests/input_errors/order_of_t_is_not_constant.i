@@ -4,6 +4,14 @@
   foam_patch = 'topAndBottom frontAndBack'
 []
 
+[FoamBCs]
+  [T]
+    type = FoamFixedValueBC
+    foam_variable = T
+    v = T
+  []
+[]
+
 [AuxVariables]
   [T]
     initial_condition = 111
@@ -23,9 +31,6 @@
 
 [Problem]
   type=FoamProblem
-  temp = T
-  foam_temp = foam_T
-  foam_heat_flux = foam_hf
 []
 
 [Executioner]

@@ -10,29 +10,27 @@
   []
 []
 
-[AuxVariables]
+[FoamVariables]
   [T]
-    initial_condition = 111
-    family = MONOMIAL
-    order = CONSTANT
+    type = FoamVariableField
+    foam_variable = T
   []
-  [foam_T]
-    initial_condition = 999
-    family = MONOMIAL
-    order = CONSTANT
+  [hf]
+    type = FoamFunctionObject
+    foam_variable = wallHeatFlux
   []
-  [foam_hf]
-    initial_condition = -999
-    family = MONOMIAL
-    order = CONSTANT
+[]
+
+[FoamBCs]
+  [T]
+    type = FoamFixedValueBC
+    foam_variable = T
+    v = T
   []
 []
 
 [Problem]
   type=FoamProblem
-  temp = T
-  foam_temp = foam_T
-  foam_heat_flux = foam_hf
 []
 
 [Executioner]

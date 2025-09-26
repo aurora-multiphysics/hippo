@@ -74,13 +74,7 @@ FoamBCBase::getVariable(const InputParameters & params)
   auto * var = getFieldVar(variable_name, 0);
   if (!is_constant_monomial(*var))
   {
-    mooseError("variable '",
-               variable_name,
-               "' (",
-               var->name(),
-               ") must have:\n"
-               "  family = MONOMIAL\n"
-               "  order = CONSTANT\n");
+    mooseError("Variable '", variable_name, "' (", var->name(), ") must be a constant monomial");
   }
   return *var;
 }
