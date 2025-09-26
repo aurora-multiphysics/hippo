@@ -23,6 +23,10 @@ AddFoamBCAction::act()
     if (!foam_problem)
       mooseError("[FoamBC] can only be used with FoamProblem.");
 
+    if (foam_problem->oldBCSyntax())
+      mooseError(
+          "The old BC sytax (Problem/temp, Problem/heat_flux) cannot be used with [FoamBCs] block");
+
     auto foam_bc = foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false)[0];
   }
 }

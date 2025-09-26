@@ -14,7 +14,7 @@
             type = RunException
             input = main.i
             prereq = transfer_test/setup
-            expect_err = "FoamVariables block must be used with FoamProblem"
+            expect_err = "can only be used with FoamProblem"
             cli_args = "Problem/type=FEProblem"
             allow_warnings = true
         []
