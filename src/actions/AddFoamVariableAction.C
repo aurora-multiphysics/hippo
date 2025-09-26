@@ -27,7 +27,11 @@ AddFoamVariableAction::act()
   {
     auto * foam_problem = dynamic_cast<FoamProblem *>(_problem.get());
     if (!foam_problem)
-      mooseError("FoamVariables block must be used with FoamProblem");
+      mooseError("[FoamVariables] can only be used with FoamProblem.");
+
+    if (foam_problem->oldVariableSyntax())
+      mooseError("The old variable shadowing sytax (Problem/foam_temp, Problem/foam_heat_flux) "
+                 "cannot be used with [FoamVariables] block");
 
     foam_problem->addObject<FoamVariableField>(_type, _name, _moose_object_pars, false);
   }

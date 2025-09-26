@@ -1,4 +1,7 @@
 #include "ExternalProblem.h"
+#include "FoamFixedValueBC.h"
+#include "FoamFixedGradientBC.h"
+#include "FoamFunctionObject.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
@@ -48,7 +51,7 @@ FoamProblem::validParams()
 {
   auto params = ExternalProblem::validParams();
 
-  // Parameters to set variables to read from/write to.
+  // Deprecated parameters to set variables to read from/write to.
   // Note that these can be omitted or point to the same variable to save
   // memory.
   params.addDeprecatedParam<std::string>(PARAM_VAR_FOAM_HF,
@@ -78,24 +81,62 @@ FoamProblem::FoamProblem(InputParameters const & params)
                               _foam_mesh->fvMesh())
                 .ptr()),
     _foam_variables(),
-    _foam_bcs()
+    _foam_bcs(),
+    _old_bc_syntax(false),
+    _old_variable_syntax(false)
 {
   assert(_foam_mesh);
 
   auto t_var_name = params.get<std::string>(PARAM_VAR_T);
   auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
 
-  if (!t_var_name.empty() || !hf_var_name.empty())
+  if (!t_var_name.empty())
   {
-    mooseError("BCs should no longer be specified using the old syntax");
+    if (!hf_var_name.empty())
+      mooseError("'temp' and 'heat_flux cannot both be specified.");
+
+    auto params = _factory.getValidParams("FoamFixedValueBC");
+    params.set<std::string>("foam_variable") = 'T';
+    params.set<std::string>("v") = t_var_name;
+
+    addObject<FoamFixedValueBC>("FoamFixedValueBC", PARAM_VAR_T, params);
+
+    _old_bc_syntax = true;
+  }
+  else if (!hf_var_name.empty())
+  {
+    auto params = _factory.getValidParams("FoamFixedGradientBC");
+    params.set<std::string>("foam_variable") = 'T';
+    params.set<std::string>("v") = hf_var_name;
+    params.set<std::string>("diffusivity_coefficient") = "kappa";
+    addObject<FoamFixedGradientBC>("FoamFixedGradientBC", PARAM_VAR_HF, params);
+
+    _old_bc_syntax = true;
   }
 
   auto foam_t_var_name = params.get<std::string>(PARAM_VAR_FOAM_T);
   auto foam_hf_var_name = params.get<std::string>(PARAM_VAR_FOAM_HF);
 
-  if (!foam_hf_var_name.empty() || !foam_t_var_name.empty())
+  if (!foam_t_var_name.empty())
   {
-    mooseError("Variable shadowing should no longer be specified using the old syntax");
+    mooseWarning("Foam variable shadowing should no longer be specified using the old syntax");
+
+    auto params = _factory.getValidParams("FoamVariableField");
+    params.set<std::string>("foam_variable") = 'T';
+    addObject<FoamVariableField>("FoamVariableField", PARAM_VAR_T, params);
+
+    _old_variable_syntax = true;
+  }
+
+  if (!foam_hf_var_name.empty())
+  {
+    mooseWarning("Foam variable shadowing should no longer be specified using the old syntax");
+
+    auto params = _factory.getValidParams("FoamFunctionObject");
+    params.set<std::string>("foam_variable") = "wallheatFlux";
+    addObject<FoamFunctionObject>("FoamFunctionObject", PARAM_VAR_HF, params);
+
+    _old_variable_syntax = true;
   }
 }
 
