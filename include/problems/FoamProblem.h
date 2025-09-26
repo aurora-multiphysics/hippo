@@ -47,20 +47,20 @@ public:
 
   void verifyFoamBCs();
 
-  bool oldBCSyntax() { return _old_bc_syntax; };
+  bool oldBCSyntax();
 
-  bool oldVariableSyntax() { return _old_variable_syntax; };
+  bool oldVariableSyntax();
 
 protected:
   // check FoamVariables and print summarising table
   void verifyFoamVariables();
 
+  void addOldStyleBCs();
+
+  void addOldStyleVariables();
+
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
   std::vector<FoamVariableField *> _foam_variables;
   std::vector<FoamBCBase *> _foam_bcs;
-
-  // check if old syntax used
-  bool _old_bc_syntax;
-  bool _old_variable_syntax;
 };
