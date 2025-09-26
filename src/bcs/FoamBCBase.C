@@ -65,6 +65,9 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
     if (it == all_subdomain_names.end())
       mooseError("Boundary '", subdomain, "' not found in FoamMesh");
   }
+
+  if (_boundary.empty())
+    _boundary = all_subdomain_names;
 }
 
 const MooseVariableFieldBase &
