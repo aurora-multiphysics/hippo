@@ -73,6 +73,73 @@ FoamProblem::validParams()
   return params;
 }
 
+bool
+FoamProblem::oldBCSyntax()
+{
+  return !parameters().get<std::string>(PARAM_VAR_T).empty() ||
+         !parameters().get<std::string>(PARAM_VAR_HF).empty();
+}
+
+bool
+FoamProblem::oldVariableSyntax()
+{
+  return !parameters().get<std::string>(PARAM_VAR_FOAM_T).empty() ||
+         !parameters().get<std::string>(PARAM_VAR_FOAM_HF).empty();
+}
+
+void
+FoamProblem::addOldStyleBCs()
+{
+
+  auto t_var_name = parameters().get<std::string>(PARAM_VAR_T);
+  auto hf_var_name = parameters().get<std::string>(PARAM_VAR_HF);
+
+  if (!t_var_name.empty())
+  {
+    if (!hf_var_name.empty())
+      mooseError("'temp' and 'heat_flux' cannot both be specified.");
+
+    auto params = _factory.getValidParams("FoamFixedValueBC");
+    params.set<std::string>("foam_variable") = 'T';
+    params.set<std::vector<VariableName>>("v") = {VariableName(t_var_name)};
+    params.set<FEProblemBase *>("_fe_problem_base") = this;
+
+    addObject<FoamFixedValueBC>("FoamFixedValueBC", PARAM_VAR_T, params);
+  }
+  else if (!hf_var_name.empty())
+  {
+    auto params = _factory.getValidParams("FoamFixedGradientBC");
+    params.set<std::string>("foam_variable") = 'T';
+    params.set<std::vector<VariableName>>("v") = {VariableName(hf_var_name)};
+    params.set<std::string>("diffusivity_coefficient") = "kappa";
+
+    params.set<FEProblemBase *>("_fe_problem_base") = this;
+    addObject<FoamFixedGradientBC>("FoamFixedGradientBC", PARAM_VAR_HF, params);
+  }
+}
+
+void
+FoamProblem::addOldStyleVariables()
+{
+
+  auto foam_t_var_name = parameters().get<std::string>(PARAM_VAR_FOAM_T);
+  auto foam_hf_var_name = parameters().get<std::string>(PARAM_VAR_FOAM_HF);
+
+  if (!foam_t_var_name.empty())
+  {
+    auto params = _factory.getValidParams("FoamVariableField");
+    params.set<std::string>("foam_variable") = 'T';
+    addObject<FoamVariableField>("FoamVariableField", PARAM_VAR_T, params);
+  }
+
+  if (!foam_hf_var_name.empty())
+  {
+    auto params = _factory.getValidParams("FoamFunctionObject");
+    params.set<std::string>("foam_variable") = "wallheatFlux";
+    addObject<FoamFunctionObject>("FoamFunctionObject", PARAM_VAR_HF, params);
+  }
+}
+
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
@@ -81,63 +148,9 @@ FoamProblem::FoamProblem(InputParameters const & params)
                               _foam_mesh->fvMesh())
                 .ptr()),
     _foam_variables(),
-    _foam_bcs(),
-    _old_bc_syntax(false),
-    _old_variable_syntax(false)
+    _foam_bcs()
 {
   assert(_foam_mesh);
-
-  auto t_var_name = params.get<std::string>(PARAM_VAR_T);
-  auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
-
-  if (!t_var_name.empty())
-  {
-    if (!hf_var_name.empty())
-      mooseError("'temp' and 'heat_flux cannot both be specified.");
-
-    auto params = _factory.getValidParams("FoamFixedValueBC");
-    params.set<std::string>("foam_variable") = 'T';
-    params.set<std::string>("v") = t_var_name;
-
-    addObject<FoamFixedValueBC>("FoamFixedValueBC", PARAM_VAR_T, params);
-
-    _old_bc_syntax = true;
-  }
-  else if (!hf_var_name.empty())
-  {
-    auto params = _factory.getValidParams("FoamFixedGradientBC");
-    params.set<std::string>("foam_variable") = 'T';
-    params.set<std::string>("v") = hf_var_name;
-    params.set<std::string>("diffusivity_coefficient") = "kappa";
-    addObject<FoamFixedGradientBC>("FoamFixedGradientBC", PARAM_VAR_HF, params);
-
-    _old_bc_syntax = true;
-  }
-
-  auto foam_t_var_name = params.get<std::string>(PARAM_VAR_FOAM_T);
-  auto foam_hf_var_name = params.get<std::string>(PARAM_VAR_FOAM_HF);
-
-  if (!foam_t_var_name.empty())
-  {
-    mooseWarning("Foam variable shadowing should no longer be specified using the old syntax");
-
-    auto params = _factory.getValidParams("FoamVariableField");
-    params.set<std::string>("foam_variable") = 'T';
-    addObject<FoamVariableField>("FoamVariableField", PARAM_VAR_T, params);
-
-    _old_variable_syntax = true;
-  }
-
-  if (!foam_hf_var_name.empty())
-  {
-    mooseWarning("Foam variable shadowing should no longer be specified using the old syntax");
-
-    auto params = _factory.getValidParams("FoamFunctionObject");
-    params.set<std::string>("foam_variable") = "wallheatFlux";
-    addObject<FoamFunctionObject>("FoamFunctionObject", PARAM_VAR_HF, params);
-
-    _old_variable_syntax = true;
-  }
 }
 
 void
@@ -145,12 +158,14 @@ FoamProblem::initialSetup()
 {
   ExternalProblem::initialSetup();
 
+  addOldStyleVariables();
   // Get FoamVariables create by the action AddFoamVariableAction
   TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
   query_vars.queryInto(_foam_variables);
 
   verifyFoamVariables();
 
+  addOldStyleBCs();
   // Get FoamBCs create by the action AddFoamBCAction
   TheWarehouse::Query query_bcs = theWarehouse().query().condition<AttribSystem>("FoamBC");
   query_bcs.queryInto(_foam_bcs);

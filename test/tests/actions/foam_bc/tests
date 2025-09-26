@@ -34,5 +34,66 @@
             cli_args = 'FoamBCs/temp_r/boundary=left'
             allow_warnings = true
         []
+        [old_bc_temp]
+            type = RunException
+            input = main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Old BC syntax"
+            cli_args = 'Problem/temp=dummy'
+            allow_warnings = true
+        []
+        [old_bc_heat_flux]
+            type = RunException
+            input = main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Old BC syntax"
+            cli_args = 'Problem/heat_flux=dummy'
+            allow_warnings = true
+        []
+
+    []
+    [foam_bc_old_style]
+        [succeed]
+            type = RunApp
+            input = deprecate_main.i
+            prereq = foam_bc_action/setup
+            allow_warnings = true
+            cli_args = 'Problem/temp=T_value'
+        []
+        [no_temp_and_heat_flux]
+            type = RunException
+            input = deprecate_main.i
+            prereq = foam_bc_action/setup
+            expect_err = "'temp' and 'heat_flux' cannot both be specified."
+            cli_args = 'Problem/temp=T_value Problem/heat_flux=dummy'
+        []
+        [deprecate_temp]
+            type = RunException
+            input = deprecate_main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Use FoamFixedValueBC in the new"
+            cli_args='--error-deprecated Problem/temp=T_value'
+        []
+        [deprecate_heat_flux]
+            type = RunException
+            input = deprecate_main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Use FoamFixedGradientBC in the new"
+            cli_args='--error-deprecated Problem/heat_flux=T_value'
+        []
+        [deprecate_foam_temp]
+            type = RunException
+            input = deprecate_main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Use FoamVariableField in the new"
+            cli_args='--error-deprecated Problem/foam_temp=T_value'
+        []
+        [deprecate_foam_heat_flux]
+            type = RunException
+            input = deprecate_main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Use FoamFunctionObject in the new"
+            cli_args='--error-deprecated Problem/foam_heat_flux=T_value'
+        []
     []
 []
