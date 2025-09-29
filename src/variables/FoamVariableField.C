@@ -27,7 +27,9 @@ MooseVariableFieldBase &
 FoamVariableField::createMooseVariable(std::string name, const InputParameters & params)
 {
   // TODO: Add other parameters from variable instantiations such as Boundary restrictions
-  auto & problem = getMooseApp().feProblem();
+  auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
+  if (!problem)
+    mooseError("This Variable can only be used with FoamProblem");
 
   auto var_params = _factory.getValidParams("MooseVariable");
 
@@ -37,15 +39,15 @@ FoamVariableField::createMooseVariable(std::string name, const InputParameters &
 
   // In the deprecated variable shadowing system, the variable already exists
   if (params.get<bool>("_deprecated"))
-    return problem.getVariable(0, name);
+    return problem->getVariable(0, name);
 
   // Create the Aux variable
-  problem.addAuxVariable("MooseVariable", name, var_params);
+  problem->addAuxVariable("MooseVariable", name, var_params);
 
   THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
 
   // return reference to moose variable
-  return problem.getVariable(tid, name, Moose::VarKindType::VAR_AUXILIARY);
+  return problem->getVariable(tid, name, Moose::VarKindType::VAR_AUXILIARY);
 }
 
 FoamVariableField::FoamVariableField(const InputParameters & params)
@@ -53,9 +55,8 @@ FoamVariableField::FoamVariableField(const InputParameters & params)
     _foam_variable(params.get<std::string>("foam_variable")),
     _moose_var(createMooseVariable(name(), params))
 {
+  // Already checked in createMooseVariable
   auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
-  if (!problem)
-    mooseError("This Variable can only be used with FoamProblem");
 
   _mesh = &problem->mesh();
 }

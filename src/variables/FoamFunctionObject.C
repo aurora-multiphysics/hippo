@@ -5,7 +5,6 @@
 #include "SystemBase.h"
 #include "dictionary.H"
 #include "functionObject.H"
-// #include "wallHeatFlux.h"
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 
 registerMooseObject("hippoApp", FoamFunctionObject);
