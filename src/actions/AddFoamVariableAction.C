@@ -27,6 +27,7 @@ AddFoamVariableAction::act()
 {
   auto * foam_problem = dynamic_cast<FoamProblem *>(_problem.get());
 
+  // Add variable through [FoamVariables] block
   if (_current_task == "add_foam_variable")
   {
     if (!foam_problem)
@@ -50,10 +51,15 @@ void
 AddFoamVariableAction::addOldStyleVariables(FoamProblem & problem)
 {
   auto & problem_params = problem.parameters();
+
+  // construct new-style Variable from old-style foam_temp and foam_heat_flux parameters
   if (problem_params.isParamSetByUser("foam_temp"))
   {
     auto params = _factory.getValidParams("FoamVariableField");
     params.set<std::string>("foam_variable") = 'T';
+
+    // In the old style, the MooseVariable has already been created so this tell the
+    // FoamVariableField to get the existing field rather than create a new one.
     params.set<bool>("_deprecated") = true;
 
     problem.addObject<FoamVariableField>(
