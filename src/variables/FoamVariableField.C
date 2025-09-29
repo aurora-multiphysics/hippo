@@ -16,6 +16,8 @@ FoamVariableField::validParams()
   params.addRequiredParam<std::string>("foam_variable",
                                        "OpenFOAM variable or functionObject to be shadowed");
 
+  // For handling the deprecated variable shadowing syntax
+  params.addPrivateParam<bool>("_deprecated", false);
   params.registerBase("FoamVariable");
   params.registerSystemAttributeName("FoamVariable");
   return params;
@@ -32,6 +34,10 @@ FoamVariableField::createMooseVariable(std::string name, const InputParameters &
   // The MOOSE variable has to be constant monomial
   var_params.set<MooseEnum>("order") = "CONSTANT";
   var_params.set<MooseEnum>("family") = "MONOMIAL";
+
+  // In the deprecated variable shadowing system, the variable already exists
+  if (params.get<bool>("_deprecated"))
+    return problem.getVariable(0, name);
 
   // Create the Aux variable
   problem.addAuxVariable("MooseVariable", name, var_params);

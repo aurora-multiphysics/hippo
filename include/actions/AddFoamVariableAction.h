@@ -1,3 +1,4 @@
+#include "FoamProblem.h"
 #include "InputParameters.h"
 #include "MooseObjectAction.h"
 
@@ -9,4 +10,7 @@ public:
   AddFoamVariableAction(const InputParameters & parameters);
 
   virtual void act() override;
+
+protected:
+  void addOldStyleVariables(FoamProblem & problem);
 };
