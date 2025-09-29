@@ -64,33 +64,21 @@ void
 FoamVariableField::transferVariable()
 {
   // TODO: some recent  changes to FoamMesh can improve this
-  // TODO: may be useful to create a base class for getting data to and from MOOSE/OpenFOAM
-
-  auto subdomains = _mesh->getSubdomainList();
   auto & foam_mesh = _mesh->fvMesh();
-  std::vector<size_t> patch_counts(subdomains.size() + 1, 0);
-  std::vector<Foam::scalar> data;
-
-  // loop over subdomains and construct vector with boundary values
-  for (auto i = 0U; i < subdomains.size(); ++i)
+  for (auto subdomain : _mesh->getSubdomainList())
   {
-    auto patch_id = subdomains[i];
-    auto & var = foam_mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>(
+    size_t patch_count = _mesh->getPatchCount(subdomain);
+    size_t patch_offset = _mesh->getPatchOffset(subdomain);
+
+    auto & var = foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
         _foam_variable);
-    std::copy(var.begin(), var.end(), std::back_inserter(data));
-    patch_counts[i] = var.size();
-  }
-
-  // assign values to each element
-  std::exclusive_scan(patch_counts.begin(), patch_counts.end(), patch_counts.begin(), 0);
-  for (auto i = 0U; i < subdomains.size(); ++i)
-  {
-    for (auto elem = patch_counts[i]; elem < patch_counts[i + 1]; ++elem)
+    for (size_t j = 0; j < patch_count; ++j)
     {
+      auto elem = patch_offset + j;
       auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
       assert(elem_ptr);
       auto dof_t = elem_ptr->dof_number(_moose_var.sys().number(), _moose_var.number(), 0);
-      _moose_var.sys().solution().set(dof_t, data[elem]);
+      _moose_var.sys().solution().set(dof_t, var[j]);
     }
   }
 
