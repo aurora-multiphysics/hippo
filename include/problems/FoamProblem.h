@@ -47,17 +47,13 @@ public:
 
   void verifyFoamBCs();
 
-  bool oldBCSyntax();
+  bool hasOldBCSyntax();
 
-  bool oldVariableSyntax();
+  bool hasOldVariableSyntax();
 
 protected:
   // check FoamVariables and print summarising table
   void verifyFoamVariables();
-
-  void addOldStyleBCs();
-
-  void addOldStyleVariables();
 
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
