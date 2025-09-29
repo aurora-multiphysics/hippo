@@ -34,18 +34,7 @@ public:
     Both
   };
 
-  template <SyncVariables sync_vars>
-  void syncFromOpenFoam();
-
-  template <SyncVariables sync_vars>
-  void syncToOpenFoam();
-
-  MooseVariableFieldBase *
-  getConstantMonomialVariableFromParameters(const std::string & parameter_name);
-
   Hippo::FoamSolver & solver() { return _solver; }
-
-  void verifyFoamBCs();
 
   bool hasOldBCSyntax();
 
@@ -54,6 +43,9 @@ public:
 protected:
   // check FoamVariables and print summarising table
   void verifyFoamVariables();
+
+  // check FoamBCs and print summarising table
+  void verifyFoamBCs();
 
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
