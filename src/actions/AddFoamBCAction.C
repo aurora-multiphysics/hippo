@@ -21,6 +21,7 @@ AddFoamBCAction::act()
 {
   auto foam_problem = dynamic_cast<FoamProblem *>(_problem.get());
 
+  // Adding BCs using [FoamBC] syntax
   if (_current_task == "add_foam_bc")
   {
     if (!foam_problem)
@@ -32,8 +33,10 @@ AddFoamBCAction::act()
 
     foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
   }
+  // Adding BCs using old syntax
   else if (_current_task == "check_deprecated_bc")
   {
+    // Invoked on Problem but problem may not be a FoamProblem
     if (!foam_problem)
       return;
     addOldStyleBCs(*foam_problem);
@@ -43,13 +46,14 @@ AddFoamBCAction::act()
 void
 AddFoamBCAction::addOldStyleBCs(FoamProblem & problem)
 {
-
+  // Old style uses temp or heat_flux to apply boundary conditions
   auto & problem_params = problem.parameters();
-  if (problem_params.isParamSetByUser("temp"))
+  if (problem_params.isParamSetByUser("temp")) // check is temp is set
   {
     if (problem_params.isParamSetByUser("heat_flux"))
       mooseError("'temp' and 'heat_flux' cannot both be specified.");
 
+    // Create the equivalent new BC from info from the old style BC
     auto params = _factory.getValidParams("FoamFixedValueBC");
     params.set<std::string>("foam_variable") = 'T';
     params.set<std::vector<VariableName>>("v") = {
