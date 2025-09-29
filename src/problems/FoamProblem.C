@@ -6,6 +6,9 @@
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include "FoamVariableField.h"
+#include "InputParameters.h"
+#include "VariadicTable.h"
 #include <finiteVolume/solver/solver.H>
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
@@ -60,7 +63,11 @@ FoamProblem::validParams()
 FoamProblem::FoamProblem(InputParameters const & params)
   : ExternalProblem(params),
     _foam_mesh(dynamic_cast<FoamMesh *>(&this->ExternalProblem::mesh())),
-    _solver(Foam::solver::New("fluid", _foam_mesh->fvMesh()).ptr())
+    _solver(Foam::solver::New(_foam_mesh->fvMesh().time().controlDict().lookupOrDefault<Foam::word>(
+                                  "solver", "fluid"),
+                              _foam_mesh->fvMesh())
+                .ptr()),
+    _foam_variables()
 {
   assert(_foam_mesh);
 
@@ -118,6 +125,18 @@ FoamProblem::externalSolve()
 }
 
 void
+FoamProblem::initialSetup()
+{
+  ExternalProblem::initialSetup();
+
+  // Get FoamVariables create by the action AddFoamVariableAction
+  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamVariable");
+  query.queryInto(_foam_variables);
+
+  verifyFoamVariables();
+}
+
+void
 FoamProblem::syncSolutions(Direction dir)
 {
   if (!parameters().get<bool>("solve"))
@@ -142,6 +161,12 @@ FoamProblem::syncSolutions(Direction dir)
     else if (transfer_wall_heat_flux)
     {
       syncFromOpenFoam<SyncVariables::WallHeatFlux>();
+    }
+
+    // Loop of shadowed variables and perform transfer
+    for (auto & var : _foam_variables)
+    {
+      var->transferVariable();
     }
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
@@ -330,4 +355,20 @@ FoamProblem::getConstantMonomialVariableFromParameters(const std::string & param
                "  order = CONSTANT\n");
   }
   return var;
+}
+
+void
+FoamProblem::verifyFoamVariables()
+{
+  // Create table summarising FoamVariables
+  VariadicTable<std::string, std::string, std::string> vt({
+      "FoamVariable name",
+      "Type",
+      "Foam variable",
+  });
+  for (auto & var : _foam_variables)
+  {
+    vt.addRow(var->name(), var->type(), var->foamVariable());
+  }
+  vt.print(_console);
 }
