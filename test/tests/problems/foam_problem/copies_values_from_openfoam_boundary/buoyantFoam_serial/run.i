@@ -10,12 +10,20 @@
   []
 []
 
-[FoamVariables]
+[AuxVariables]
   [T]
+    initial_condition = 111
+    family = MONOMIAL
+    order = CONSTANT
+  []
+[]
+
+[FoamVariables]
+  [foam_T]
     type = FoamVariableField
     foam_variable = T
   []
-  [hf]
+  [foam_hf]
     type = FoamFunctionObject
     foam_variable = wallHeatFlux
   []
