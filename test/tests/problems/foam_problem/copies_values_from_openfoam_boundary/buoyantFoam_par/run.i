@@ -29,6 +29,20 @@
   []
 []
 
+# TODO: This will be removed once initial condition is added to FoamVariables
+[ICs]
+  [foam_T]
+    type = ConstantIC
+    variable = foam_T
+    value = 999
+  []
+  [foam_hf]
+    type = ConstantIC
+    variable = foam_hf
+    value = -999
+  []
+[]
+
 [FoamBCs]
   [T]
     type = FoamFixedValueBC
