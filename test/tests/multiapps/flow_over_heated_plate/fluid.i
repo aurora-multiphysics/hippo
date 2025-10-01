@@ -12,24 +12,11 @@
     []
 []
 
-[AuxVariables]
-    [fluid_wall_temp]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 300
-    []
-    [solid_heat_flux]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 0
-    []
-[]
-
 [FoamBCs]
-    [heat_flux]
+    [solid_heat_flux]
         type = FoamFixedGradientBC
         foam_variable = T
-        v = solid_heat_flux
+        initial_condition = 0
         diffusivity_coefficient = kappa
     []
 []
@@ -38,6 +25,7 @@
     [fluid_wall_temp]
         type = FoamVariableField
         foam_variable = T
+        initial_condition = 300
     []
 []
 

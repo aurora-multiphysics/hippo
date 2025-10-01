@@ -12,19 +12,11 @@
     []
 []
 
-[AuxVariables]
-    [solid_wall_temp]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 300
-    []
-[]
-
 [FoamBCs]
-    [temp]
+    [solid_wall_temp]
         type = FoamFixedValueBC
         foam_variable = T
-        v = solid_wall_temp
+        initial_condition = 300
     []
 []
 

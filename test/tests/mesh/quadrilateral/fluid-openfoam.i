@@ -13,19 +13,11 @@
 []
 
 
-[AuxVariables]
-    [solid_heat_flux]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 0
-    []
-[]
-
 [FoamBCs]
-    [heat_flux]
+    [solid_heat_flux]
         type = FoamFixedGradientBC
         foam_variable = T
-        v = solid_heat_flux
+        initial_condition = 0
         diffusivity_coefficient = kappa
     []
 []
