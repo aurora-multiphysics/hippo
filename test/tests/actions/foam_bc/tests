@@ -96,4 +96,22 @@
             cli_args='--error-deprecated Problem/foam_heat_flux=T_value'
         []
     []
+    [order_of_t_is_not_constant]
+        type = RunException
+        input = order_of_t_is_not_constant.i
+        expect_err = "must be a constant monomial"
+        cli_args = "AuxVariables/T/order=FIRST"
+    []
+    [order_of_t_is_not_monomial]
+        type = RunException
+        input = order_of_t_is_not_constant.i
+        expect_err = "must be a constant monomial"
+        cli_args = "AuxVariables/T/family=LAGRANGE AuxVariables/T/order=FIRST"
+    []
+    [v_doesnt_exist]
+        type = RunException
+        input = order_of_t_is_not_constant.i
+        expect_err = "Variable 'T1' doesn't exist"
+        cli_args = "FoamBCs/T/v=T1"
+    []
 []

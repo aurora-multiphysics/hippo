@@ -1,7 +1,7 @@
 [Mesh]
   type = FoamMesh
-  case = './foam_mesh'
-  foam_patch = 'topAndBottom frontAndBack'
+  case = './foam'
+  foam_patch = 'left right'
 []
 
 [FoamBCs]
@@ -16,6 +16,7 @@
   [T]
     initial_condition = 111
     family = MONOMIAL
+    order = CONSTANT
   []
   [foam_T]
     initial_condition = 999
