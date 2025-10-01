@@ -32,6 +32,9 @@ protected:
   // Get the data vector of the MOOSE field on a subdomain
   std::vector<Real> getMooseVariableArray(int subdomainId);
 
+  // Name of Moose variable used to impose BC
+  VariableName _moose_var_name;
+
   // Pointer to the FoamMesh object
   FoamMesh * _mesh;
 

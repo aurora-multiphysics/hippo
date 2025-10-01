@@ -8,17 +8,6 @@
 registerMooseAction("hippoApp", AddFoamBCAction, "add_foam_bc");
 registerMooseAction("hippoApp", AddFoamBCAction, "check_deprecated_bc");
 
-namespace
-{
-template <typename T>
-inline void
-copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)
-{
-  if (src.isParamValid(name_in))
-    dst.set<T>(name_in) = src.get<T>(name_in);
-}
-}
-
 InputParameters
 AddFoamBCAction::validParams()
 {
@@ -42,7 +31,10 @@ AddFoamBCAction::act()
       mooseError(
           "Old BC syntax (Problem/temp, Problem/heat_flux) cannot be used with FoamBCs system");
 
-    createAuxVariable();
+    // Do not create aux variable if variable provided.
+    if (!_moose_object_pars.isParamSetByUser("v"))
+      createAuxVariable();
+
     foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
   }
   // Adding BCs using old syntax
@@ -98,7 +90,7 @@ AddFoamBCAction::addOldStyleBCs(FoamProblem & problem)
   }
   else if (problem_params.isParamSetByUser("heat_flux"))
   {
-    auto var_name = problem_params.get<std::string>("temp");
+    auto var_name = problem_params.get<std::string>("heat_flux");
 
     auto params = _factory.getValidParams("FoamFixedGradientBC");
     params.set<std::string>("foam_variable") = 'T';
