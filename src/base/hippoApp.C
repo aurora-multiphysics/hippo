@@ -43,16 +43,17 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   // the hood
   registerSyntaxTask("AddFoamVariableAction", "Problem", "check_deprecated_var");
   registerMooseObjectTask("check_deprecated_var", Problem, false);
-  addTaskDependency("add_external_aux_variables", "check_deprecated_var");
+  addTaskDependency("add_aux_variable", "check_deprecated_var");
 
   // Add input file syntax for the [FoamBCs] block
   registerSyntaxTask("AddFoamBCAction", "FoamBCs/*", "add_foam_bc");
   registerMooseObjectTask("add_foam_bc", FoamBC, false);
+  addTaskDependency("add_aux_variable", "add_foam_bc");
 
   // Enable deprecated syntax Problem/temp and Problem/heat_flux to use new system under the hood
   registerSyntaxTask("AddFoamBCAction", "Problem", "check_deprecated_bc");
   registerMooseObjectTask("check_deprecated_bc", Problem, false);
-  addTaskDependency("add_external_aux_variables", "check_deprecated_bc");
+  addTaskDependency("add_aux_variable", "check_deprecated_bc");
 }
 
 void

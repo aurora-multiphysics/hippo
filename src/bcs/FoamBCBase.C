@@ -14,25 +14,17 @@
 // remove after improved tests
 // registerMooseObject("hippoApp", FoamBCBase);
 
-namespace
-{
-// Private function to check if variables are constant monomials
-inline bool
-is_constant_monomial(const MooseVariableFieldBase & var)
-{
-  return var.order() == libMesh::Order::CONSTANT && var.feType().family == FEFamily::MONOMIAL;
-}
-}
-
 InputParameters
 FoamBCBase::validParams()
 {
   InputParameters params = MooseObject::validParams();
   params.addRequiredParam<std::string>("foam_variable",
                                        "Name of a Foam field. e.g. T (temperature) U (velocity).");
-  params.addRequiredCoupledVar("v", "MOOSE variable to impose as the boundary condition.");
   params.addParam<std::vector<SubdomainName>>("boundary",
                                               "Boundaries that the boundary condition applies to.");
+
+  // Get desired parameters from Variable objects
+  params.transferParam<std::vector<Real>>(MooseVariable::validParams(), "initial_condition");
 
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
@@ -44,7 +36,6 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   : MooseObject(params),
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
-    _v(getVariable(params)),
     _boundary(params.get<std::vector<SubdomainName>>("boundary"))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
@@ -70,29 +61,21 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
     _boundary = all_subdomain_names;
 }
 
-const MooseVariableFieldBase &
-FoamBCBase::getVariable(const InputParameters & params)
-{
-  auto variable_name = *params.getCoupledVariableParamNames().begin();
-  auto * var = getFieldVar(variable_name, 0);
-  if (!is_constant_monomial(*var))
-  {
-    mooseError("Variable '", variable_name, "' (", var->name(), ") must be a constant monomial");
-  }
-  return *var;
-}
-
 Real
-FoamBCBase::variableValueAtElement(const libMesh::Elem * elem)
+FoamBCBase::variableValueAtElement(const MooseVariableFieldBase & moose_var,
+                                   const libMesh::Elem * elem)
 {
-  auto & sys = _v.sys();
-  auto dof = elem->dof_number(sys.number(), _v.number(), 0);
+  auto & sys = moose_var.sys();
+  auto dof = elem->dof_number(sys.number(), moose_var.number(), 0);
   return sys.solution()(dof);
 }
 
 std::vector<Real>
 FoamBCBase::getMooseVariableArray(int subdomainId)
 {
+  THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
+  auto & moose_var = getMooseApp().feProblem().getVariable(tid, _name);
+
   size_t patch_count = _mesh->getPatchCount(subdomainId);
   size_t patch_offset = _mesh->getPatchOffset(subdomainId);
 
@@ -102,7 +85,7 @@ FoamBCBase::getMooseVariableArray(int subdomainId)
     auto elem = patch_offset + j;
     auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
     assert(elem_ptr);
-    var_array[j] = variableValueAtElement(elem_ptr);
+    var_array[j] = variableValueAtElement(moose_var, elem_ptr);
   }
 
   return var_array;

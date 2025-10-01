@@ -27,9 +27,7 @@ FoamVariableField::validParams()
 }
 
 FoamVariableField::FoamVariableField(const InputParameters & params)
-  : MooseObject(params),
-    _foam_variable(params.get<std::string>("foam_variable")),
-    _moose_var_name(_name)
+  : MooseObject(params), _foam_variable(params.get<std::string>("foam_variable"))
 {
   // Already checked in createMooseVariable
   auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
@@ -41,7 +39,7 @@ void
 FoamVariableField::transferVariable()
 {
   THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
-  auto & moose_var = getMooseApp().feProblem().getVariable(tid, _moose_var_name);
+  auto & moose_var = getMooseApp().feProblem().getVariable(tid, _name);
 
   // TODO: some recent  changes to FoamMesh can improve this
   auto & foam_mesh = _mesh->fvMesh();

@@ -49,14 +49,6 @@ AddFoamVariableAction::act()
   }
 }
 
-template <typename T>
-inline void
-copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)
-{
-  if (src.isParamValid(name_in))
-    dst.set<T>(name_in) = src.get<T>(name_in);
-}
-
 void
 AddFoamVariableAction::createAuxVariable()
 {
@@ -78,6 +70,7 @@ AddFoamVariableAction::createAuxVariable()
       std::static_pointer_cast<Action>(_action_factory.create(class_name, name(), action_params));
   _awh.addActionBlock(action);
 }
+
 void
 AddFoamVariableAction::addOldStyleVariables(FoamProblem & problem)
 {
