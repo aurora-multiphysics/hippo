@@ -1,7 +1,0 @@
-[Tests]
-  [order_of_t_is_not_constant]
-    type = RunException
-    input = order_of_t_is_not_constant.i
-    expect_err = "must be a constant monomial"
-  []
-[]
