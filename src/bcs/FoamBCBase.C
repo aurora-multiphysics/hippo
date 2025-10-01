@@ -11,8 +11,15 @@
 #include <algorithm>
 #include <vector>
 
-// remove after improved tests
-// registerMooseObject("hippoApp", FoamBCBase);
+namespace
+{
+// Private function to check if variables are constant monomials
+inline bool
+is_constant_monomial(const MooseVariableFieldBase & var)
+{
+  return var.order() == libMesh::Order::CONSTANT && var.feType().family == FEFamily::MONOMIAL;
+}
+}
 
 InputParameters
 FoamBCBase::validParams()
@@ -23,7 +30,7 @@ FoamBCBase::validParams()
   params.addParam<std::vector<SubdomainName>>("boundary",
                                               "Boundaries that the boundary condition applies to.");
 
-  params.addParam<std::vector<VariableName>>(
+  params.addParam<VariableName>(
       "v",
       "Optional variable to use in BC. This allows existing AuxVariables to be"
       " used rather than creating a new one under the hood.");
@@ -40,8 +47,7 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   : MooseObject(params),
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
-    _moose_var_name((params.isParamValid("v")) ? params.get<std::vector<VariableName>>("v")[0]
-                                               : _name),
+    _moose_var(nullptr),
     _boundary(params.get<std::vector<SubdomainName>>("boundary"))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
@@ -67,20 +73,33 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
     _boundary = all_subdomain_names;
 }
 
-Real
-FoamBCBase::variableValueAtElement(const MooseVariableFieldBase & moose_var,
-                                   const libMesh::Elem * elem)
+void
+FoamBCBase::initialSetup()
 {
-  auto & sys = moose_var.sys();
-  auto dof = elem->dof_number(sys.number(), moose_var.number(), 0);
+  // Check variable exists
+  auto var_name = parameters().isParamValid("v") ? parameters().get<VariableName>("v") : _name;
+  if (!_c_fe_problem.hasVariable(var_name))
+    mooseError("Variable '", var_name, "' doesn't exist");
+
+  THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
+  _moose_var = &_c_fe_problem.getVariable(tid, var_name);
+
+  // Check variable is constant monomial in case it is provided.
+  if (!is_constant_monomial(*_moose_var))
+    mooseError("Variable '", var_name, "' must be a constant monomial.");
+}
+
+Real
+FoamBCBase::variableValueAtElement(const libMesh::Elem * elem)
+{
+  auto & sys = _moose_var->sys();
+  auto dof = elem->dof_number(sys.number(), _moose_var->number(), 0);
   return sys.solution()(dof);
 }
 
 std::vector<Real>
 FoamBCBase::getMooseVariableArray(int subdomainId)
 {
-  THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
-  auto & moose_var = getMooseApp().feProblem().getVariable(tid, _moose_var_name);
 
   size_t patch_count = _mesh->getPatchCount(subdomainId);
   size_t patch_offset = _mesh->getPatchOffset(subdomainId);
@@ -91,7 +110,7 @@ FoamBCBase::getMooseVariableArray(int subdomainId)
     auto elem = patch_offset + j;
     auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
     assert(elem_ptr);
-    var_array[j] = variableValueAtElement(moose_var, elem_ptr);
+    var_array[j] = variableValueAtElement(elem_ptr);
   }
 
   return var_array;
