@@ -16,13 +16,11 @@
     [temp1]
         type=FoamFixedValueBC
         foam_variable = T
-        v = T_bc1
         boundary = 'left right top' # test boundary restrictions
     []
     [temp2]
         type=FoamFixedValueBC
         foam_variable = T
-        v = T_bc2
         boundary = 'bottom front back' # test boundary restrictions
     []
 []
@@ -42,28 +40,17 @@
     []
 []
 
-[AuxVariables]
-    [T_bc1]
-        family = MONOMIAL
-        order = CONSTANT
-    []
-    [T_bc2]
-        family = MONOMIAL
-        order = CONSTANT
-    []
-[]
-
 [AuxKernels]
     [T_bc1]
         type=ParsedAux
-        variable = T_bc1
+        variable = temp1
         expression = '0.05 + (x + y + z)*t'
         use_xyzt = true
         execute_on='TIMESTEP_BEGIN INITIAL'
     []
     [T_bc2]
         type=ParsedAux
-        variable = T_bc2
+        variable = temp2
         expression = '0.05 + 2*(x + y + z)*t'
         use_xyzt = true
         execute_on='TIMESTEP_BEGIN INITIAL'

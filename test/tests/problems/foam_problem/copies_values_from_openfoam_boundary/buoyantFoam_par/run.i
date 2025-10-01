@@ -10,14 +10,6 @@
   []
 []
 
-[AuxVariables]
-  [T]
-    initial_condition = 111
-    family = MONOMIAL
-    order = CONSTANT
-  []
-[]
-
 [FoamVariables]
   [foam_T]
     type = FoamVariableField
@@ -35,7 +27,7 @@
   [T]
     type = FoamFixedValueBC
     foam_variable = T
-    v = T
+    initial_condition = 111
   []
 []
 

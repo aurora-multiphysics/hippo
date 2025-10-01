@@ -10,29 +10,11 @@
   []
 []
 
-[AuxVariables]
-  [T]
-    initial_condition = 111
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [foam_T]
-    initial_condition = 999
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [foam_hf]
-    initial_condition = -999
-    family = MONOMIAL
-    order = CONSTANT
-  []
-[]
-
 [FoamBCs]
   [T]
     type = FoamFixedValueBC
     foam_variable = T
-    v = T
+    initial_condition = 111
   []
 []
 

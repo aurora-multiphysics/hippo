@@ -13,30 +13,17 @@
 []
 
 [FoamBCs]
-    [temp1]
+    [T_value]
         type=FoamFixedValueBC
         foam_variable = T
-        v = T_value
+        initial_condition = 0.
         boundary = 'left'
     []
-    [temp2]
+    [T_flux]
         type=FoamFixedGradientBC
         foam_variable = T
-        v = T_flux
         boundary = 'right'
         diffusivity_coefficient = kappa
-    []
-[]
-
-[AuxVariables]
-    [T_value]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 0.
-    []
-    [T_flux]
-        family = MONOMIAL
-        order = CONSTANT
     []
 []
 
@@ -49,6 +36,7 @@
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []
+
 [Problem]
     type = FoamProblem
 []
