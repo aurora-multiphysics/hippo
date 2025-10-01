@@ -23,6 +23,10 @@ FoamBCBase::validParams()
   params.addParam<std::vector<SubdomainName>>("boundary",
                                               "Boundaries that the boundary condition applies to.");
 
+  params.addParam<std::vector<VariableName>>(
+      "v",
+      "Optional variable to use in BC. This allows existing AuxVariables to be"
+      " used rather than creating a new one under the hood.");
   // Get desired parameters from Variable objects
   params.transferParam<std::vector<Real>>(MooseVariable::validParams(), "initial_condition");
 
@@ -36,6 +40,8 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   : MooseObject(params),
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
+    _moose_var_name((params.isParamValid("v")) ? params.get<std::vector<VariableName>>("v")[0]
+                                               : _name),
     _boundary(params.get<std::vector<SubdomainName>>("boundary"))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
@@ -74,7 +80,7 @@ std::vector<Real>
 FoamBCBase::getMooseVariableArray(int subdomainId)
 {
   THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
-  auto & moose_var = getMooseApp().feProblem().getVariable(tid, _name);
+  auto & moose_var = getMooseApp().feProblem().getVariable(tid, _moose_var_name);
 
   size_t patch_count = _mesh->getPatchCount(subdomainId);
   size_t patch_offset = _mesh->getPatchOffset(subdomainId);

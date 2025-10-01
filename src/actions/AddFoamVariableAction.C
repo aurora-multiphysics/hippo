@@ -5,6 +5,7 @@
 #include "InputParameters.h"
 #include "MooseObjectAction.h"
 #include "Registry.h"
+#include "FoamBCBase.h"
 
 registerMooseAction("hippoApp", AddFoamVariableAction, "add_foam_variable");
 registerMooseAction("hippoApp", AddFoamVariableAction, "check_deprecated_var");
