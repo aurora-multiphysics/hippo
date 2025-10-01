@@ -100,7 +100,6 @@ FoamBCBase::variableValueAtElement(const libMesh::Elem * elem)
 std::vector<Real>
 FoamBCBase::getMooseVariableArray(int subdomainId)
 {
-
   size_t patch_count = _mesh->getPatchCount(subdomainId);
   size_t patch_offset = _mesh->getPatchOffset(subdomainId);
 

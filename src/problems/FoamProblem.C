@@ -173,10 +173,11 @@ FoamProblem::verifyFoamBCs()
   std::set<std::string> unique_vars(variables.begin(), variables.end());
 
   // Create table for printing BC information
-  VariadicTable<std::string, std::string, std::string, std::string> vt({
+  VariadicTable<std::string, std::string, std::string, std::string, std::string> vt({
       "FoamBC name",
       "Type",
       "Foam variable",
+      "Moose variable",
       "Boundaries",
   });
 
@@ -194,7 +195,11 @@ FoamProblem::verifyFoamBCs()
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
         // List info about BC
-        vt.addRow(bc->name(), bc->type(), bc->foamVariable(), listFromVector(boundary));
+        vt.addRow(bc->name(),
+                  bc->type(),
+                  bc->foamVariable(),
+                  bc->mooseVariable(),
+                  listFromVector(boundary));
       }
     }
 
@@ -216,7 +221,7 @@ FoamProblem::verifyFoamBCs()
         unused_bcs.push_back(bc);
     }
     if (unused_bcs.size() > 0)
-      vt.addRow("", "UnusedBoundaries", "", listFromVector(unused_bcs));
+      vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
   }
   vt.print(_console);
 }
