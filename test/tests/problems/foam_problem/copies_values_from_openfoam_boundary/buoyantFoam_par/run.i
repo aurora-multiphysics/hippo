@@ -22,24 +22,12 @@
   [foam_T]
     type = FoamVariableField
     foam_variable = T
+    initial_condition = 999
   []
   [foam_hf]
     type = FoamFunctionObject
     foam_variable = wallHeatFlux
-  []
-[]
-
-# TODO: This will be removed once initial condition is added to FoamVariables
-[ICs]
-  [foam_T]
-    type = ConstantIC
-    variable = foam_T
-    value = 999
-  []
-  [foam_hf]
-    type = ConstantIC
-    variable = foam_hf
-    value = -999
+    initial_condition = -999
   []
 []
 

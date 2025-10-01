@@ -37,7 +37,7 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   // Add input file syntax for the [FoamVariables] block
   registerSyntaxTask("AddFoamVariableAction", "FoamVariables/*", "add_foam_variable");
   registerMooseObjectTask("add_foam_variable", FoamVariable, false);
-  addTaskDependency("add_external_aux_variables", "add_foam_variable");
+  addTaskDependency("add_aux_variable", "add_foam_variable");
 
   // Enable deprecated syntax Problem/foam_temp and Problem/foam_heat_flux to use new system under
   // the hood

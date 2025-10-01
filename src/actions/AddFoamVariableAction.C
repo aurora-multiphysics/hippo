@@ -37,6 +37,8 @@ AddFoamVariableAction::act()
       mooseError("The old variable shadowing sytax (Problem/foam_temp, Problem/foam_heat_flux) "
                  "cannot be used with FoamVariables system");
 
+    createAuxVariable();
+
     foam_problem->addObject<FoamVariableField>(_type, _name, _moose_object_pars, false);
   }
   else if (_current_task == "check_deprecated_var")
@@ -47,6 +49,35 @@ AddFoamVariableAction::act()
   }
 }
 
+template <typename T>
+inline void
+copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)
+{
+  if (src.isParamValid(name_in))
+    dst.set<T>(name_in) = src.get<T>(name_in);
+}
+
+void
+AddFoamVariableAction::createAuxVariable()
+{
+  // Use AddAuxVariableAction to create AuxVariable that also allows additional
+  // parameters such as initial conditions to be set
+  const std::string class_name = "AddAuxVariableAction";
+
+  InputParameters action_params = _action_factory.getValidParams(class_name);
+  action_params.set<std::string>("task") = "add_aux_variable";
+
+  // The MOOSE variable has to be constant monomial
+  action_params.set<MooseEnum>("order") = "CONSTANT";
+  action_params.set<MooseEnum>("family") = "MONOMIAL";
+
+  // Copy desired parameters from FoamVariable action
+  copyParamFromParam<std::vector<Real>>(action_params, _moose_object_pars, "initial_condition");
+
+  std::shared_ptr<Action> action =
+      std::static_pointer_cast<Action>(_action_factory.create(class_name, name(), action_params));
+  _awh.addActionBlock(action);
+}
 void
 AddFoamVariableAction::addOldStyleVariables(FoamProblem & problem)
 {
@@ -58,10 +89,6 @@ AddFoamVariableAction::addOldStyleVariables(FoamProblem & problem)
     auto params = _factory.getValidParams("FoamVariableField");
     params.set<std::string>("foam_variable") = 'T';
 
-    // In the old style, the MooseVariable has already been created so this tell the
-    // FoamVariableField to get the existing field rather than create a new one.
-    params.set<bool>("_deprecated") = true;
-
     problem.addObject<FoamVariableField>(
         "FoamVariableField", problem_params.get<std::string>("foam_temp"), params);
   }
@@ -70,7 +97,6 @@ AddFoamVariableAction::addOldStyleVariables(FoamProblem & problem)
   {
     auto params = _factory.getValidParams("FoamFunctionObject");
     params.set<std::string>("foam_variable") = "wallheatFlux";
-    params.set<bool>("_deprecated") = true;
 
     problem.addObject<FoamFunctionObject>(
         "FoamFunctionObject", problem_params.get<std::string>("foam_heat_flux"), params);
