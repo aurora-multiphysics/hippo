@@ -161,6 +161,10 @@ listFromVector(std::vector<StrType> vec, StrType sep = ", ")
 void
 FoamProblem::verifyFoamBCs()
 {
+  // Check BC
+  for (auto & bc : _foam_bcs)
+    bc->initialSetup();
+
   // Get list of all variables used by all BCs
   std::vector<std::string> variables(_foam_bcs.size());
   for (auto & bc : _foam_bcs)
