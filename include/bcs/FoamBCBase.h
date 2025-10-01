@@ -19,6 +19,9 @@ public:
   // returns foam variable BC applies to
   std::string foamVariable() const { return _foam_variable; };
 
+  // returns the moose AuxVariable imposed on OpenFOAM
+  VariableName mooseVariable() const { return _moose_var->name(); }
+
   // returns foam variable BC applies to
   std::vector<SubdomainName> boundary() const { return _boundary; };
 
@@ -34,7 +37,7 @@ protected:
   // Get the data vector of the MOOSE field on a subdomain
   std::vector<Real> getMooseVariableArray(int subdomainId);
 
-  // Name of Moose variable used to impose BC
+  // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
 
   // Pointer to the FoamMesh object
