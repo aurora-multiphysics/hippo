@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Moose.h"
-#include "MooseTypes.h"
+#include "MooseObject.h"
 #include "FoamMesh.h"
 
 class FoamVariableField : public MooseObject
@@ -22,10 +21,7 @@ protected:
   std::string _foam_variable;
 
   // moose variable that shadows the OpenFOAM variable
-  MooseVariableFieldBase & _moose_var;
-
-  // Create Auxilliary variable
-  MooseVariableFieldBase & createMooseVariable(std::string name, const InputParameters & params);
+  VariableName _moose_var_name;
 
   // Pointer to the FoamMesh object
   FoamMesh * _mesh;
