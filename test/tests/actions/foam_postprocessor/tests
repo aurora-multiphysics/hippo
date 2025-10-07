@@ -1,0 +1,14 @@
+[Tests]
+    [postprocessor_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+        []
+    []
+[]
