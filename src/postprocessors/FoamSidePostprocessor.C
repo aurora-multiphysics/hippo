@@ -2,6 +2,8 @@
 #include "FoamSidePostprocessor.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
+#include "FoamProblem.h"
+#include "Postprocessor.h"
 
 InputParameters
 FoamSidePostprocessor::validParams()
@@ -16,4 +18,7 @@ FoamSidePostprocessor::validParams()
 FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
   : FoamPostprocessorBase(params)
 {
+  FoamProblem * problem = dynamic_cast<FoamProblem *>(&getSubProblem());
+  if (!problem)
+    mooseError("FoamPostprocessors can only be used with FoamProblem");
 }
