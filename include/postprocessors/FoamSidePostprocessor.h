@@ -10,4 +10,7 @@ public:
   static InputParameters validParams();
 
   FoamSidePostprocessor(const InputParameters & params);
+
+protected:
+  Real _volume;
 };

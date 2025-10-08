@@ -11,13 +11,11 @@ FoamSidePostprocessor::validParams()
   auto params = ElementUserObject::validParams();
   params += Postprocessor::validParams();
 
-  // Remove once changedto BoundaryRestrictable
-  params.addPrivateParam("_dual_restrictable", false);
   return params;
 }
 
 FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
-  : ElementUserObject(params), Postprocessor(this)
+  : ElementUserObject(params), Postprocessor(this), _volume(0.)
 {
   FoamProblem * problem = dynamic_cast<FoamProblem *>(&getSubProblem());
   if (!problem)

@@ -3,6 +3,7 @@
 #include "MooseTypes.h"
 #include "UserObject.h"
 #include "FoamMesh.h"
+#include <cstdint>
 
 registerMooseObject("hippoApp", FoamSideAverageValue);
 
@@ -25,40 +26,44 @@ FoamSideAverageValue::FoamSideAverageValue(const InputParameters & params)
 void
 FoamSideAverageValue::initialize()
 {
+  _value = 0.;
+  _volume = 0.;
 }
 
 void
 FoamSideAverageValue::execute()
 {
   auto foam_mesh = dynamic_cast<FoamMesh *>(&_mesh);
-  auto boundary = blocks()[0];
+  int64_t patch_offset = 0;
+  for (auto & subdomain : foam_mesh->meshSubdomains())
+    if (subdomain < _current_elem->subdomain_id())
+      patch_offset += foam_mesh->getPatchCount(subdomain);
+
+  auto boundary = foam_mesh->getSubdomainName(_current_elem->subdomain_id());
+  auto idx = static_cast<int64_t>(_current_elem->id()) -
+             static_cast<int64_t>(foam_mesh->rank_element_offset) - patch_offset;
+
   auto & var_array =
       foam_mesh->fvMesh().boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(
           _foam_scalar);
   auto & areas = foam_mesh->fvMesh().boundary()[boundary].magSf();
 
-  Real total_area = 0.;
-  _value = 0.;
-
-  std::cout << _value << std::endl;
-  for (int i = 0; i < var_array.size(); ++i)
-  {
-    _value += var_array[i] * areas[i];
-    total_area += areas[i];
-  }
-
-  _value /= total_area;
+  _value += var_array[idx] * areas[idx];
+  _volume += areas[idx];
 }
 
 void
 FoamSideAverageValue::threadJoin(const UserObject & uo)
 {
+  (void)uo;
 }
 
 void
 FoamSideAverageValue::finalize()
 {
+  gatherSum(_volume);
   gatherSum(_value);
+  _value /= _volume;
 }
 
 PostprocessorValue
