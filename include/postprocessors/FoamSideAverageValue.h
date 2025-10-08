@@ -1,7 +1,9 @@
-#include "FoamPostprocessorBase.h"
+#pragma once
+#include "FoamSidePostprocessor.h"
 
-class FoamSideAverageValue : public FoamPostprocessorBase
+class FoamSideAverageValue : public FoamSidePostprocessor
 {
+public:
   static InputParameters validParams();
 
   FoamSideAverageValue(const InputParameters & params);
