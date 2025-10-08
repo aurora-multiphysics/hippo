@@ -30,6 +30,7 @@
 [FoamPostprocessors]
     [test]
         type = FoamTestPostprocessor
+        boundary = right
     []
 []
 [Outputs]
