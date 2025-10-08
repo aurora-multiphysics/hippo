@@ -1,11 +1,11 @@
 #pragma once
 
-#include "FoamPostprocessorBase.h"
+#include "FoamSidePostprocessor.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "UserObject.h"
 
-class FoamTestPostprocessor : public FoamPostprocessorBase
+class FoamTestPostprocessor : public FoamSidePostprocessor
 {
 public:
   static InputParameters validParams();

@@ -1,4 +1,3 @@
-#include "FoamPostprocessorBase.h"
 #include "FoamTestPostprocessor.h"
 #include "Registry.h"
 
@@ -7,11 +6,11 @@ registerMooseObject("hippoApp", FoamTestPostprocessor);
 InputParameters
 FoamTestPostprocessor::validParams()
 {
-  return FoamPostprocessorBase::validParams();
+  return FoamSidePostprocessor::validParams();
 }
 
 FoamTestPostprocessor::FoamTestPostprocessor(const InputParameters & params)
-  : FoamPostprocessorBase(params), _value(0.)
+  : FoamSidePostprocessor(params), _value(0.)
 {
 }
 
