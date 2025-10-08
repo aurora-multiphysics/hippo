@@ -1,0 +1,23 @@
+[Tests]
+    [postprocessor_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [check_csv]
+            type = CSVDiff
+            input = main.i
+            prereq = postprocessor_test/setup
+            csvdiff = main_out.csv
+            allow_warnings = true
+        []
+        [boundary_err]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            cli_args='Postprocessors/test/block=top1'
+            expect_err = "do not exist on the mesh: top1"
+        []
+    []
+[]
