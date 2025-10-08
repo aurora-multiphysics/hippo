@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MooseTypes.h"
 #include "UserObject.h"
 #include "Postprocessor.h"
 
@@ -14,4 +15,5 @@ public:
 
 protected:
   FoamMesh * _mesh;
+  SubdomainName _boundary;
 };
