@@ -1,13 +1,15 @@
-#include "FoamPostprocessorBase.h"
 #include "FoamSideAverageValue.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "UserObject.h"
+#include "FoamMesh.h"
+
+registerMooseObject("hippoApp", FoamSideAverageValue);
 
 InputParameters
 FoamSideAverageValue::validParams()
 {
-  auto params = FoamPostprocessorBase::validParams();
+  auto params = FoamSidePostprocessor::validParams();
   params.addClassDescription(
       "Class that calculates the average or scalar on a OpenFOAM boundary patch.");
   params.addRequiredParam<std::string>("foam_scalar",
@@ -16,26 +18,29 @@ FoamSideAverageValue::validParams()
 }
 
 FoamSideAverageValue::FoamSideAverageValue(const InputParameters & params)
-  : FoamPostprocessorBase(params), _value(0.), _foam_scalar(params.get<std::string>("foam_scalar"))
+  : FoamSidePostprocessor(params), _value(0.), _foam_scalar(params.get<std::string>("foam_scalar"))
 {
 }
 
 void
 FoamSideAverageValue::initialize()
 {
-  _value = 0.;
 }
 
 void
 FoamSideAverageValue::execute()
 {
+  auto foam_mesh = dynamic_cast<FoamMesh *>(&_mesh);
+  auto boundary = blocks()[0];
   auto & var_array =
-      _mesh->fvMesh().boundary()[_boundary].lookupPatchField<Foam::volScalarField, double>(
+      foam_mesh->fvMesh().boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(
           _foam_scalar);
-  auto & areas = _mesh->fvMesh().boundary()[_boundary].magSf();
+  auto & areas = foam_mesh->fvMesh().boundary()[boundary].magSf();
 
   Real total_area = 0.;
+  _value = 0.;
 
+  std::cout << _value << std::endl;
   for (int i = 0; i < var_array.size(); ++i)
   {
     _value += var_array[i] * areas[i];
@@ -48,8 +53,6 @@ FoamSideAverageValue::execute()
 void
 FoamSideAverageValue::threadJoin(const UserObject & uo)
 {
-  const auto & pps = static_cast<const FoamSideAverageValue &>(uo);
-  _value += pps._value;
 }
 
 void
