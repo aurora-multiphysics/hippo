@@ -1,10 +1,9 @@
 #pragma once
 
-#include "ElementUserObject.h"
-#include "InputParameters.h"
+#include "FoamPostprocessorBase.h"
 
 // When FoamMesh is updated  use BoundaryRestrictable when Foammesh is refactored
-class FoamSidePostprocessor : public ElementUserObject, public Postprocessor
+class FoamSidePostprocessor : public FoamPostprocessorBase
 {
 public:
   static InputParameters validParams();

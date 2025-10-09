@@ -1,3 +1,4 @@
+#include "Attributes.h"
 #include "ExternalProblem.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
@@ -57,7 +58,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
                               _foam_mesh->fvMesh())
                 .ptr()),
     _foam_variables(),
-    _foam_bcs()
+    _foam_bcs(),
+    _foam_postprocessor()
 {
   assert(_foam_mesh);
 }
@@ -78,6 +80,19 @@ FoamProblem::initialSetup()
   query_bcs.queryInto(_foam_bcs);
 
   verifyFoamBCs();
+
+  std::vector<Postprocessor *> uos;
+  TheWarehouse::Query query_uos =
+      theWarehouse().query().condition<AttribInterfaces>(Interfaces::Postprocessor);
+  query_uos.queryInto(uos);
+
+  for (auto uo : uos)
+  {
+    auto fpp = dynamic_cast<FoamPostprocessorBase *>(uo);
+    if (fpp)
+      _foam_postprocessor.push_back(fpp);
+  }
+  std::cout << _foam_postprocessor.size() << std::endl;
 }
 
 void
@@ -102,6 +117,10 @@ FoamProblem::syncSolutions(Direction dir)
     for (auto & var : _foam_variables)
     {
       var->transferVariable();
+    }
+    for (auto & fpp : _foam_postprocessor)
+    {
+      fpp->compute();
     }
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
