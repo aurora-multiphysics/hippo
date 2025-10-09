@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FoamMesh.h"
+#include "FoamPostprocessorBase.h"
 #include "FoamSolver.h"
 #include "FoamVariableField.h"
 #include "FoamBCBase.h"
@@ -47,4 +48,5 @@ protected:
 
   std::vector<FoamVariableField *> _foam_variables;
   std::vector<FoamBCBase *> _foam_bcs;
+  std::vector<FoamPostprocessorBase *> _foam_postprocessor;
 };
