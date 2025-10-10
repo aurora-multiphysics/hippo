@@ -31,9 +31,12 @@ FoamSideAverageValue::FoamSideAverageValue(const InputParameters & params)
     _is_vector(false),
     _function_object(nullptr)
 {
+  // Create function object if the foam variable matches one of the
+  // available function objects
   if (_pp_function_objects.find(_foam_variable) != _pp_function_objects.items().end())
     createFunctionObject();
 
+  // determine if this is a vector scalar, ahead of computation
   if (_foam_mesh->foundObject<Foam::volVectorField>(_foam_variable))
     _is_vector = true;
   else if (!_foam_mesh->foundObject<Foam::volScalarField>(_foam_variable))
@@ -46,9 +49,7 @@ FoamSideAverageValue::createFunctionObject()
   auto fo_dict =
       _foam_mesh->time().controlDict().lookupOrDefault(_foam_variable, Foam::dictionary());
 
-  Foam::wordList patch_names;
-  for (auto id : blocks())
-    patch_names.append(_foam_mesh->boundaryMesh()[id].name());
+  Foam::wordList patch_names(blocks().begin(), blocks().end());
 
   fo_dict.set("patches", patch_names);
   fo_dict.set("writeToFile", false);
@@ -70,13 +71,13 @@ FoamSideAverageValue::createFunctionObject()
 void
 FoamSideAverageValue::compute()
 {
-  auto foam_mesh = dynamic_cast<FoamMesh *>(&getSubProblem().mesh());
-  _value = 0.;
-  _volume = 0.;
-
   if (_function_object)
     _function_object->execute();
 
+  _value = 0.;
+  Real volume = 0.;
+
+  // loop over boundary ids
   for (auto & block : ElementUserObject::blocks())
   {
     auto & areas = _foam_mesh->boundary()[block].magSf();
@@ -84,14 +85,19 @@ FoamSideAverageValue::compute()
 
     if (_is_vector)
     {
-      auto && normals = _foam_mesh->boundary()[block].nf();
+      // get vector data associated with the block
       auto & vec_data =
           _foam_mesh->boundary()[block].lookupPatchField<Foam::volVectorField, double>(
               _foam_variable);
 
+      // get the component specified in parameters and get the
+      // component of the vector in that direction
       auto components = parameters().get<MooseEnum>("component");
       if (components == "normal")
+      {
+        auto && normals = _foam_mesh->boundary()[block].nf();
         var_array = normals & vec_data;
+      }
       else if (components == "magnitude")
         var_array = Foam::mag(vec_data);
       else
@@ -103,16 +109,20 @@ FoamSideAverageValue::compute()
           _foam_variable);
     }
 
+    // Integrate
     for (int i = 0; i < var_array.size(); ++i)
     {
       _value += var_array[i] * areas[i];
-      _volume += areas[i];
+      volume += areas[i];
     }
   }
 
+  // sum over ranks
   gatherSum(_value);
-  gatherSum(_volume);
-  _value /= _volume;
+  gatherSum(volume);
+
+  // divide by area
+  _value /= volume;
 }
 
 PostprocessorValue
