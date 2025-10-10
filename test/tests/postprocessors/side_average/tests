@@ -19,5 +19,13 @@
             cli_args='Postprocessors/test/block=top1'
             expect_err = "do not exist on the mesh: top1"
         []
+        [invalid_foam_scalar]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            cli_args='Postprocessors/test/foam_scalar=T1'
+            expect_err = "Foam scalar 'T1' not found."
+        []
     []
 []

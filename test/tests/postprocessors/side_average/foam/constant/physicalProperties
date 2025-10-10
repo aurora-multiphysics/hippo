@@ -16,13 +16,13 @@ FoamFile
 
 thermoType
 {
-    type            heSolidThermo;
+    type            heRhoThermo;
     mixture         pureMixture;
-    transport       constIsoSolid;
-    thermo          eConst;
+    transport       const;
+    thermo          hConst;
     equationOfState rhoConst;
     specie          specie;
-    energy          sensibleInternalEnergy;
+    energy          sensibleEnthalpy;
 }
 
 mixture
@@ -33,13 +33,14 @@ mixture
     }
     thermodynamics
     {
-        Cv              1;        // Specific heat capacity [J/(kg·K)]
+        Cp              1;        // Specific heat capacity [J/(kg·K)]
         Hf              1;         // Heat of formation [J/kg]
         Tref            0;
     }
     transport
     {
         kappa           1;         // Thermal conductivity [W/(m·K)]
+        mu              1.;
     }
     equationOfState
     {
