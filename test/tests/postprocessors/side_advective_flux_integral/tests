@@ -1,0 +1,23 @@
+[Tests]
+    [postprocessor_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [check_csv]
+            type = CSVDiff
+            input = main.i
+            prereq = postprocessor_test/setup
+            csvdiff = main_out.csv
+            allow_warnings = true
+        []
+        [invalid_advective_velocity]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            cli_args='Postprocessors/m_dot_x1/advective_velocity=U1'
+            expect_err = "advective_velocity 'U1' not found."
+        []
+    []
+[]
