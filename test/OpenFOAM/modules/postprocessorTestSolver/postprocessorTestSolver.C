@@ -110,8 +110,6 @@ Foam::solvers::postprocessorTestSolver::thermophysicalPredictor()
   dimensioned<Foam::scalar> t("t", thermo_.T().dimensions(), mesh_.time().userTimeValue());
   h = Cp * t;
 
-  U_ = dimensionedVector(dimVelocity, {1., 1., 1.});
-
   thermo_.correct();
 }
 
