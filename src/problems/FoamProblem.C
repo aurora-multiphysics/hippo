@@ -81,18 +81,7 @@ FoamProblem::initialSetup()
 
   verifyFoamBCs();
 
-  std::vector<Postprocessor *> uos;
-  TheWarehouse::Query query_uos =
-      theWarehouse().query().condition<AttribInterfaces>(Interfaces::Postprocessor);
-  query_uos.queryInto(uos);
-
-  for (auto uo : uos)
-  {
-    auto fpp = dynamic_cast<FoamPostprocessorBase *>(uo);
-    if (fpp)
-      _foam_postprocessor.push_back(fpp);
-  }
-  std::cout << _foam_postprocessor.size() << std::endl;
+  verifyFoamPostprocessors();
 }
 
 void
@@ -211,5 +200,32 @@ FoamProblem::verifyFoamBCs()
     if (unused_bcs.size() > 0)
       vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
   }
+  vt.print(_console);
+}
+
+void
+FoamProblem::verifyFoamPostprocessors()
+{
+  std::vector<Postprocessor *> pps;
+  TheWarehouse::Query query_uos =
+      theWarehouse().query().condition<AttribInterfaces>(Interfaces::Postprocessor);
+  query_uos.queryInto(pps);
+
+  VariadicTable<std::string, std::string, std::string> vt({
+      "Foam postprocessor",
+      "Type",
+      "Boundaries",
+  });
+
+  for (auto pp : pps)
+  {
+    auto fpp = dynamic_cast<FoamPostprocessorBase *>(pp);
+    if (fpp)
+    {
+      _foam_postprocessor.push_back(fpp);
+      vt.addRow(fpp->name(), fpp->type(), listFromVector(fpp->blocks()));
+    }
+  }
+
   vt.print(_console);
 }
