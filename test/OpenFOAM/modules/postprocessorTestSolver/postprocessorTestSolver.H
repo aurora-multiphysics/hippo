@@ -35,8 +35,7 @@ SourceFiles
 
 #pragma once
 
-#include "solver.H"
-#include "solidThermophysicalTransportModel.H"
+#include "fluid.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,45 +48,14 @@ namespace solvers
                           Class postprocessorTestSolver Declaration
 \*---------------------------------------------------------------------------*/
 
-class postprocessorTestSolver : public solver
+class postprocessorTestSolver : public fluid
 {
 
-protected:
-  // Control parameters
-  scalar maxDeltaT_;
-
-  // Thermophysical properties
-  autoPtr<solidThermo> thermoPtr_;
-
-  solidThermo & thermo_;
-
-  volScalarField T_;
-
-  autoPtr<solidThermophysicalTransportModel> thermophysicalTransport;
-
-  // Protected Member Functions
-
-  //- Return true if the solver's dependencies have been modified
-  virtual bool dependenciesModified() const;
-
-  //- Read controls
-  virtual bool read();
-
 public:
-  // Public Data
-  // reference to thermophysical properties
-  const solidThermo & thermo;
-
-  //- Reference to the temperature field
-  const volScalarField & T;
-
   //- Runtime type information
   TypeName("postprocessorTestSolver");
 
   // Constructors
-
-  //- Construct from region mesh
-  postprocessorTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr);
 
   postprocessorTestSolver(fvMesh & mesh);
 
@@ -98,9 +66,6 @@ public:
   virtual ~postprocessorTestSolver();
 
   // Member Functions
-
-  //- Return the current maximum time-step for stable solution
-  virtual scalar maxDeltaT() const;
 
   //- Called at the start of the time-step, before the PIMPLE loop
   virtual void preSolve();
