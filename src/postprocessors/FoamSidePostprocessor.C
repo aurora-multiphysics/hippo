@@ -7,12 +7,13 @@ InputParameters
 FoamSidePostprocessor::validParams()
 {
   auto params = FoamPostprocessorBase::validParams();
+  // Eventually change to BoundaryRestrictable
   params += BlockRestrictable::validParams();
 
   return params;
 }
 
 FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
-  : FoamPostprocessorBase(params), _volume(0.)
+  : FoamPostprocessorBase(params)
 {
 }

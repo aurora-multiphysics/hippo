@@ -46,12 +46,14 @@ FoamSideAdvectiveFluxIntegral::compute()
     auto & areas = _foam_mesh->boundary()[block].magSf();
     auto && normals = _foam_mesh->boundary()[block].nf();
 
+    // integrate locally
     for (int i = 0; i < var_array.size(); ++i)
     {
       _value += var_array[i] * areas[i] * (normals->data()[i] & vel_array[i]);
     }
   }
 
+  // Sum across ranks
   gatherSum(_value);
 }
 
