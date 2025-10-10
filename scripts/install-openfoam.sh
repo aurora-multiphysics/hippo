@@ -111,7 +111,6 @@ if [ ${STRIP_SOURCES} -eq 1 ]; then
     rm "${OPENFOAM_DIR}/.gitattributes"
     rm "${OPENFOAM_DIR}/.gitignore"
     rm -rf "${OPENFOAM_DIR}/.git/"
-    rm -rf "${OPENFOAM_DIR}/applications/"
     rm -rf "${OPENFOAM_DIR}/doc/"
     rm -rf "${OPENFOAM_DIR}/platforms/${WM_OPTIONS}/src"
     rm -rf "${OPENFOAM_DIR}/test/"
