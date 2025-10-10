@@ -3,6 +3,7 @@
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "FoamMesh.h"
+#include "volFieldsFwd.H"
 
 registerMooseObject("hippoApp", FoamSideAverageValue);
 
@@ -20,6 +21,8 @@ FoamSideAverageValue::validParams()
 FoamSideAverageValue::FoamSideAverageValue(const InputParameters & params)
   : FoamSidePostprocessor(params), _value(0.), _foam_scalar(params.get<std::string>("foam_scalar"))
 {
+  if (!_foam_mesh->foundObject<Foam::volScalarField>(_foam_scalar))
+    mooseError("Foam scalar '", _foam_scalar, "' not found.");
 }
 
 void
@@ -32,9 +35,8 @@ FoamSideAverageValue::compute()
   {
 
     auto & var_array =
-        foam_mesh->fvMesh().boundary()[block].lookupPatchField<Foam::volScalarField, double>(
-            _foam_scalar);
-    auto & areas = foam_mesh->fvMesh().boundary()[block].magSf();
+        _foam_mesh->boundary()[block].lookupPatchField<Foam::volScalarField, double>(_foam_scalar);
+    auto & areas = _foam_mesh->boundary()[block].magSf();
 
     for (int i = 0; i < var_array.size(); ++i)
     {
@@ -46,8 +48,6 @@ FoamSideAverageValue::compute()
   gatherSum(_value);
   gatherSum(_volume);
   _value /= _volume;
-
-  std::cout << _value << std::endl;
 }
 
 PostprocessorValue
