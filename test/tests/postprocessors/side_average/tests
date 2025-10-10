@@ -16,7 +16,7 @@
             input = main.i
             prereq = postprocessor_test/setup
             allow_warnings = true
-            cli_args='Postprocessors/test/block=top1'
+            cli_args='Postprocessors/t_avg/block=top1'
             expect_err = "do not exist on the mesh: top1"
         []
         [invalid_foam_scalar]
@@ -24,8 +24,8 @@
             input = main.i
             prereq = postprocessor_test/setup
             allow_warnings = true
-            cli_args='Postprocessors/test/foam_scalar=T1'
-            expect_err = "Foam scalar 'T1' not found."
+            cli_args='Postprocessors/t_avg/foam_variable=T1'
+            expect_err = "No Foam scalar or function object called 'T1'."
         []
     []
 []
