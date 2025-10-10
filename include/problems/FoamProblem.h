@@ -43,6 +43,9 @@ protected:
   // check FoamBCs and print summarising table
   void verifyFoamBCs();
 
+  // check FoamPostprocessors and print summarising table
+  void verifyFoamPostprocessors();
+
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
 
