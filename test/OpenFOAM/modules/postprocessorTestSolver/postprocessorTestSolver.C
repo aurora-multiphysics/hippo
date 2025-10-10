@@ -24,6 +24,8 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "dimensionSets.H"
+#include "dimensionedScalar.H"
+#include "dimensionedVector.H"
 #include "fvMesh.H"
 #include "postprocessorTestSolver.H"
 #include "fvMeshMover.H"
@@ -44,60 +46,15 @@ addToRunTimeSelectionTable(solver, postprocessorTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::postprocessorTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::postprocessorTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 // Solver based on solid.C module
-Foam::solvers::postprocessorTestSolver::postprocessorTestSolver(fvMesh & mesh,
-                                                                autoPtr<solidThermo> thermoPtr)
-  : solver(mesh),
-
-    thermoPtr_(thermoPtr),
-    thermo_(thermoPtr_()),
-
-    T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
-
-    thermophysicalTransport(solidThermophysicalTransportModel::New(thermo_)),
-    thermo(thermo_),
-    T(T_)
-{
-  thermo.validate("solid", "h", "e");
-}
-
-Foam::solvers::postprocessorTestSolver::postprocessorTestSolver(fvMesh & mesh)
-  : postprocessorTestSolver(mesh, solidThermo::New(mesh))
-{
-  // Read the controls
-  read();
-}
+Foam::solvers::postprocessorTestSolver::postprocessorTestSolver(fvMesh & mesh) : fluid(mesh) {}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 Foam::solvers::postprocessorTestSolver::~postprocessorTestSolver() {}
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::scalar
-Foam::solvers::postprocessorTestSolver::maxDeltaT() const
-{
-  return min(fvModels().maxDeltaT(), maxDeltaT_);
-}
 
 void
 Foam::solvers::postprocessorTestSolver::preSolve()
@@ -145,13 +102,15 @@ Foam::solvers::postprocessorTestSolver::thermophysicalPredictor()
   // thermo_.correct() call calculates Temperature.
 
   // Get e and Cv
-  volScalarField & e = thermo_.he();
-  const volScalarField & Cv = thermo_.Cv();
+  volScalarField & h = thermo_.he();
+  const volScalarField & Cp = thermo_.Cp();
 
   // Set e to Cv*(xy + yz + xz)t which gives a non-uniform be first order value of wall heat flux at
   // all boundaries.
-  dimensioned<Foam::scalar> t("t", T.dimensions(), mesh_.time().userTimeValue());
-  e = Cv * t;
+  dimensioned<Foam::scalar> t("t", thermo_.T().dimensions(), mesh_.time().userTimeValue());
+  h = Cp * t;
+
+  U_ = dimensionedVector(dimVelocity, {1., 1., 1.});
 
   thermo_.correct();
 }
