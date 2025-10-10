@@ -2,7 +2,7 @@
     [postprocessor_test]
         [setup]
             type = RunCommand
-            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
         []
         [check_csv]
             type = CSVDiff
@@ -10,6 +10,15 @@
             prereq = postprocessor_test/setup
             csvdiff = main_out.csv
             allow_warnings = true
+        []
+        [check_csv_parallel]
+            type = CSVDiff
+            input = main.i
+            prereq = postprocessor_test/setup
+            csvdiff = main_out.csv
+            allow_warnings = true
+            min_parallel = 2
+            max_parallel = 2
         []
         [boundary_err]
             type = RunException
