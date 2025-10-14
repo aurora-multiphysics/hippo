@@ -1,8 +1,11 @@
+#include "DimensionedField.H"
 #include "FoamBCBase.h"
 #include "FoamMassFlowRateInletBC.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
+#include "PstreamReduceOps.H"
 #include "Registry.h"
+#include <numeric>
 
 registerMooseObject("hippoApp", FoamMassFlowRateInletBC);
 
@@ -46,12 +49,13 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
     auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
         boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
     auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
-
-    U_var == pp_value * boundary_patch.nf() / (rho * boundary_patch.magSf());
+    Real area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
+    U_var == -pp_value * boundary_patch.nf() / (rho * area);
   }
 }
 
 void
 FoamMassFlowRateInletBC::initialSetup()
 {
+  _foam_variable = "";
 }
