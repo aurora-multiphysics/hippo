@@ -1,0 +1,20 @@
+[Tests]
+    [mass_flow_rate]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = CSVDiff
+            input = main.i
+            prereq = mass_flow_rate/setup
+            csvdiff = main_out.csv
+            allow_warnings = true
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = mass_flow_rate/run
+        []
+    []
+[]
