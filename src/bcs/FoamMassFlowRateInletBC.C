@@ -2,9 +2,7 @@
 #include "FoamMassFlowRateInletBC.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "Postprocessor.h"
 #include "Registry.h"
-#include "finiteVolume/fields/fvPatchFields/derived/flowRateInletVelocity/flowRateInletVelocityFvPatchVectorField.H"
 
 registerMooseObject("hippoApp", FoamMassFlowRateInletBC);
 
@@ -43,15 +41,13 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
   for (auto subdomain : subdomains)
   {
     auto pp_value = getPostprocessorValueByName(_pp_name);
+    auto & boundary_patch = foam_mesh.boundary()[subdomain];
 
     auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
-        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volVectorField, double>(
-            _foam_variable));
-    auto && nf = foam_mesh.boundary()[subdomain].nf();
-    auto & rho =
-        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>("rho");
+        boundary_patch.lookupPatchField<Foam::volVectorField, double>(_foam_variable));
+    auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
 
-    U_var = nf / rho * pp_value;
+    U_var = pp_value * boundary_patch.nf() / (rho * boundary_patch.magSf());
   }
 }
 
