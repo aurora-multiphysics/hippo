@@ -15,7 +15,7 @@ FoamMassFlowRateInletBC::validParams()
   params.remove("foam_variable");
 
   params.addParam<std::string>(
-      "foam_variable", "U", "Name of foam variable associated with velocity");
+      "foam_variable", "T", "Name of foam variable associated with velocity");
 
   params.addRequiredParam<PostprocessorName>("postprocessor",
                                              "Postprocessors containing mass flow rate.");
@@ -44,10 +44,10 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
     auto & boundary_patch = foam_mesh.boundary()[subdomain];
 
     auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
-        boundary_patch.lookupPatchField<Foam::volVectorField, double>(_foam_variable));
+        boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
     auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
 
-    U_var = pp_value * boundary_patch.nf() / (rho * boundary_patch.magSf());
+    U_var == pp_value * boundary_patch.nf() / (rho * boundary_patch.magSf());
   }
 }
 
