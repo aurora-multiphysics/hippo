@@ -1,11 +1,9 @@
-#include "DimensionedField.H"
 #include "FoamBCBase.h"
 #include "FoamMassFlowRateInletBC.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "PstreamReduceOps.H"
 #include "Registry.h"
-#include <numeric>
 
 registerMooseObject("hippoApp", FoamMassFlowRateInletBC);
 
