@@ -108,7 +108,7 @@ RUN ln -s "${MPI_ROOT}/lib" "${MPI_ROOT}/lib64"
 COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
-RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS
+RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS -q
 
 # Python linting and testing requirements
 COPY ./requirements.test.txt ./requirements.test.txt
