@@ -5,10 +5,10 @@ set -e
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 STRIP_SOURCES=0
-QUIET_COMPILATION=0
 BUILD_JOBS=""
+QUIET_COMPILATION=0
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
-USAGE="usage: install-openfoam.sh [-h] [-s] [-o DIRECTORY]
+USAGE="usage: install-openfoam.sh [-h] [-q] [-s] [-j JOBS] [-o DIRECTORY]
 
 Install OpenFOAM-12 for Ubuntu, applying the patch required by hippo.
 
@@ -45,7 +45,7 @@ for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     fi
 done
 
-while getopts "o:j:shq" opt; do
+while getopts "o:j:sqh" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}" ;;
         j) BUILD_JOBS="${OPTARG}" ;;
