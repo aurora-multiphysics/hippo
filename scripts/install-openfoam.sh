@@ -88,7 +88,7 @@ echo "  WM_MPLIB:            ${WM_MPLIB}"
 echo "  WM_PRECISION_OPTION: ${WM_PRECISION_OPTION}"
 
 ALLWMAKE="./Allwmake"
-ALLWMAKE+=" ${BUILD_JOBS}"
+ALLWMAKE+=" -j${BUILD_JOBS}"
 if ((QUIET_COMPILATION)); then
     ALLWMAKE+=" -s"
 fi
