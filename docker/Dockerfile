@@ -117,6 +117,10 @@ RUN conda install pre-commit --file requirements.test.txt -S --yes --quiet
 # Pull down MOOSE's 'large_media' submodule for building docs
 RUN git -C "${MOOSE_DIR}" submodule update --init large_media
 
+#remove .git directories from Moose and OpenFOAM to reduce container size
+RUN rm -rf /opt/openfoam/OpenFOAM-12/.git
+RUN rm -rf ${MOOSE_DIR}/.git
+
 RUN groupadd -g $GID --non-unique $UNAME
 RUN useradd -u $UID -g $GID --shell /bin/bash --create-home $UNAME
 RUN chown -R $UNAME:$UNAME /opt/moose
