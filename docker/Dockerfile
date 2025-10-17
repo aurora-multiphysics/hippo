@@ -112,7 +112,7 @@ RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS -q
 
 # Python linting and testing requirements
 COPY ./requirements.test.txt ./requirements.test.txt
-RUN conda install pre-commit --file requirements.test.txt -S --yes
+RUN conda install pre-commit --file requirements.test.txt -S --yes --quiet
 
 # Pull down MOOSE's 'large_media' submodule for building docs
 RUN git -C "${MOOSE_DIR}" submodule update --init large_media
