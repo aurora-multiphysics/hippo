@@ -2,8 +2,11 @@
 
 #include "DataIO.h"
 
+#include "DimensionedField.H"
+#include "GeometricField.H"
 #include "fvCFD_moose.h"
 
+#include <algorithm>
 #include <fstream>
 #include <ostream>
 #include <cxxabi.h>
@@ -60,6 +63,26 @@ getFieldkeys(const Foam::fvMesh & mesh)
   return fieldKeyList;
 }
 
+template <class Type, class GeomMesh>
+inline void
+readBoundary(istream & stream, Foam::DimensionedField<Type, GeomMesh> & field)
+{
+  (void)stream;
+  (void)field;
+}
+
+template <class Type, template <class> class PatchField, class GeoMesh>
+inline void
+readBoundary(istream & stream, Foam::GeometricField<Type, PatchField, GeoMesh> & field)
+{
+  for (auto & bField : field.boundaryFieldRef())
+  {
+    std::vector<Type> data(bField.size());
+    loadHelper(stream, data, nullptr);
+    for (auto i = 0lu; i < data.size(); ++i)
+      bField[i] = data[i];
+  }
+}
 // readField abstracts the construction of the field allowing the same
 // interface to be used for different types. A pair is returned with
 // first being the key in mesh.toc() and second being the field.
@@ -73,14 +96,16 @@ readField(std::istream & stream, const Foam::fvMesh & mesh)
 
   loadHelper(stream, field_data, nullptr);
   Foam::IStringStream iss{Foam::string(field_data.second), Foam::IOstream::ASCII};
-  return std::pair(
-      field_data.first,
-      Type{
-          Foam::IOobject{
-              field_data.first, mesh, Foam::IOobject::NO_READ, Foam::IOobject::NO_WRITE, false},
-          mesh,
-          Foam::dictionary(iss),
-      });
+  Type field{
+      Foam::IOobject{
+          field_data.first, mesh, Foam::IOobject::NO_READ, Foam::IOobject::NO_WRITE, false},
+      mesh,
+      Foam::dictionary(iss),
+  };
+
+  readBoundary(stream, field);
+
+  return std::pair(field_data.first, field);
 }
 
 // readField for uniformDimensionedScalarFields
@@ -102,6 +127,25 @@ readField(std::istream & stream, const Foam::fvMesh & mesh)
       });
 }
 
+template <class Type, class GeomMesh>
+inline void
+writeBoundary(ostream & stream, const Foam::DimensionedField<Type, GeomMesh> & field)
+{
+  (void)stream;
+  (void)field;
+}
+
+template <class Type, template <class> class PatchField, class GeoMesh>
+inline void
+writeBoundary(ostream & stream, const Foam::GeometricField<Type, PatchField, GeoMesh> & field)
+{
+  for (auto & bField : field.boundaryField())
+  {
+    std::vector<Type> data(bField.size());
+    std::copy(bField.begin(), bField.end(), data.begin());
+    storeHelper(stream, data, nullptr);
+  }
+}
 // writeField befores a similar role to readField but for the serialisation
 // step
 //
@@ -118,6 +162,8 @@ writeField(ostream & stream, const Foam::string & name, const Type & field)
   oss << field;
   std::pair store_pair{std::string(name), std::string(oss.str())};
   storeHelper(stream, store_pair, nullptr);
+
+  writeBoundary(stream, field);
 }
 
 // writeField for UniformDimensionedFields
