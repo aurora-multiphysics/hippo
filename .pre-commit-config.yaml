@@ -31,3 +31,4 @@ repos:
     hooks:
       - id: remove-crlf
       - id: forbid-tabs
+        exclude: '.*\.mk$'
