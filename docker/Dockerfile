@@ -99,7 +99,7 @@ RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 WORKDIR "/opt/hippo"
 
 # Build MOOSE
-RUN git clone --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
+RUN git clone --depth=1 --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS
 
 # Build OpenFOAM
@@ -116,10 +116,6 @@ RUN conda install pre-commit --file requirements.test.txt -S --yes --quiet
 
 # Pull down MOOSE's 'large_media' submodule for building docs
 RUN git -C "${MOOSE_DIR}" submodule update --init large_media
-
-#remove .git directories from Moose and OpenFOAM to reduce container size
-RUN rm -rf /opt/openfoam/OpenFOAM-12/.git
-RUN rm -rf ${MOOSE_DIR}/.git
 
 RUN groupadd -g $GID --non-unique $UNAME
 RUN useradd -u $UID -g $GID --shell /bin/bash --create-home $UNAME
