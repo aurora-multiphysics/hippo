@@ -8,35 +8,14 @@
 FoamFile
 {
     format      ascii;
-    class       volVectorField;
-    location    "0";
-    object      U;
+    class       uniformDimensionedVectorField;
+    location    "constant";
+    object      g;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 -1 0 0 0 0];
-
-internalField   uniform (0 0 0);
-
-boundaryField
-{
-    topAndBottom
-    {
-        type            noSlip;
-    }
-    frontAndBack
-    {
-        type            noSlip;
-    }
-    hot
-    {
-        type            noSlip;
-    }
-    cold
-    {
-        type            noSlip;
-    }
-}
+dimensions      [0 1 -2 0 0 0 0];
+value           (0 0 0);
 
 
 // ************************************************************************* //

@@ -10,39 +10,40 @@ FoamFile
     format      ascii;
     class       volScalarField;
     location    "0";
-    object      alphat;
+    object      T;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [1 -1 -1 0 0 0 0];
+dimensions      [0 0 0 1 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform 1e-10;
 
 boundaryField
 {
-    topAndBottom
+    left
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
-        value           uniform 0;
+        type            fixedGradient;
+        gradient        uniform 0.75;
     }
-    frontAndBack
+    right
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
-        value           uniform 0;
+        type            zeroGradient;
     }
-    hot
+    top
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
-        value           uniform 0;
+        type            zeroGradient;
     }
-    cold
+    front
     {
-        type            compressible::alphatWallFunction;
-        Prt             0.85;
-        value           uniform 0;
+        type            zeroGradient;
+    }
+    bottom
+    {
+        type            zeroGradient;
+    }
+    back
+    {
+        type            zeroGradient;
     }
 }
 

@@ -16,30 +16,35 @@ FoamFile
 
 thermoType
 {
-    type            heRhoThermo;
+    type            heSolidThermo;
     mixture         pureMixture;
-    transport       const;
-    thermo          hConst;
-    equationOfState perfectGas;
+    transport       constIsoSolid;
+    thermo          eConst;
+    equationOfState rhoConst;
     specie          specie;
-    energy          sensibleEnthalpy;
+    energy          sensibleInternalEnergy;
 }
 
 mixture
 {
     specie
     {
-        molWeight       28.96;
+        nMoles          1;
+        molWeight       1;
     }
     thermodynamics
     {
-        Cp              1004.4;
-        Hf              0;
+        Cv              16;        // Specific heat capacity [J/(kg·K)]
+        Hf              0;         // Heat of formation [J/kg]
     }
     transport
     {
-        mu              1.831e-05;
-        Pr              0.705;
+        kappa           4;         // Thermal conductivity [W/(m·K)]
+        mu              1e-3;      // Dynamic viscosity [Pa·s]
+    }
+    equationOfState
+    {
+        rho             1;         // Density [kg/m^3]
     }
 }
 

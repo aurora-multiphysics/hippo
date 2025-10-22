@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  10
+    \\  /    A nd           | Version:  12
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -10,33 +10,45 @@ FoamFile
     format      ascii;
     class       volScalarField;
     location    "0";
-    object      T;
+    object      rho;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [1 -3 0 0 0 0 0];
 
-internalField   uniform 293;
+internalField   uniform 1;
 
 boundaryField
 {
-    topAndBottom
+    left
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform 1;
     }
-    frontAndBack
+    right
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform 1;
     }
-    hot
+    top
     {
-        type            fixedValue;
-        value           uniform 307.75;
+        type            calculated;
+        value           uniform 1;
     }
-    cold
+    front
     {
-        type            fixedValue;
-        value           uniform 288.15;
+        type            calculated;
+        value           uniform 1;
+    }
+    bottom
+    {
+        type            calculated;
+        value           uniform 1;
+    }
+    back
+    {
+        type            calculated;
+        value           uniform 1;
     }
 }
 
