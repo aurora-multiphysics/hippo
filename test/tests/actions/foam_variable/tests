@@ -1,0 +1,22 @@
+[Tests]
+    [transfer_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = transfer_test/setup
+            allow_warnings = true
+        []
+        [err_problem]
+            type = RunException
+            input = main.i
+            prereq = transfer_test/setup
+            expect_err = "can only be used with FoamProblem"
+            cli_args = "Problem/type=FEProblem"
+            allow_warnings = true
+        []
+    []
+[]

@@ -60,3 +60,8 @@ include            $(FRAMEWORK_DIR)/app.mk
 
 ###############################################################################
 # Additional special case targets should be added here
+
+# Add foam modules
+# TODO: Reorganise build: consider single mk for all OpenFOAM modules
+# as they are written.
+include test/OpenFOAM/foam_modules.mk

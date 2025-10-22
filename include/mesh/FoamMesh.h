@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FoamRuntime.h"
+#include "MooseTypes.h"
 #include "libmesh/elem.h"
 #include "Foam2MooseMeshGen.h"
 
@@ -31,7 +32,7 @@ public:
   ~FoamMesh() = default;
   virtual std::unique_ptr<MooseMesh> safeClone() const override;
   virtual void buildMesh() override;
-  std::vector<int> & getSubdomainList();
+  std::vector<SubdomainID> & getSubdomainList();
   bool isSerial() const { return _serial; }
   libMesh::Elem * getElemPtr(int local) const;
   Foam::fvMesh & fvMesh() { return _foam_mesh; }
@@ -39,6 +40,8 @@ public:
   std::unique_ptr<Elem> createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
                                       const Hippo::FoamFace & face);
 
+  int64_t getPatchCount(int subdomainId) const { return _patch_counts.at(subdomainId); };
+  int64_t getPatchOffset(int subdomainId) const { return _patch_offsets.at(subdomainId); };
   std::vector<int32_t> n_faces{0};
   // The index offset into the MOOSE element array, for the current rank.
   // This can be used with `getElemPtr` like so:
@@ -51,8 +54,10 @@ protected:
   Hippo::FoamRuntime _foam_runtime;
   Foam::fvMesh _foam_mesh;
   std::vector<int32_t> _patch_id;
-  std::vector<int> _subdomain_list;
+  std::vector<SubdomainID> _subdomain_list;
   bool _serial = true;
+  std::map<int, int64_t> _patch_counts;
+  std::map<int, int64_t> _patch_offsets;
 };
 // Local Variables:
 // mode: c++

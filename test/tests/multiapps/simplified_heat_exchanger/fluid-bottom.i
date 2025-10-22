@@ -4,25 +4,24 @@
     foam_patch = 'interface'
 []
 
-[AuxVariables]
-    [fluid_wall_temp]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 310
-    []
+[FoamBCs]
     [solid_heat_flux]
-        family = MONOMIAL
-        order = CONSTANT
+        type = FoamFixedGradientBC
+        foam_variable = T
         initial_condition = 0
+        diffusivity_coefficient = kappa
+    []
+[]
+
+[FoamVariables]
+    [fluid_wall_temp]
+        type = FoamVariableField
+        foam_variable = T
     []
 []
 
 [Problem]
     type = FoamProblem
-    # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
-    heat_flux = solid_heat_flux
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
-    foam_temp = fluid_wall_temp
 []
 
 [Executioner]

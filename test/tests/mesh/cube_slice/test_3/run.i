@@ -3,20 +3,27 @@
   case = 'foaminput'
   foam_patch = ' Wall-0 Wall-3 Wall-5'
 []
-[Variables]
+[FoamVariables]
   [T]
-  initial_condition = 1.0
+    type = FoamVariableField
+    foam_variable = T
   []
   [hf]
-  initial_condition = 1.0
+    type = FoamFunctionObject
+    foam_variable = wallHeatFlux
+  []
+[]
+
+[FoamBCs]
+  [T]
+    type = FoamFixedValueBC
+    foam_variable = T
+    v = T
   []
 []
 [Problem]
   type = FoamProblem
   solve = false
-  temp = T
-  foam_temp = T
-  foam_heat_flux = hf
 []
 [Executioner]
   type = Transient
