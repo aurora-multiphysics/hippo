@@ -38,4 +38,34 @@
             prereq = recover/prep_verify
         []
     []
+    [restep]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
+            prereq = recover/clean
+        []
+        [run]
+            type = Exodiff
+            prereq = restep/setup
+            input = main_restep.i
+            exodiff = main_out.e
+            min_parallel = 2
+            max_parallel = 2
+        []
+        [prep_verify]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case foam && tar xvf gold/unsteady_fixed_point_reference.tar.gz -C gold/"'
+            prereq = restep/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = restep/prep_verify
+        []
+        [clean]
+            type = RunCommand
+            command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
+            prereq = restep/prep_verify
+        []
+    []
 []
