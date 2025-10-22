@@ -99,7 +99,7 @@ RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 WORKDIR "/opt/hippo"
 
 # Build MOOSE
-RUN git clone --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
+RUN git clone --depth=1 --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS
 
 # Build OpenFOAM
@@ -108,11 +108,11 @@ RUN ln -s "${MPI_ROOT}/lib" "${MPI_ROOT}/lib64"
 COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
-RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS
+RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS -q
 
 # Python linting and testing requirements
 COPY ./requirements.test.txt ./requirements.test.txt
-RUN conda install pre-commit --file requirements.test.txt -S --yes
+RUN conda install pre-commit --file requirements.test.txt -S --yes --quiet
 
 # Pull down MOOSE's 'large_media' submodule for building docs
 RUN git -C "${MOOSE_DIR}" submodule update --init large_media

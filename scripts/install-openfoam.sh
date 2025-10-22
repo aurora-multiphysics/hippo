@@ -6,8 +6,9 @@ set -e
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 STRIP_SOURCES=0
 BUILD_JOBS=""
+QUIET_COMPILATION=0
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
-USAGE="usage: install-openfoam.sh [-h] [-s] [-o DIRECTORY]
+USAGE="usage: install-openfoam.sh [-h] [-q] [-s] [-j JOBS] [-o DIRECTORY]
 
 Install OpenFOAM-12 for Ubuntu, applying the patch required by hippo.
 
@@ -32,6 +33,7 @@ options:
                   hippo
   -j              set the number of build jobs, no limit by default. Pass 0 for
                   no limit
+  -q              run compilations in silent/quiet mode
   -h              show help and exit
 "
 
@@ -43,18 +45,19 @@ for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     fi
 done
 
-while getopts "o:j:sh" opt; do
+while getopts "o:j:sqh" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}" ;;
         j) BUILD_JOBS="${OPTARG}" ;;
         s) STRIP_SOURCES=1 ;;
+        q) QUIET_COMPILATION=1 ;;
         h) echo "${USAGE}" && exit 0 ;;
         *) exit 1
     esac
 done
 
 # remove limit on build jobs when 0 is passed
-if [ "$BUILD_JOBS" -eq "0" ]; then
+if [ "${BUILD_JOBS}" = "0" ]; then
     BUILD_JOBS=""
 fi;
 
@@ -84,6 +87,12 @@ echo "  WM_LABEL_SIZE:       ${WM_LABEL_SIZE}"
 echo "  WM_MPLIB:            ${WM_MPLIB}"
 echo "  WM_PRECISION_OPTION: ${WM_PRECISION_OPTION}"
 
+ALLWMAKE="./Allwmake"
+ALLWMAKE+=" -j${BUILD_JOBS}"
+if ((QUIET_COMPILATION)); then
+    ALLWMAKE+=" -s"
+fi
+
 mkdir -p "${THIRDPARTY_DIR}"
 if [ ! -d "${THIRDPARTY_DIR}/.git" ]; then
     git clone https://github.com/OpenFOAM/ThirdParty-12.git "${THIRDPARTY_DIR}"
@@ -91,7 +100,7 @@ fi
 git -C "${THIRDPARTY_DIR}" reset --hard "${THIRDPARTY_REV}"
 (
     cd "${THIRDPARTY_DIR}" \
-    && ./Allwmake
+    && ${ALLWMAKE}
 )
 
 # Refresh OpenFOAM paths
@@ -100,10 +109,10 @@ wmRefresh || true
 # Build OpenFOAM
 (
     cd "${OPENFOAM_DIR}" \
-    && ./Allwmake -j${BUILD_JOBS} dep \
-    && ./Allwmake -j${BUILD_JOBS} src/ \
-    && ./Allwmake -j${BUILD_JOBS} applications/modules/ \
-    && ./Allwmake -j${BUILD_JOBS} applications/utilities/
+    && ${ALLWMAKE} dep \
+    && ${ALLWMAKE} src/ \
+    && ${ALLWMAKE} applications/modules/ \
+    && ${ALLWMAKE} applications/utilities/
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then
@@ -111,7 +120,6 @@ if [ ${STRIP_SOURCES} -eq 1 ]; then
     rm "${OPENFOAM_DIR}/.gitattributes"
     rm "${OPENFOAM_DIR}/.gitignore"
     rm -rf "${OPENFOAM_DIR}/.git/"
-    rm -rf "${OPENFOAM_DIR}/applications/"
     rm -rf "${OPENFOAM_DIR}/doc/"
     rm -rf "${OPENFOAM_DIR}/platforms/${WM_OPTIONS}/src"
     rm -rf "${OPENFOAM_DIR}/test/"

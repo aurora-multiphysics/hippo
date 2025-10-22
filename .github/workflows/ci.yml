@@ -11,7 +11,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/ukaea/hippo:832fedfb59feaa9d14dc
+      image: quay.io/ukaea/hippo:f4111251770f96aa77a0
 
     steps:
     - uses: actions/checkout@v4
