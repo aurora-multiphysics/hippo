@@ -1,8 +1,9 @@
 #include "FoamFixedGradientBC.h"
-#include "InputParameters.h"
-#include "MooseTypes.h"
-#include "fixedGradientFvPatchFields.H"
-#include "volFieldsFwd.H"
+
+#include <InputParameters.h>
+#include <MooseTypes.h>
+#include <fixedGradientFvPatchFields.H>
+#include <volFieldsFwd.H>
 
 registerMooseObject("hippoApp", FoamFixedGradientBC);
 
@@ -24,7 +25,7 @@ FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
 {
   // check that the diffusivity coefficient is a OpenFOAM scalar field
   if (!_diffusivity_coefficient.empty() &&
-      !_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity_coefficient))
+      !_mesh->foamHasObject<Foam::volScalarField>(_diffusivity_coefficient))
     mooseError(
         "Diffusivity coefficient '", _diffusivity_coefficient, "' not a Foam volScalarField");
 }
@@ -41,15 +42,9 @@ FoamFixedGradientBC::imposeBoundaryCondition()
   {
     std::vector<Real> && grad_array = getMooseVariableArray(subdomain);
 
-    // Get underlying field from OpenFOAM boundary patch
-    auto & var = const_cast<Foam::fvPatchField<double> &>(
-        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
-            _foam_variable));
-
     // Get the gradient associated with the field
-    Foam::scalarField & foam_gradient(
-        Foam::refCast<Foam::fixedGradientFvPatchScalarField>(var).gradient());
-
+    auto & foam_gradient =
+        _mesh->getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
     assert(grad_array.size() == static_cast<size_t>(foam_gradient.size()));
 
     // If diffusivity_coefficient is specified grad array is a flux, so result

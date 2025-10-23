@@ -21,6 +21,25 @@
 
 registerMooseObject("hippoApp", FoamProblem);
 
+namespace
+{
+// Create comma separated list from vector
+template <typename StrType>
+inline std::string
+listFromVector(std::vector<StrType> vec, StrType sep = ", ")
+{
+  if (vec.size() == 0)
+    return std::string();
+  else if (vec.size() == 1)
+    return vec.at(0);
+
+  std::string str;
+  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
+  std::accumulate(vec.begin(), vec.end(), str, binary_op);
+  return str;
+}
+}
+
 InputParameters
 FoamProblem::validParams()
 {
@@ -80,13 +99,13 @@ FoamProblem::initialSetup()
 {
   ExternalProblem::initialSetup();
 
-  // Get FoamVariables create by the action AddFoamVariableAction
+  // Get FoamVariables created by the action AddFoamVariableAction
   TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
   query_vars.queryInto(_foam_variables);
 
   verifyFoamVariables();
 
-  // Get FoamBCs create by the action AddFoamBCAction
+  // Get FoamBCs created by the action AddFoamBCAction
   TheWarehouse::Query query_bcs = theWarehouse().query().condition<AttribSystem>("FoamBC");
   query_bcs.queryInto(_foam_bcs);
 
@@ -142,22 +161,6 @@ FoamProblem::verifyFoamVariables()
   vt.print(_console);
 }
 
-// Create comma separated list from vector
-template <typename StrType>
-inline std::string
-listFromVector(std::vector<StrType> vec, StrType sep = ", ")
-{
-  if (vec.size() == 0)
-    return std::string();
-  else if (vec.size() == 1)
-    return vec.at(0);
-
-  std::string str;
-  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
-  std::accumulate(vec.begin(), vec.end(), str, binary_op);
-  return str;
-}
-
 void
 FoamProblem::verifyFoamBCs()
 {
@@ -166,11 +169,9 @@ FoamProblem::verifyFoamBCs()
     bc->initialSetup();
 
   // Get list of all variables used by all BCs
-  std::vector<std::string> variables(_foam_bcs.size());
-  for (auto & bc : _foam_bcs)
-    variables.push_back(bc->foamVariable());
-
-  std::set<std::string> unique_vars(variables.begin(), variables.end());
+  std::set<std::string> unique_vars;
+  for (const auto & bc : _foam_bcs)
+    unique_vars.insert(bc->foamVariable());
 
   // Create table for printing BC information
   VariadicTable<std::string, std::string, std::string, std::string, std::string> vt({
@@ -212,7 +213,7 @@ FoamProblem::verifyFoamBCs()
                  var,
                  "'");
 
-    // Add table entry for boundaries which do no have BC for variable
+    // Add table entry for boundaries which do not have a BC for variable
     std::vector<SubdomainName> unused_bcs;
     for (auto bc : _mesh.getSubdomainNames(_foam_mesh->getSubdomainList()))
     {
