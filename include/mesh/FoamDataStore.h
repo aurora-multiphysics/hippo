@@ -10,6 +10,7 @@
 #include <fstream>
 #include <ostream>
 #include <cxxabi.h>
+#include <type_traits>
 
 // This method is to help debug issues with serialising and deserialising
 // TODO: Remove before merge
@@ -89,42 +90,44 @@ readBoundary(istream & stream, Foam::GeometricField<Type, PatchField, GeoMesh> &
 //
 // readField for GeometricFields and DimensionedFields
 template <typename Type>
-inline std::pair<std::string, Type>
-readField(std::istream & stream, const Foam::fvMesh & mesh)
+inline Type &
+readField(std::istream & stream,
+          Foam::fvMesh & mesh,
+          Type * parent_field,
+          unsigned int old_time_index)
 {
-  std::pair<std::string, std::string> field_data;
+  assert(old_time_index == 0 || parent_field);
 
-  loadHelper(stream, field_data, nullptr);
-  Foam::IStringStream iss{Foam::string(field_data.second), Foam::IOstream::ASCII};
-  Type field{
-      Foam::IOobject{
-          field_data.first, mesh, Foam::IOobject::NO_READ, Foam::IOobject::NO_WRITE, false},
-      mesh,
-      Foam::dictionary(iss),
-  };
+  std::string field_name;
+  loadHelper(stream, field_name, nullptr);
+  auto & field = (old_time_index > 0 && parent_field) ? parent_field->oldTimeRef(old_time_index)
+                                                      : mesh.lookupObjectRef<Type>(field_name);
+
+  std::vector<typename Type::value_type> internal_data(field.size());
+  loadHelper(stream, internal_data, nullptr);
+
+  for (auto i = 0lu; i < internal_data.size(); ++i)
+    field.primitiveFieldRef()[i] = internal_data[i];
 
   readBoundary(stream, field);
 
-  return std::pair(field_data.first, field);
+  return field;
 }
 
 // readField for uniformDimensionedScalarFields
 template <>
-inline std::pair<std::string, Foam::uniformDimensionedScalarField>
-readField(std::istream & stream, const Foam::fvMesh & mesh)
+inline Foam::uniformDimensionedScalarField &
+readField(std::istream & stream,
+          Foam::fvMesh & mesh,
+          Foam::uniformDimensionedScalarField * parent_field,
+          unsigned int old_time_index)
 {
-  Foam::dimensionSet dimSet{Foam::dimless};
-  loadHelper(stream, dimSet, nullptr);
   std::pair<std::string, Foam::scalar> field_data;
   loadHelper(stream, field_data, nullptr);
+  auto & field = mesh.lookupObjectRef<Foam::uniformDimensionedScalarField>(field_data.first);
+  field.value() = field_data.second;
 
-  return std::pair(
-      field_data.first,
-      Foam::uniformDimensionedScalarField{
-          Foam::IOobject{
-              field_data.first, mesh, Foam::IOobject::NO_READ, Foam::IOobject::NO_WRITE, false},
-          Foam::dimensioned<Foam::scalar>(dimSet, field_data.second),
-      });
+  return field;
 }
 
 template <class Type, class GeomMesh>
@@ -154,14 +157,12 @@ template <typename Type>
 inline void
 writeField(ostream & stream, const Foam::string & name, const Type & field)
 {
-  // ensure that data is written to at least double precision
-  auto precision = std::max(field.time().controlDict().lookupOrDefault("writePrecision", 17), 17);
+  std::vector<typename Type::value_type> internal_field(field.primitiveField().size());
+  std::copy(field.primitiveField().begin(), field.primitiveField().end(), internal_field.begin());
 
-  Foam::OStringStream oss(Foam::IOstream::ASCII);
-  oss.precision(precision);
-  oss << field;
-  std::pair store_pair{std::string(name), std::string(oss.str())};
-  storeHelper(stream, store_pair, nullptr);
+  std::string field_name{name};
+  storeHelper(stream, field_name, nullptr);
+  storeHelper(stream, internal_field, nullptr);
 
   writeBoundary(stream, field);
 }
@@ -173,7 +174,6 @@ writeField(ostream & stream,
            const Foam::string & name,
            const Foam::UniformDimensionedField<Type> & field)
 {
-  storeHelper(stream, field.dimensions(), nullptr);
   auto store_pair{std::pair(std::string(name), field.value())};
   storeHelper(stream, store_pair, nullptr);
 }
@@ -190,9 +190,11 @@ dataStoreField(std::ostream & stream, const Foam::string & name, T & field, void
 
   writeField(stream, name, field);
 
+  auto old_name = name;
   for (int n = 1; n <= nOldTimes; ++n)
   {
-    writeField(stream, name, field.oldTime(n));
+    old_name += "_0";
+    writeField(stream, old_name, field.oldTime(n));
     std::cout << "  - Serialising "
               << abi::__cxa_demangle(typeid(field.oldTime(n)).name(), NULL, NULL, NULL) << " "
               << field.oldTime(n).name() << std::endl;
@@ -208,19 +210,15 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
   Foam::label nOldTimes;
   loadHelper(stream, nOldTimes, nullptr);
 
-  auto && read_field = readField<T>(stream, foam_mesh);
-  auto & field = foam_mesh.lookupObjectRef<T>(read_field.first);
-
-  field == read_field.second;
+  auto & field = readField<T>(stream, foam_mesh, nullptr, 0);
 
   std::cout << "Deserialising " << abi::__cxa_demangle(typeid(field).name(), NULL, NULL, NULL)
             << " " << field.name() << " timeindex: " << field.timeIndex() << std::endl;
 
   for (int nOld = 1; nOld <= nOldTimes; ++nOld)
   {
-    auto old_read_field = readField<T>(stream, foam_mesh);
-    field.oldTimeRef(nOld) == old_read_field.second;
-    std::cout << "  - Deserialising " << old_read_field.first << ". nOld: " << nOld << std::endl;
+    auto & old_field = readField<T>(stream, foam_mesh, &field, nOld);
+    std::cout << "  - Deserialising " << old_field.name() << ". nOld: " << nOld << std::endl;
   }
 }
 
@@ -261,7 +259,7 @@ storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
     auto & field = mesh.lookupObjectRef<T>(key);
 
     // TODO: remove before merge
-    outputField(field.name() + "_out.txt", field, false);
+    // outputField(field.name() + "_out.txt", field, false);
     dataStoreField<T>(stream, key, field, context);
   }
 }
@@ -339,7 +337,7 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
     }
 
     // TODO: remove before merge
-    outputField(field.name() + "_in.txt", field, false);
+    // outputField(field.name() + "_in.txt", field, false);
   }
 }
 
@@ -398,13 +396,13 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
 {
   storeHelper(stream, mesh.time(), context);
 
-  storeFields<Foam::volScalarField, true>(stream, mesh, context);
-  storeFields<Foam::volVectorField, true>(stream, mesh, context);
+  storeFields<Foam::volScalarField, false>(stream, mesh, context);
+  storeFields<Foam::volVectorField, false>(stream, mesh, context);
   storeFields<Foam::volTensorField, false>(stream, mesh, context);
   storeFields<Foam::volSymmTensorField, false>(stream, mesh, context);
 
-  storeFields<Foam::surfaceScalarField, true>(stream, mesh, context);
-  storeFields<Foam::surfaceVectorField, true>(stream, mesh, context);
+  storeFields<Foam::surfaceScalarField, false>(stream, mesh, context);
+  storeFields<Foam::surfaceVectorField, false>(stream, mesh, context);
   storeFields<Foam::surfaceTensorField, false>(stream, mesh, context);
   storeFields<Foam::surfaceSymmTensorField, false>(stream, mesh, context);
 
