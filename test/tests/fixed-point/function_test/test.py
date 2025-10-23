@@ -41,7 +41,7 @@ class TestFunctionSolver(TestCase):
 
             ref = 1. if time > time_dirs[0] else 0.
             assert np.allclose(dTdt, ref,
-                                   atol=0, rtol=1e-14), f"Max diff ({time}): {abs(dTdt-1).max()}"
+                                   atol=0, rtol=1e-14), f"Max diff ({time}): {abs(dTdt-ref).max()}"
 
     def test_compare_reference(self):
         case_dir = 'foam/'

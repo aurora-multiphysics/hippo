@@ -42,5 +42,6 @@
 #include "symmTensorField.H"
 #include "DimensionedField.H"
 #include "uniformDimensionedFields.H"
+#include "ddtScheme.H"
 
 #undef NotImplemented

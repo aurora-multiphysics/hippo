@@ -279,30 +279,36 @@ struct is_geometric_field<Foam::GeometricField<Type, Patch, Mesh>> : std::true_t
 {
 };
 
-// This functions nulls and clears old time information from the first step
-// For geometric fields the underlying `base field' needs to be nulled for this to work.
-// Unfortunately, OpenFOAM code is pretty opaque in terms of understanding this issue.
-// constexpr ensures this is compiled statically as the base field is not present for
-// dimensioned fields.
 template <typename T>
 void
-removeOldTime(T & field)
+removeOldTime(Foam::fvMesh & mesh, T & field)
 {
-  if constexpr (is_geometric_field<T>::value)
-  {
-    // Note that this does not work as intended and it seems that only the first
-    // base field is removed.
-    // TODO: fix to get Crank-Nicolson to work.
-    if (field.nOldTimes() > 1)
-      removeOldTime(field.oldTimeRef());
+  // This is required for Hippo to behave the exact same as OpenFOAM when using
+  // fixed-point iteration. The differences only affect the fvc::ddt calls on the first
+  // time step. In OpenFOAM, on the first timestep fvc::ddt calls return 0. However,
+  // on the second fixed-point they don't unless the old time base field is cleared, but
+  // this results in an internal OpenFOAM error for some time schemes.
+  // Schemes known to work:
+  //   - Euler (implicit)
+  // Schemes known not to work
+  //   - Crank-Nicolson
+  auto scheme = Foam::fv::ddtScheme<typename T::cmptType>::New(
+                    mesh, mesh.schemes().ddt("ddt(" + field.name() + ')'))
+                    ->type();
 
-    // otbf is set in the setBase functions of the OldTimeField. This is mirrored here
-    // in order to null it.
-    auto & otbf = const_cast<typename T::Base::OldTime &>(Foam::OldTimeBaseFieldType<T>()(field));
-    otbf.clearOldTimes();
-    otbf.nullOldestTime();
+  if (scheme == "Euler")
+  {
+    // Only geometric fields have a base field
+    if constexpr (is_geometric_field<T>::value)
+    {
+      // otbf is set in the setBase functions of the OldTimeField. This is mirrored here
+      // in order to null it.
+      auto & otbf = const_cast<typename T::Base::OldTime &>(Foam::OldTimeBaseFieldType<T>()(field));
+      otbf.clearOldTimes();
+      otbf.nullOldestTime();
+    }
+    field.clearOldTimes();
   }
-  field.clearOldTimes();
 }
 
 template <typename T>
@@ -323,7 +329,7 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
     if (mesh.time().timeIndex() == 0)
     {
       std::cout << "Clearing old times " << field.name() << std::endl;
-      removeOldTime(field);
+      removeOldTime(mesh, field);
 
       if (mesh.time().timeIndex() != field.timeIndex())
       {
