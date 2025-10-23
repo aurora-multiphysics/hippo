@@ -1,13 +1,16 @@
-#include "Coupleable.h"
+
 #include "FoamBCBase.h"
 #include "FoamProblem.h"
-#include "InputParameters.h"
-#include "MooseError.h"
-#include "MooseObject.h"
-#include "MooseTypes.h"
-#include "MooseVariableFieldBase.h"
-#include "Registry.h"
-#include "volFieldsFwd.H"
+
+#include <Coupleable.h>
+#include <InputParameters.h>
+#include <MooseError.h>
+#include <MooseObject.h>
+#include <MooseTypes.h>
+#include <MooseVariableFieldBase.h>
+#include <Registry.h>
+#include <volFieldsFwd.H>
+
 #include <algorithm>
 #include <vector>
 
@@ -57,7 +60,7 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   _mesh = &problem->mesh();
 
   // check that the foam variable exists
-  if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_foam_variable))
+  if (!_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
     mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
 
   // check that the boundary is in the FoamMesh
@@ -98,10 +101,10 @@ FoamBCBase::variableValueAtElement(const libMesh::Elem * elem)
 }
 
 std::vector<Real>
-FoamBCBase::getMooseVariableArray(int subdomainId)
+FoamBCBase::getMooseVariableArray(int subdomain_id)
 {
-  size_t patch_count = _mesh->getPatchCount(subdomainId);
-  size_t patch_offset = _mesh->getPatchOffset(subdomainId);
+  size_t patch_count = _mesh->getPatchCount(subdomain_id);
+  size_t patch_offset = _mesh->getPatchOffset(subdomain_id);
 
   std::vector<Real> var_array(patch_count);
   for (size_t j = 0; j < patch_count; ++j)

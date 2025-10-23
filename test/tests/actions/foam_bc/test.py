@@ -5,12 +5,12 @@ import unittest
 import fluidfoam as ff
 import numpy as np
 
-from read_hippo_data import get_foam_times #pylint: disable=E0401
+from read_hippo_data import get_foam_times
 
 class TestFoamBCFixedGradient(unittest.TestCase):
-    """Test class for imposing fixed value BCs in Hippo."""
+    """Test class for imposing fixed gradient BCs in Hippo."""
     def test_fixed_gradient_x(self):
-        """Test case for imposing fixed value."""
+        """Test case for imposing fixed gradient."""
         case_dir = 'foam/'
         times = get_foam_times(case_dir)[1:]
 

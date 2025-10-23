@@ -4,7 +4,7 @@
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
         []
-        [succeed]
+        [check_foam_bc_input_syntax]
             type = RunApp
             input = main.i
             prereq = foam_bc_action/setup

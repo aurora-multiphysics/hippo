@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Coupleable.h"
-#include "InputParameters.h"
-#include "MooseObject.h"
-#include "MooseTypes.h"
-#include "MooseVariableFieldBase.h"
 #include "FoamMesh.h"
+
+#include <Coupleable.h>
+#include <InputParameters.h>
+#include <MooseObject.h>
+#include <MooseTypes.h>
+#include <MooseVariableFieldBase.h>
 
 class FoamBCBase : public MooseObject, public Coupleable
 {
@@ -20,9 +21,9 @@ public:
   std::string foamVariable() const { return _foam_variable; };
 
   // returns the moose AuxVariable imposed on OpenFOAM
-  VariableName mooseVariable() const { return _moose_var->name(); }
+  AuxVariableName mooseVariable() const { return _moose_var->name(); }
 
-  // returns foam variable BC applies to
+  // returns the name of the foam boundaries the BC applies to
   std::vector<SubdomainName> boundary() const { return _boundary; };
 
   virtual void initialSetup();
@@ -35,7 +36,7 @@ protected:
   Real variableValueAtElement(const libMesh::Elem * elem);
 
   // Get the data vector of the MOOSE field on a subdomain
-  std::vector<Real> getMooseVariableArray(int subdomainId);
+  std::vector<Real> getMooseVariableArray(int subdomain_id);
 
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
