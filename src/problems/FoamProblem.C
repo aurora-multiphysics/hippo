@@ -1,11 +1,15 @@
+#include "ExternalProblem.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
+#include "VariadicTable.h"
+#include "word.H"
 
 #include <AuxiliarySystem.h>
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include <algorithm>
 #include "FoamVariableField.h"
 #include "InputParameters.h"
 #include "VariadicTable.h"
@@ -13,6 +17,7 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
+#include <string>
 
 registerMooseObject("hippoApp", FoamProblem);
 
@@ -67,21 +72,15 @@ FoamProblem::FoamProblem(InputParameters const & params)
                                   "solver", "fluid"),
                               _foam_mesh->fvMesh())
                 .ptr()),
-    _foam_variables()
+    _foam_variables(),
+    _foam_bcs()
 {
   assert(_foam_mesh);
 
   auto t_var_name = params.get<std::string>(PARAM_VAR_T);
   auto hf_var_name = params.get<std::string>(PARAM_VAR_HF);
-  if (t_var_name.empty() && hf_var_name.empty())
-  {
-    mooseWarning("Neither parameters '",
-                 PARAM_VAR_T,
-                 "' or '",
-                 PARAM_VAR_HF,
-                 "' are set. No quantities are being transferred to OpenFOAM.");
-  }
-  else if (t_var_name == hf_var_name)
+
+  if (t_var_name == hf_var_name && !t_var_name.empty())
   {
     mooseError("Parameters '",
                PARAM_VAR_T,
@@ -94,15 +93,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
 
   auto foam_t_var_name = params.get<std::string>(PARAM_VAR_FOAM_T);
   auto foam_hf_var_name = params.get<std::string>(PARAM_VAR_FOAM_HF);
-  if (foam_t_var_name.empty() && foam_hf_var_name.empty())
-  {
-    mooseWarning("Neither parameters '",
-                 PARAM_VAR_FOAM_T,
-                 "', or '",
-                 PARAM_VAR_FOAM_HF,
-                 "' are set. No quantities are being copied from OpenFOAM.");
-  }
-  else if (foam_t_var_name == foam_hf_var_name)
+
+  if (foam_t_var_name == foam_hf_var_name && !foam_t_var_name.empty())
   {
     mooseError("Parameters '",
                PARAM_VAR_FOAM_T,
@@ -115,6 +107,24 @@ FoamProblem::FoamProblem(InputParameters const & params)
 }
 
 void
+FoamProblem::initialSetup()
+{
+  ExternalProblem::initialSetup();
+
+  // Get FoamVariables create by the action AddFoamVariableAction
+  TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
+  query_vars.queryInto(_foam_variables);
+
+  verifyFoamVariables();
+
+  // Get FoamBCs create by the action AddFoamBCAction
+  TheWarehouse::Query query_bcs = theWarehouse().query().condition<AttribSystem>("FoamBC");
+  query_bcs.queryInto(_foam_bcs);
+
+  verifyFoamBCs();
+}
+
+void
 FoamProblem::externalSolve()
 {
   if (parameters().get<bool>("solve"))
@@ -122,18 +132,6 @@ FoamProblem::externalSolve()
     _solver.setTimeDelta(_dt); // Needed for constant deltaT cases
     _solver.run();
   }
-}
-
-void
-FoamProblem::initialSetup()
-{
-  ExternalProblem::initialSetup();
-
-  // Get FoamVariables create by the action AddFoamVariableAction
-  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamVariable");
-  query.queryInto(_foam_variables);
-
-  verifyFoamVariables();
 }
 
 void
@@ -187,6 +185,11 @@ FoamProblem::syncSolutions(Direction dir)
     else if (transfer_wall_heat_flux)
     {
       syncToOpenFoam<SyncVariables::WallHeatFlux>();
+    }
+
+    for (auto & foam_bc : _foam_bcs)
+    {
+      foam_bc->imposeBoundaryCondition();
     }
   }
 }
@@ -369,6 +372,86 @@ FoamProblem::verifyFoamVariables()
   for (auto & var : _foam_variables)
   {
     vt.addRow(var->name(), var->type(), var->foamVariable());
+  }
+  vt.print(_console);
+}
+
+// Create comma separated list from vector
+template <typename StrType>
+inline std::string
+listFromVector(std::vector<StrType> vec, StrType sep = ", ")
+{
+  if (vec.size() == 0)
+    return std::string();
+  else if (vec.size() == 1)
+    return vec.at(0);
+
+  std::string str;
+  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
+  std::accumulate(vec.begin(), vec.end(), str, binary_op);
+  return str;
+}
+
+void
+FoamProblem::verifyFoamBCs()
+{
+  // Get list of all variables used by all BCs
+  std::vector<std::string> variables(_foam_bcs.size());
+  for (auto & bc : _foam_bcs)
+    variables.push_back(bc->foamVariable());
+
+  std::set<std::string> unique_vars(variables.begin(), variables.end());
+
+  // Create table for printing BC information
+  VariadicTable<std::string, std::string, std::string, std::string, std::string> vt({
+      "FoamBC name",
+      "Type",
+      "Foam variable",
+      "MOOSE field",
+      "Boundaries",
+  });
+
+  for (auto var : unique_vars)
+  {
+    if (var.empty())
+      continue;
+
+    // create list of all boundaries where bc has been applied for var
+    std::vector<SubdomainName> used_bcs;
+    for (auto & bc : _foam_bcs)
+    {
+      if (bc->foamVariable() == var)
+      {
+        auto && boundary = bc->boundary();
+        used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
+        // List info about BC
+        vt.addRow(bc->name(),
+                  bc->type(),
+                  bc->foamVariable(),
+                  bc->mooseVariable(),
+                  listFromVector(boundary));
+      }
+    }
+
+    // Find duplicates
+    auto unique_bc = std::unique(used_bcs.begin(), used_bcs.end());
+    if (unique_bc != used_bcs.end())
+      mooseError("Imposed FoamBC has duplicated boundary '",
+                 *unique_bc,
+                 "' for foam variable '",
+                 var,
+                 "'");
+
+    // Add table entry for boundaries which do no have BC for variable
+    std::vector<SubdomainName> unused_bcs;
+    for (auto bc : _mesh.getSubdomainNames(_foam_mesh->getSubdomainList()))
+    {
+      auto it = std::find(used_bcs.begin(), used_bcs.end(), bc);
+      if (it == used_bcs.end())
+        unused_bcs.push_back(bc);
+    }
+    if (unused_bcs.size() > 0)
+      vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
   }
   vt.print(_console);
 }

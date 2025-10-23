@@ -1,0 +1,38 @@
+[Tests]
+    [foam_bc_action]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [succeed]
+            type = RunApp
+            input = main.i
+            prereq = foam_bc_action/setup
+            allow_warnings = true
+        []
+        [foam_var_error]
+            type = RunException
+            input = main.i
+            prereq = foam_bc_action/setup
+            expect_err = "There is no OpenFOAM field named 'T1'"
+            cli_args = 'FoamBCs/temp/foam_variable=T1'
+            allow_warnings = true
+        []
+        [foam_boundary_error]
+            type = RunException
+            input = main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Boundary 'left1' not found in FoamMesh"
+            cli_args = 'FoamBCs/temp/boundary=left1'
+            allow_warnings = true
+        []
+        [foam_duplicated_boundary_error]
+            type = RunException
+            input = main.i
+            prereq = foam_bc_action/setup
+            expect_err = "Imposed FoamBC has duplicated boundary 'left' for foam variable 'T'"
+            cli_args = 'FoamBCs/temp_r/boundary=left'
+            allow_warnings = true
+        []
+    []
+[]
