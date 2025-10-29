@@ -5,8 +5,9 @@
       command = 'bash -c "cd foam && ./Allclean && blockMesh"'
     []
     [run]
-      type = RunApp
+      type = Exodiff
       input = main.i
+      exodiff = main_out.e
       prereq = unsteady_1d_fixed_point/setup
     []
     [prep_verify]
