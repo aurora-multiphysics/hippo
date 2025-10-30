@@ -102,7 +102,7 @@
         variable = wall_heat_flux
         T = temp
         boundary = 'solid_top'
-        execute_on = TIMESTEP_END
+        execute_on = 'MULTIAPP_FIXED_POINT_BEGIN TIMESTEP_END'
     []
 []
 
