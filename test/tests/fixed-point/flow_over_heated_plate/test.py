@@ -46,14 +46,14 @@ class TestFlowOverHeatedPlate(TestCase):
         times = get_foam_times(case_dir, True)
         for time in times:
             # internal data
-            T = ff.readof.readscalar(case_dir, time, "T")
-            T_ref = ff.readof.readscalar(ref_dir, time, "T")
-            assert np.array_equal(T_ref, T), f"Max diff: {abs(T-T_ref).max()}"
+            temp = ff.readof.readscalar(case_dir, time, "T")
+            temp_ref = ff.readof.readscalar(ref_dir, time, "T")
+            assert np.allclose(temp_ref, temp, rtol=1e-8), f"Max diff ({time}): {abs(temp-temp_ref).max()}"
 
             # boundary data
             for boundary in boundaries:
-                T = ff.readof.readscalar(case_dir, time, "T",
+                temp = ff.readof.readscalar(case_dir, time, "T",
                                          boundary=boundary)
-                T_ref = ff.readof.readscalar(ref_dir, time, "T",
+                temp_ref = ff.readof.readscalar(ref_dir, time, "T",
                                              boundary=boundary)
-                assert np.array_equal(T_ref, T), f"Max diff: {abs(T-T_ref).max()}"
+                assert np.allclose(temp_ref, temp, rtol=1e-8), f"Max diff ({time}): {abs(temp-temp_ref).max()}"

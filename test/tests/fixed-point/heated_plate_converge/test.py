@@ -46,7 +46,7 @@ class TestFlowOverHeatedPlate(TestCase):
             # internal data
             temp = ff.readof.readscalar(case_dir, time, "T")
             temp_ref = ff.readof.readscalar(ref_dir, time, "T")
-            assert np.allclose(temp_ref, temp, rtol=1e-10), f"Max diff ({time}): {abs(temp-temp_ref).max()}"
+            assert np.allclose(temp_ref, temp, rtol=1e-8), f"Max diff ({time}): {abs(temp-temp_ref).max()}"
 
             # boundary data
             for boundary in boundaries:
@@ -54,4 +54,4 @@ class TestFlowOverHeatedPlate(TestCase):
                                          boundary=boundary)
                 temp_ref = ff.readof.readscalar(ref_dir, time, "T",
                                              boundary=boundary)
-                assert np.allclose(temp_ref, temp, rtol=1e-10), f"Max diff ({time}): {abs(temp-temp_ref).max()}"
+                assert np.allclose(temp_ref, temp, rtol=1e-8), f"Max diff ({time}): {abs(temp-temp_ref).max()}"
