@@ -10,8 +10,9 @@
             prereq = 'flow_over_heated_plate_regression/setup'
             exodiff = heated_plate_out.e
             allow_warnings = true
-            min_parallel=2
-            max_parallel=2
+            min_parallel=4
+            max_parallel=4
+            rel_err = 1e-4
         []
         [prep_verify]
             type = RunCommand
