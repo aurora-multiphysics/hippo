@@ -1,8 +1,26 @@
 [Tests]
     [flow_over_heated_plate_parallel]
+        [setup_no_fixed_point]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+        []
+        [run_no_fixed_point]
+            type = RunApp
+            input = heated_plate-no-fixed.i
+            prereq = 'flow_over_heated_plate_parallel/setup_no_fixed_point'
+            allow_warnings = true
+            min_parallel=4
+            max_parallel=4
+        []
+        [copy_no_fixed]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case fluid-openfoam && mkdir -p gold && cp heated_plate-no-fixed_out.e gold/heated_plate_out.e && cp -r fluid-openfoam/* gold/"'
+            prereq = flow_over_heated_plate_parallel/run_no_fixed_point
+        []
         [setup]
             type = RunCommand
             command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+            prereq = 'flow_over_heated_plate_parallel/copy_no_fixed'
         []
         [run]
             type = Exodiff
@@ -12,11 +30,10 @@
             allow_warnings = true
             min_parallel=4
             max_parallel=4
-            rel_err = 1.2e-4
         []
         [prep_verify]
             type = RunCommand
-            command = 'bash -c "reconstructPar -case fluid-openfoam && tar xvf gold/flow_over_heated_plate.tar.gz -C gold/"'
+            command = 'bash -c "reconstructPar -case fluid-openfoam"'
             prereq = flow_over_heated_plate_parallel/run
         []
         [verify]
@@ -26,8 +43,8 @@
         []
         [clean]
             type = RunCommand
-            command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
-            prereq = flow_over_heated_plate_parallel/prep_verify
+            command = 'bash -c "rm -rf gold/*"'
+            prereq = flow_over_heated_plate_parallel/verify
         []
     []
 []
