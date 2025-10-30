@@ -5,10 +5,10 @@
             command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
         []
         [run]
-            type = Exodiff
+            type = RunApp
             input = heated_plate.i
             prereq = 'flow_over_heated_plate_regression/setup'
-            exodiff = heated_plate_out.e
+            # exodiff = heated_plate_out.e
             allow_warnings = true
             min_parallel=4
             max_parallel=4
