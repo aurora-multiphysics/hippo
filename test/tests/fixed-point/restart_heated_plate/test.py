@@ -37,7 +37,7 @@ class TestFlowOverHeatedPlate(TestCase):
     def test_times(self):
         """Compares fixed-point solution against reference case."""
         case_dir = 'fluid-openfoam/'
-        ref_dir = 'gold/'
+        ref_dir = '../heated_plate_converge/fluid-openfoam'
 
         boundaries = ['inlet', 'outlet', 'top', 'slip-bottom', 'bottom', 'interface']
 

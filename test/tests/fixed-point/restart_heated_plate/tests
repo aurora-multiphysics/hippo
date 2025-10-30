@@ -19,6 +19,7 @@
             cli_args = '--recover heated_plate_out_cp/LATEST'
             delete_output_before_running = false
             exodiff = heated_plate_out.e
+            gold_dir = '../heated_plate_converge'
             allow_warnings = true
             min_parallel=4
             max_parallel=4

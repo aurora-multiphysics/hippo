@@ -145,7 +145,7 @@
 [Executioner]
     type = Transient
     start_time = 0
-    end_time = 0.5
+    end_time = 1.
     dt = 0.025
     fixed_point_max_its=20
     fixed_point_min_its=1
