@@ -12,9 +12,6 @@ public:
   virtual void act() override;
 
 protected:
-  // Function to enable compatibility with old style variable shadowing
-  void addOldStyleVariables(FoamProblem & problem);
-
   // Create AuxVariable associated with new-style variable shadowing
   void createAuxVariable();
 };

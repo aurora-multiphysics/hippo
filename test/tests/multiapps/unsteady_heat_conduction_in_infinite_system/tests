@@ -22,40 +22,4 @@
       prereq = unsteady_heat_conduction_in_infinite_system/reconstruct
     []
   []
-  [unsteady_heat_conduction_deprecated]
-    [setup]
-      type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh && decomposePar"'
-      prereq = unsteady_heat_conduction_in_infinite_system/verify
-    []
-    [temp_heat_flux_err]
-      type = RunException
-      input = run.i
-      min_parallel = 2
-      max_parallel = 2
-      prereq = unsteady_heat_conduction_in_infinite_system/setup
-      cli_args = "MultiApps/hippo/input_files='fluid-deprecated-fail.i'"
-      expect_err = "'temp' and 'heat_flux' cannot both be specified."
-      allow_warnings=true
-    []
-    [run]
-      type = RunApp
-      input = run.i
-      min_parallel = 2
-      max_parallel = 2
-      prereq = unsteady_heat_conduction_in_infinite_system/setup
-      cli_args = "MultiApps/hippo/input_files='fluid-deprecated.i'"
-      allow_warnings=true
-    []
-    [reconstruct]
-      type = RunCommand
-      command = 'reconstructPar -case fluid-openfoam'
-      prereq = unsteady_heat_conduction_deprecated/run
-    []
-    [verify]
-      type = PythonUnitTest
-      input = test.py
-      prereq = unsteady_heat_conduction_deprecated/reconstruct
-    []
-  []
 []
