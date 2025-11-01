@@ -22,8 +22,6 @@ public:
   virtual void act() override;
 
 protected:
-  void addOldStyleBCs(FoamProblem & problem);
-
   // Create AuxVariable associated with new-style BCs
   void createAuxVariable();
 };

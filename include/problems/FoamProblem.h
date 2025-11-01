@@ -36,10 +36,6 @@ public:
 
   Hippo::FoamSolver & solver() { return _solver; }
 
-  bool hasOldBCSyntax();
-
-  bool hasOldVariableSyntax();
-
 protected:
   // check FoamVariables and print summarising table
   void verifyFoamVariables();

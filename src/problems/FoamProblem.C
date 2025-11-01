@@ -44,41 +44,7 @@ InputParameters
 FoamProblem::validParams()
 {
   auto params = ExternalProblem::validParams();
-
-  // Deprecated parameters to set variables to read from/write to.
-  // Note that these can be omitted or point to the same variable to save
-  // memory.
-  params.addDeprecatedParam<std::string>("foam_heat_flux",
-                                         "The name of the aux variable to write the "
-                                         "OpenFOAM wall heat flux into.",
-                                         "Use FoamFunctionObject in the new [FoamVariables] block");
-  params.addDeprecatedParam<std::string>("foam_temp",
-                                         "The name of the aux variable to write the "
-                                         "OpenFOAM boundary temperature into.",
-                                         "Use FoamVariableField in the new [FoamVariables] block");
-  params.addDeprecatedParam<std::string>(
-      "heat_flux",
-      "The name of the aux variable to set the OpenFOAM wall heat flux from.",
-      "Use FoamFixedGradientBC in the new [FoamBCs] block");
-  params.addDeprecatedParam<std::string>("temp",
-                                         "The name of the aux variable to set the "
-                                         "OpenFOAM boundary temperature from.",
-                                         "Use FoamFixedValueBC in the new [FoamBCs] block");
   return params;
-}
-
-bool
-FoamProblem::hasOldBCSyntax()
-{
-  return !parameters().get<std::string>("temp").empty() ||
-         !parameters().get<std::string>("heat_flux").empty();
-}
-
-bool
-FoamProblem::hasOldVariableSyntax()
-{
-  return !parameters().get<std::string>("foam_temp").empty() ||
-         !parameters().get<std::string>("foam_heat_flux").empty();
 }
 
 FoamProblem::FoamProblem(InputParameters const & params)
