@@ -55,14 +55,14 @@ public:
 
   // Check if Foam mesh object has object of type T called name
   template <typename T>
-  bool foamHasObject(Foam::word name)
+  bool foamHasObject(Foam::word const & name)
   {
     return _foam_mesh.foundObject<T>(name);
   }
 
   // Returns the gradient BC array for field and subdomain
   template <typename GeoField, typename Type>
-  Foam::Field<Type> & getGradientBCField(SubdomainID subdomain, Foam::word field)
+  Foam::Field<Type> & getGradientBCField(SubdomainID subdomain, Foam::word const & field)
   {
     auto & var = const_cast<Foam::fvPatchField<Type> &>(
         _foam_mesh.boundary()[subdomain].lookupPatchField<GeoField, Type>(field));

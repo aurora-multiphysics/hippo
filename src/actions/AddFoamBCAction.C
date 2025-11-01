@@ -1,7 +1,9 @@
 #include "AddFoamBCAction.h"
-#include "InputParameters.h"
-#include "MooseObjectAction.h"
 #include "FoamProblem.h"
+#include "hippoUtils.h"
+
+#include <InputParameters.h>
+#include <MooseObjectAction.h>
 
 registerMooseAction("hippoApp", AddFoamBCAction, "add_foam_bc");
 
@@ -47,7 +49,8 @@ AddFoamBCAction::createAuxVariable()
   action_params.set<MooseEnum>("family") = "MONOMIAL";
 
   // Copy desired parameters from FoamBC action
-  copyParamFromParam<std::vector<Real>>(action_params, _moose_object_pars, "initial_condition");
+  Hippo::internal::copyParamFromParam<std::vector<Real>>(
+      action_params, _moose_object_pars, "initial_condition");
 
   std::shared_ptr<Action> action =
       std::static_pointer_cast<Action>(_action_factory.create(class_name, name(), action_params));
