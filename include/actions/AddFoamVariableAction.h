@@ -1,4 +1,5 @@
-#include "FoamProblem.h"
+#pragma once
+
 #include "InputParameters.h"
 #include "MooseObjectAction.h"
 

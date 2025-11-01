@@ -10,7 +10,6 @@
 #include <MooseVariableFieldBase.h>
 #include <SystemBase.h>
 #include <libmesh/elem.h>
-#include <string>
 
 class FoamProblem : public ExternalProblem
 {
