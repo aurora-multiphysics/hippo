@@ -12,4 +12,5 @@ build_foam_tests:
 	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/laplacianTestSolver/
 	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/odeTestSolver/
 	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/postprocessorTestSolver/
+	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/mappedInletTestSolver/
 
