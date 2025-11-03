@@ -15,7 +15,7 @@ public:
 protected:
   PostprocessorName _pp_name;
 
-  std::vector<Real> _offset;
+  Foam::vector _offset;
 
   std::map<int, std::vector<int>> _send_map;
 

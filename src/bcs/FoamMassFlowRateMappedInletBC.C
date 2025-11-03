@@ -35,31 +35,32 @@ FoamMassFlowRateMappedInletBC::createPatchProcMap()
 
   std::vector<MPI_Request> size_requests(Foam::Pstream::nProcs());
   std::vector<MPI_Request> data_requests(Foam::Pstream::nProcs());
-  std::vector<int> sizes;
+  std::vector<int> sizes(Foam::Pstream::nProcs());
   for (int i = 0; i < Foam::Pstream::nProcs(); ++i)
   {
     // Recieve from each process and check required point is present
     Foam::vectorField field;
-    Foam::PstreamBuffers recv_points(Foam::UPstream::commsTypes::blocking);
-
-    Foam::UIPstream recieve(i, recv_points);
+    Foam::UIPstream recieve(i, send_points);
     recieve >> field;
     auto & vec = _send_map[i];
+    std::vector<int> recv_indices;
     for (int j = 0; j < field.size(); ++j)
     {
-      auto index = foam_mesh.findCell(field[j]);
+      auto index = foam_mesh.findCell(field[j] + _offset);
       if (index >= 0)
       {
-        vec.push_back(j); // assign to send map required indices
+        vec.push_back(index); // assign to send map required indices
+        recv_indices.push_back(j);
       }
     }
 
     // Let original processes know which points will come from each rank
     auto size = static_cast<int>(vec.size());
     MPI_Isend(&size, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &size_requests[i]);
-    MPI_Isend(vec.data(), vec.size(), MPI_INT, i, 1, MPI_COMM_WORLD, &data_requests[i]);
+    MPI_Isend(
+        recv_indices.data(), recv_indices.size(), MPI_INT, i, 1, MPI_COMM_WORLD, &data_requests[i]);
 
-    MPI_Irecv(sizes.data(), 1, MPI_INT, i, 0, MPI_COMM_WORLD, &size_requests[i]);
+    MPI_Irecv(&sizes[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD, &size_requests[i]);
   }
 
   MPI_Waitall(size_requests.size(), size_requests.data(), MPI_STATUSES_IGNORE);
@@ -67,7 +68,7 @@ FoamMassFlowRateMappedInletBC::createPatchProcMap()
   for (int i = 0; i < Foam::Pstream::nProcs(); ++i)
   {
     std::vector<int> recv_indices(sizes[i]);
-    MPI_Recv(recv_indices.data(), sizes[i], MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(recv_indices.data(), sizes[i], MPI_INT, i, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     for (auto index : recv_indices)
       _recv_map[i].push_back(index);
   }
@@ -84,7 +85,7 @@ FoamMassFlowRateMappedInletBC::validParams()
   params.addParam<std::string>(
       "foam_variable", "T", "Name of foam variable associated with velocity");
 
-  params.addRequiredParam<std::vector<Real>>("mapped_inlet_offset",
+  params.addRequiredParam<std::vector<Real>>("translation_vector",
                                              "A vector indicating the location of recycling plane");
   params.addRequiredParam<PostprocessorName>("mass_flow_pp",
                                              "Postprocessors containing mass flow rate.");
@@ -96,13 +97,17 @@ FoamMassFlowRateMappedInletBC::FoamMassFlowRateMappedInletBC(const InputParamete
   : FoamBCBase(params),
     PostprocessorInterface(this),
     _pp_name(params.get<PostprocessorName>("mass_flow_pp")),
-    _offset(params.get<std::vector<Real>>("mapped_inlet_offset")),
+    _offset(),
     _send_map(),
     _recv_map()
 {
   if (_boundary.size() > 1)
     mooseError("There can only be one boundary using this method");
 
+  auto param_offset = params.get<std::vector<Real>>("translation_vector");
+  assert(param_offset.size() == 3);
+
+  _offset = {param_offset[0], param_offset[1], param_offset[2]};
   createPatchProcMap();
 }
 
@@ -114,15 +119,12 @@ FoamMassFlowRateMappedInletBC::getMappedArray(const Foam::word & name)
   auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
 
   Foam::PstreamBuffers sendBuf(Foam::UPstream::commsTypes::nonBlocking);
-  auto & U_var = const_cast<Foam::fvPatchField<T> &>(
-      boundary_patch.lookupPatchField<Foam::VolField<T>, double>("U"));
-
-  auto & U_internal = foam_mesh.lookupObject<Foam::VolField<T>>("U");
+  auto & var = foam_mesh.lookupObject<Foam::VolField<T>>(name);
   for (int i = 0; i < Foam::Pstream::nProcs(); ++i)
   {
     Foam::Field<T> points(_send_map[i].size());
-    for (int j = 0; j < _send_map[i].size(); ++j)
-      points[j] = U_internal[_send_map[i][j]];
+    for (auto j = 0lu; j < _send_map[i].size(); ++j)
+      points[j] = var[_send_map[i][j]];
 
     Foam::UOPstream send(i, sendBuf);
     send << points;
@@ -130,15 +132,14 @@ FoamMassFlowRateMappedInletBC::getMappedArray(const Foam::word & name)
   sendBuf.finishedSends(true);
 
   Foam::Field<T> boundaryData(boundary_patch.size());
-  Foam::PstreamBuffers recvBuf(Foam::UPstream::commsTypes::blocking);
   for (int i = 0; i < Foam::Pstream::nProcs(); ++i)
   {
-    Foam::UIPstream recv(i, recvBuf);
+    Foam::UIPstream recv(i, sendBuf);
     Foam::Field<T> recvData;
     recv >> recvData;
-    for (int j = 0; _recv_map[i].size(); ++j)
+    for (auto j = 0lu; j < _recv_map[i].size(); ++j)
     {
-      boundaryData[_recv_map[i].at(j)] = recvData[j];
+      boundaryData[_recv_map[i][j]] = recvData[j];
     }
   }
 
@@ -152,19 +153,19 @@ FoamMassFlowRateMappedInletBC::imposeBoundaryCondition()
   auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
 
   // should we mapping rho U or just U? Fo now U but we can change it
-  auto && U_map = getMappedArray<Foam::vector>("U");
   auto pp_value = getPostprocessorValueByName(_pp_name);
-  auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
-  auto & Af = boundary_patch.magSf();
-  auto && Nf = boundary_patch.nf();
-  auto mdot_f = rho * (U_map & Nf) * Af;
 
-  Real m_dot = Foam::returnReduce(Foam::sum(mdot_f), Foam::sumOp<Real>());
+  auto && U_map = getMappedArray<Foam::vector>("U");
+  auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
+  auto & Sf = boundary_patch.Sf();
+
+  auto m_dot = Foam::sum(rho * (U_map & Sf));
+  Foam::reduce(m_dot, Foam::sumOp<Real>());
 
   auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
       boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
 
-  U_var == U_map * pp_value / m_dot;
+  U_var == -U_map * pp_value / m_dot;
 }
 
 void
