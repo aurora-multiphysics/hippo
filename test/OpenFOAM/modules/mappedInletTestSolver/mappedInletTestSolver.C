@@ -143,16 +143,25 @@ Foam::solvers::mappedInletTestSolver::prePredictor()
 void
 Foam::solvers::mappedInletTestSolver::momentumPredictor()
 {
-  auto rank_time = Pstream::myProcNo() * mesh.time().userTimeValue();
-  U_.primitiveFieldRef() = vector{rank_time + 1., 2. * rank_time + 1., 3 * rank_time + 1.};
+  auto & coords = mesh.C().primitiveField();
+  auto & U_field = U_.primitiveFieldRef();
+  auto time = mesh.time().userTimeValue();
+
+  auto x = coords.component(0)();
+  auto y = coords.component(1)();
+  auto z = coords.component(2)();
+
+  U_field.replace(0, (x + y + z) * time);
+  U_field.replace(1, (x - y + z) * time);
+  U_field.replace(2, (x + y - z) * time);
 }
 
 void
 Foam::solvers::mappedInletTestSolver::thermophysicalPredictor()
 {
   volScalarField & e = thermo.he();
-  auto rank_time = Pstream::myProcNo() * mesh.time().userTimeValue();
-  e.primitiveFieldRef() = 4. * rank_time + 1.;
+  auto & coords = mesh.C().primitiveField();
+  e.primitiveFieldRef() = mag(coords) * mesh.time().userTimeValue();
   thermo_.correct();
 }
 
