@@ -24,6 +24,8 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "dimensionSets.H"
+#include "dimensionedScalar.H"
+#include "dimensionedVector.H"
 #include "fvMesh.H"
 #include "mappedInletTestSolver.H"
 #include "fvMeshMover.H"
@@ -141,21 +143,16 @@ Foam::solvers::mappedInletTestSolver::prePredictor()
 void
 Foam::solvers::mappedInletTestSolver::momentumPredictor()
 {
-  scalar rank = Pstream::myProcNo();
-  vectorField & U_int = U_.primitiveFieldRef();
-  vector data{rank, 2. * rank, 3 * rank};
-
-  U_int = vector{rank, 2. * rank, 3 * rank};
+  auto rank_time = Pstream::myProcNo() * mesh.time().userTimeValue();
+  U_.primitiveFieldRef() = vector{rank_time + 1., 2. * rank_time + 1., 3 * rank_time + 1.};
 }
 
 void
 Foam::solvers::mappedInletTestSolver::thermophysicalPredictor()
 {
   volScalarField & e = thermo.he();
-  int rank = Pstream::myProcNo();
-
-  e == 4. * static_cast<scalar>(rank);
-
+  auto rank_time = Pstream::myProcNo() * mesh.time().userTimeValue();
+  e.primitiveFieldRef() = 4. * rank_time + 1.;
   thermo_.correct();
 }
 
