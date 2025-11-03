@@ -151,9 +151,9 @@ Foam::solvers::mappedInletTestSolver::momentumPredictor()
   auto y = coords.component(1)();
   auto z = coords.component(2)();
 
-  U_field.replace(0, (x + y + z) * time);
-  U_field.replace(1, (x - y + z) * time);
-  U_field.replace(2, (x + y - z) * time);
+  U_field.replace(0, x + y + z + time);
+  U_field.replace(1, x - y + z + time);
+  U_field.replace(2, x + y - z + time);
 }
 
 void

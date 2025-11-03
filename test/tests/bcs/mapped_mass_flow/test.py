@@ -15,21 +15,21 @@ class TestFoamBCMappedInlet(unittest.TestCase):
         times = get_foam_times(case_dir)[1:]
 
         rho = 0.5
-        for time in times:
+        for i, time in enumerate(times):
             u = ff.readof.readvector(case_dir, time, "U", boundary='left')
-            t = np.float64(time)
 
             if time != times[0]:
                 x, y, z = ff.readof.readmesh(case_dir, boundary='left')
+                t = np.float64(times[i-1])
                 x += 0.5
-                u_ref = np.array([(x + y + z)*t, (x - y + z)*t, (x + y - z)*t,])
+                u_ref = np.array([x + y + z + t, x - y + z + t, x + y - z + t,])
             else:
                 # first time step uses initialised value
                 u_ref = np.array([1, -0.5, 0.25])[:,None]
 
             rho = 0.5
             mdot = rho*np.mean(u_ref[0])
-            mdot_pp = t
+            mdot_pp = 1
             u_ref *= mdot_pp/mdot
 
             assert np.allclose(u_ref, u, rtol=1e-7, atol=1e-12),\

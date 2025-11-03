@@ -16,8 +16,7 @@
 [Postprocessors]
     [pp]
         type = ParsedPostprocessor
-        expression = 't'
-        use_t = true
+        expression = '1'
         execute_on = TIMESTEP_BEGIN
     []
 []
