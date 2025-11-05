@@ -1,0 +1,53 @@
+#include "FoamScalarBulkMappedInletBC.h"
+#include "InputParameters.h"
+#include "MooseTypes.h"
+#include "PstreamReduceOps.H"
+#include "Registry.h"
+
+#include "ops.H"
+#include "volFieldsFwd.H"
+
+registerMooseObject("hippoApp", FoamScalarBulkMappedInletBC);
+
+InputParameters
+FoamScalarBulkMappedInletBC::validParams()
+{
+  auto params = FoamMappedInletBCBase::validParams();
+
+  return params;
+}
+
+FoamScalarBulkMappedInletBC::FoamScalarBulkMappedInletBC(const InputParameters & params)
+  : FoamMappedInletBCBase(params)
+{
+}
+
+void
+FoamScalarBulkMappedInletBC::imposeBoundaryCondition()
+{
+  auto & foam_mesh = _mesh->fvMesh();
+  auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
+
+  // should we mapping rho U or just U? Fo now U but we can change it
+  auto pp_value = getPostprocessorValueByName(_pp_name);
+
+  auto && var_map = getMappedArray<Foam::scalar>(_foam_variable);
+  auto & Sf = boundary_patch.magSf();
+
+  auto totalArea = Foam::sum(Sf);
+  Foam::reduce(totalArea, Foam::sumOp<Real>());
+
+  auto var_bulk = Foam::sum(var_map * Sf) / totalArea;
+
+  Foam::reduce(var_bulk, Foam::sumOp<Real>());
+
+  auto & var = const_cast<Foam::fvPatchField<Foam::scalar> &>(
+      boundary_patch.lookupPatchField<Foam::volScalarField, double>("T"));
+
+  var == var_map * pp_value / var_bulk;
+}
+
+void
+FoamScalarBulkMappedInletBC::initialSetup()
+{
+}

@@ -32,18 +32,12 @@ getBBox(const Foam::vectorField points, Real bbox[6])
     bbox[5] = std::max(bbox[5], p.z());
   }
 
-  MPI_Allreduce(
-      MPI_IN_PLACE, &bbox[0], 1, MPI_DOUBLE, MPI_MIN, Foam::PstreamGlobals::MPI_COMM_FOAM);
-  MPI_Allreduce(
-      MPI_IN_PLACE, &bbox[1], 1, MPI_DOUBLE, MPI_MAX, Foam::PstreamGlobals::MPI_COMM_FOAM);
-  MPI_Allreduce(
-      MPI_IN_PLACE, &bbox[2], 1, MPI_DOUBLE, MPI_MIN, Foam::PstreamGlobals::MPI_COMM_FOAM);
-  MPI_Allreduce(
-      MPI_IN_PLACE, &bbox[3], 1, MPI_DOUBLE, MPI_MAX, Foam::PstreamGlobals::MPI_COMM_FOAM);
-  MPI_Allreduce(
-      MPI_IN_PLACE, &bbox[4], 1, MPI_DOUBLE, MPI_MIN, Foam::PstreamGlobals::MPI_COMM_FOAM);
-  MPI_Allreduce(
-      MPI_IN_PLACE, &bbox[5], 1, MPI_DOUBLE, MPI_MAX, Foam::PstreamGlobals::MPI_COMM_FOAM);
+  MPI_Allreduce(MPI_IN_PLACE, &bbox[0], 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, &bbox[1], 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, &bbox[2], 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, &bbox[3], 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, &bbox[4], 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, &bbox[5], 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 }
 }
 
@@ -142,7 +136,7 @@ FoamMappedInletBCBase::createMapComm(const Foam::fvMesh & mesh,
   if (!Foam::Pstream::parRun())
   {
     _foam_comm = Foam::UPstream::worldComm;
-    _mpi_comm = Foam::PstreamGlobals::MPI_COMM_FOAM;
+    _mpi_comm = MPI_COMM_WORLD;
   }
   else
   {
