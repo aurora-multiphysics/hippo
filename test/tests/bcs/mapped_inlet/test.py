@@ -17,20 +17,30 @@ class TestFoamBCMappedInlet(unittest.TestCase):
         rho = 0.5
         for i, time in enumerate(times):
             u = ff.readof.readvector(case_dir, time, "U", boundary='left')
+            temp = ff.readof.readscalar(case_dir, time, "T", boundary='left')
 
             if time != times[0]:
                 x, y, z = ff.readof.readmesh(case_dir, boundary='left')
                 t = np.float64(times[i-1])
                 x += 0.5
                 u_ref = np.array([x + y + z + t, x - y + z + t, x + y - z + t,])
+                temp_ref = np.sqrt(x*x + y*y + z*z) + t
             else:
                 # first time step uses initialised value
                 u_ref = np.array([1, -0.5, 0.25])[:,None]
+                temp_ref = 2
 
             rho = 0.5
             mdot = rho*np.mean(u_ref[0])
             mdot_pp = 1
             u_ref *= mdot_pp/mdot
 
+            t_pp = 1
+            t_bulk = np.mean(temp_ref)
+            temp_ref *= t_pp/t_bulk
+
             assert np.allclose(u_ref, u, rtol=1e-7, atol=1e-12),\
-                        f"Max diff ({time}): {abs(u-u_ref).max()} "
+                        f"Max diff (velocity) ({time}): {abs(u-u_ref).max()} "
+
+            assert np.allclose(temp_ref, temp, rtol=1e-7, atol=1e-12),\
+                        f"Max diff (temperature) ({time}): {abs(temp-temp_ref).max()} {temp} {temp_ref}"
