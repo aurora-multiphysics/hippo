@@ -161,7 +161,7 @@ Foam::solvers::mappedInletTestSolver::thermophysicalPredictor()
 {
   volScalarField & e = thermo.he();
   auto & coords = mesh.C().primitiveField();
-  e.primitiveFieldRef() = mag(coords) * mesh.time().userTimeValue();
+  e.primitiveFieldRef() = mag(coords) + mesh.time().userTimeValue();
   thermo_.correct();
 }
 
