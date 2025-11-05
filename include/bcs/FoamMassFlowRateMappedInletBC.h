@@ -1,3 +1,4 @@
+#pragma once
 #include "FoamMappedInletBCBase.h"
 
 class FoamMassFlowRateMappedInletBC : public FoamMappedInletBCBase
