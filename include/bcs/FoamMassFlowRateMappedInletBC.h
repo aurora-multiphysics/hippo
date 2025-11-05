@@ -1,5 +1,5 @@
 #include "FoamBCBase.h"
-#include <utility>
+#include "UPstream.H"
 
 class FoamMassFlowRateMappedInletBC : public FoamBCBase, public PostprocessorInterface
 {
@@ -12,6 +12,12 @@ public:
 
   virtual void initialSetup() override;
 
+  virtual ~FoamMassFlowRateMappedInletBC()
+  {
+    if (Foam::UPstream::parRun())
+      Foam::UPstream::freeCommunicator(_foam_comm);
+  }
+
 protected:
   PostprocessorName _pp_name;
 
@@ -21,8 +27,19 @@ protected:
 
   std::map<int, std::vector<int>> _recv_map;
 
+  Foam::label _foam_comm;
+
+  MPI_Comm _mpi_comm;
+
   void createPatchProcMap();
 
   template <typename T>
   Foam::Field<T> getMappedArray(const Foam::word & name);
+
+  bool intersectMapPlane(const Foam::fvMesh & mesh, Real cart_bbox[6]);
+
+  void createMapComm(const Foam::fvMesh & mesh,
+                     Foam::vectorField face_centres,
+                     std::vector<int> & send_process,
+                     std::vector<int> & recv_process);
 };
