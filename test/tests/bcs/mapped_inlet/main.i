@@ -8,13 +8,13 @@
     [mass_flow]
         type=FoamMassFlowRateMappedInletBC
         boundary = 'left'
-        mass_flow_pp = pp
+        pp = pp
         translation_vector = '0.5 0 0'
     []
     [temp]
         type=FoamScalarBulkMappedInletBC
         boundary = 'left'
-        mass_flow_pp = pp
+        pp = pp
         translation_vector = '0.5 0 0'
         foam_variable = 'T'
     []
