@@ -1,9 +1,9 @@
 #pragma once
 
-#include "FoamBCBase.h"
+#include "FoamVariableBCBase.h"
 #include "UPstream.H"
 
-class FoamMappedInletBCBase : public FoamBCBase, public PostprocessorInterface
+class FoamMappedInletBCBase : public FoamVariableBCBase, public PostprocessorInterface
 {
 public:
   static InputParameters validParams();

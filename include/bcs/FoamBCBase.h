@@ -7,6 +7,24 @@
 #include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include "VariadicTable.h"
+
+typedef VariadicTable<std::string, std::string, std::string, std::string, std::string> BCInfoTable;
+
+template <typename StrType>
+inline std::string
+listFromVector(std::vector<StrType> vec, StrType sep = ", ")
+{
+  if (vec.size() == 0)
+    return std::string();
+  else if (vec.size() == 1)
+    return vec.at(0);
+
+  std::string str;
+  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
+  std::accumulate(vec.begin(), vec.end(), str, binary_op);
+  return str;
+}
 
 class FoamBCBase : public MooseObject, public Coupleable
 {
@@ -26,7 +44,9 @@ public:
   // returns the name of the foam boundaries the BC applies to
   std::vector<SubdomainName> boundary() const { return _boundary; };
 
-  virtual void initialSetup();
+  virtual void initialSetup() = 0;
+
+  virtual void addInfoRow(BCInfoTable table) = 0;
 
 protected:
   // OpenFOAM variable which this BC is to be imposed on
