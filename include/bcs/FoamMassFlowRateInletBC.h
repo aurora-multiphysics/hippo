@@ -1,9 +1,9 @@
-#include "FoamBCBase.h"
+#include "FoamVariableBCBase.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "PostprocessorInterface.h"
 
-class FoamMassFlowRateInletBC : public FoamBCBase, public PostprocessorInterface
+class FoamMassFlowRateInletBC : public FoamVariableBCBase, public PostprocessorInterface
 {
 public:
   static InputParameters validParams();
