@@ -27,8 +27,11 @@ AddFoamBCAction::act()
       mooseError("FoamBCs system can only be used with FoamProblem.");
 
     // Do not create aux variable if variable provided.
-    if (!_moose_object_pars.isParamSetByUser("v"))
+    if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
+
+    if (findParamKey(_moose_object_pars, "pp") && !_moose_object_pars.isParamSetByUser("pp"))
+      createReceiver(*foam_problem);
 
     foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
   }

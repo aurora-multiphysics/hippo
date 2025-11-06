@@ -1,8 +1,33 @@
 [Tests]
+    [mapped_mass_flow_receiver]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = mapped_mass_flow_receiver/setup
+            allow_warnings = true
+            min_parallel = 5
+            max_parallel = 5
+        []
+        [reconstruct]
+            type = RunCommand
+            command = 'reconstructPar -case foam'
+            prereq = mapped_mass_flow_receiver/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = mapped_mass_flow_receiver/reconstruct
+        []
+    []
     [mapped_mass_flow]
         [setup]
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
+            prereq = mapped_mass_flow_receiver/reconstruct
         []
         [run]
             type = RunApp
@@ -11,6 +36,7 @@
             allow_warnings = true
             min_parallel = 5
             max_parallel = 5
+            cli_args = 'FoamBCs/mass_flow/pp=pp FoamBCs/temp/pp=pp Postprocessors/pp/expression=1'
         []
         [reconstruct]
             type = RunCommand
