@@ -71,9 +71,14 @@ For more info on the OpenFOAM case structure, see the
 ### Problem
 
 First, we define the `Problem` block, which tells Hippo we are running an OpenFOAM case and provides the functionality to couple OpenFOAM into the MOOSE framework.
+
+```toml
+# fluid.i
+
 [Problem]
     type = FoamProblem
 []
+```
 
 ### Mesh
 
@@ -124,6 +129,8 @@ Internally, Hippo creates `AuxVariable`s which can use MOOSE's transfer system a
 Hippo also implements the `FoamBC` system that allows you to impose boundary conditions on OpenFOAM from the Hippo input file. In this case, we wish to impose a heat flux BC on the temperature field. This requires the `FoamFixedGradientBC`, which mirrors OpenFOAM's `fixedGradient` BC type. As in this case, we provide a heat flux, we must also provide the thermal conductivity, which is specified as the `diffusivity_coefficient`. `kappa` is the name of the thermal conductivity variable in OpenFOAM.
 
 ```toml
+# fluid.i
+
 [FoamBCs]
     [solid_heat_flux]
         type = FoamFixedGradientBC
