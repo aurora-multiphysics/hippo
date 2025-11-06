@@ -1,16 +1,14 @@
 #pragma once
 
-#include "FoamVariableBCBase.h"
+#include "FoamPostprocessorBCBase.h"
 #include "UPstream.H"
 
-class FoamMappedInletBCBase : public FoamVariableBCBase, public PostprocessorInterface
+class FoamMappedInletBCBase : public FoamPostprocessorBCBase
 {
 public:
   static InputParameters validParams();
 
   FoamMappedInletBCBase(const InputParameters & params);
-
-  virtual void initialSetup() override;
 
   virtual ~FoamMappedInletBCBase()
   {
@@ -19,8 +17,6 @@ public:
   }
 
 protected:
-  PostprocessorName _pp_name;
-
   Foam::vector _offset;
 
   std::map<int, std::vector<int>> _send_map;

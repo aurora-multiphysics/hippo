@@ -28,9 +28,6 @@ FoamScalarBulkMappedInletBC::imposeBoundaryCondition()
   auto & foam_mesh = _mesh->fvMesh();
   auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
 
-  // should we mapping rho U or just U? Fo now U but we can change it
-  auto pp_value = getPostprocessorValueByName(_pp_name);
-
   auto && var_map = getMappedArray<Foam::scalar>(_foam_variable);
   auto & Sf = boundary_patch.magSf();
 
@@ -44,10 +41,5 @@ FoamScalarBulkMappedInletBC::imposeBoundaryCondition()
   auto & var = const_cast<Foam::fvPatchField<Foam::scalar> &>(
       boundary_patch.lookupPatchField<Foam::volScalarField, double>("T"));
 
-  var == var_map * pp_value / var_bulk;
-}
-
-void
-FoamScalarBulkMappedInletBC::initialSetup()
-{
+  var == var_map * _pp_value / var_bulk;
 }

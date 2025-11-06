@@ -1,4 +1,3 @@
-#include "FoamVariableBCBase.h"
 #include "FoamMassFlowRateInletBC.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
@@ -10,24 +9,16 @@ registerMooseObject("hippoApp", FoamMassFlowRateInletBC);
 InputParameters
 FoamMassFlowRateInletBC::validParams()
 {
-  auto params = FoamVariableBCBase::validParams();
-  params.remove("v");
-  params.remove("initial_condition");
+  auto params = FoamPostprocessorBCBase::validParams();
+
   params.remove("foam_variable");
-
-  params.addParam<std::string>(
-      "foam_variable", "T", "Name of foam variable associated with velocity");
-
-  params.addRequiredParam<PostprocessorName>("postprocessor",
-                                             "Postprocessors containing mass flow rate.");
+  params.addPrivateParam<std::string>("foam_variable", "U");
 
   return params;
 }
 
 FoamMassFlowRateInletBC::FoamMassFlowRateInletBC(const InputParameters & params)
-  : FoamVariableBCBase(params),
-    PostprocessorInterface(this),
-    _pp_name(params.get<PostprocessorName>("postprocessor"))
+  : FoamPostprocessorBCBase(params)
 {
 }
 
@@ -41,19 +32,12 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
   auto subdomains = _mesh->getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    auto pp_value = getPostprocessorValueByName(_pp_name);
     auto & boundary_patch = foam_mesh.boundary()[subdomain];
 
     auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
         boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
     auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
     Real area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
-    U_var == -pp_value * boundary_patch.nf() / (rho * area);
+    U_var == -_pp_value * boundary_patch.nf() / (rho * area);
   }
-}
-
-void
-FoamMassFlowRateInletBC::initialSetup()
-{
-  _foam_variable = "";
 }

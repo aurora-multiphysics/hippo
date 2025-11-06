@@ -48,11 +48,10 @@ FoamVariableBCBase::initialSetup()
 }
 
 void
-FoamVariableBCBase::addInfoRow(BCInfoTable table)
+FoamVariableBCBase::addInfoRow(BCInfoTable & table)
 {
   // List info about BC
-  if (_moose_var)
-    table.addRow(name(), type(), foamVariable(), mooseVariable(), listFromVector(boundary()));
+  table.addRow(name(), type(), foamVariable(), mooseVariable(), listFromVector(boundary()));
 }
 
 Real

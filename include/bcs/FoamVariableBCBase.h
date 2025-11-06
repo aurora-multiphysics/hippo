@@ -15,7 +15,7 @@ public:
 
   virtual void initialSetup();
 
-  virtual void addInfoRow(BCInfoTable table);
+  virtual void addInfoRow(BCInfoTable & table);
 
 protected:
   // Get the value of the MOOSE variable at an element
