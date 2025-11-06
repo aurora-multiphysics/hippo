@@ -8,13 +8,13 @@
     [mass_flow]
         type=FoamMassFlowRateMappedInletBC
         boundary = 'left'
-        pp = pp
+        default = 1
         translation_vector = '0.5 0 0'
     []
     [temp]
         type=FoamScalarBulkMappedInletBC
         boundary = 'left'
-        pp = pp
+        default = 1
         translation_vector = '0.5 0 0'
         foam_variable = 'T'
     []
@@ -23,7 +23,7 @@
 [Postprocessors]
     [pp]
         type = ParsedPostprocessor
-        expression = '1'
+        expression = '2'
         execute_on = TIMESTEP_BEGIN
     []
 []
