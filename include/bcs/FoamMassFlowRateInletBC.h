@@ -1,9 +1,9 @@
-#include "FoamVariableBCBase.h"
+#include "FoamPostprocessorBCBase.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "PostprocessorInterface.h"
 
-class FoamMassFlowRateInletBC : public FoamVariableBCBase, public PostprocessorInterface
+class FoamMassFlowRateInletBC : public FoamPostprocessorBCBase
 {
 public:
   static InputParameters validParams();
@@ -11,9 +11,4 @@ public:
   FoamMassFlowRateInletBC(const InputParameters & params);
 
   virtual void imposeBoundaryCondition() override;
-
-  virtual void initialSetup() override;
-
-protected:
-  PostprocessorName _pp_name;
 };

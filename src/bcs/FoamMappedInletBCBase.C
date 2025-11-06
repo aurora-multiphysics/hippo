@@ -1,4 +1,3 @@
-#include "FoamVariableBCBase.h"
 #include "FoamMappedInletBCBase.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
@@ -230,26 +229,15 @@ FoamMappedInletBCBase::createPatchProcMap()
 InputParameters
 FoamMappedInletBCBase::validParams()
 {
-  auto params = FoamVariableBCBase::validParams();
-  params.remove("v");
-  params.remove("initial_condition");
-  params.remove("foam_variable");
-
-  params.addParam<std::string>(
-      "foam_variable", "T", "Name of foam variable associated with velocity");
-
+  auto params = FoamPostprocessorBCBase::validParams();
   params.addRequiredParam<std::vector<Real>>("translation_vector",
                                              "A vector indicating the location of recycling plane");
-  params.addRequiredParam<PostprocessorName>("mass_flow_pp",
-                                             "Postprocessors containing mass flow rate.");
 
   return params;
 }
 
 FoamMappedInletBCBase::FoamMappedInletBCBase(const InputParameters & params)
-  : FoamVariableBCBase(params),
-    PostprocessorInterface(this),
-    _pp_name(params.get<PostprocessorName>("mass_flow_pp")),
+  : FoamPostprocessorBCBase(params),
     _offset(),
     _send_map(),
     _recv_map(),
@@ -315,10 +303,4 @@ FoamMappedInletBCBase::getMappedArray(const Foam::word & name)
   }
 
   return boundaryData;
-}
-
-void
-FoamMappedInletBCBase::initialSetup()
-{
-  _foam_variable = "";
 }

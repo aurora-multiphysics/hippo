@@ -9,6 +9,4 @@ public:
   FoamScalarBulkMappedInletBC(const InputParameters & params);
 
   virtual void imposeBoundaryCondition() override;
-
-  virtual void initialSetup() override;
 };
