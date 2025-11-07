@@ -1,4 +1,7 @@
 #include "FoamFixedValuePostprocessorBC.h"
+#include "Registry.h"
+
+registerMooseObject("hippoApp", FoamFixedValuePostprocessorBC);
 
 InputParameters
 FoamFixedValuePostprocessorBC::validParams()
