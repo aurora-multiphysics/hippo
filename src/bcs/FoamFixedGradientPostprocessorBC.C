@@ -1,7 +1,10 @@
 #include "FoamFixedGradientPostprocessorBC.h"
 #include "PstreamReduceOps.H"
+#include "Registry.h"
 #include "fixedGradientFvPatchFields.H"
 #include <algorithm>
+
+registerMooseObject("hippoApp", FoamFixedGradientPostprocessorBC);
 
 InputParameters
 FoamFixedGradientPostprocessorBC::validParams()
@@ -18,6 +21,11 @@ FoamFixedGradientPostprocessorBC::FoamFixedGradientPostprocessorBC(const InputPa
   : FoamPostprocessorBCBase(params),
     _diffusivity_coefficient(params.get<std::string>("diffusivity_coefficient"))
 {
+  // check that the diffusivity coefficient is a OpenFOAM scalar field
+  if (!_diffusivity_coefficient.empty() &&
+      !_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity_coefficient))
+    mooseError(
+        "Diffusivity coefficient '", _diffusivity_coefficient, "' not a Foam volScalarField");
 }
 
 void
