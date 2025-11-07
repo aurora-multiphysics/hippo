@@ -1,6 +1,5 @@
 #include "FoamScalarBulkMappedInletBC.h"
 #include "InputParameters.h"
-#include "MooseError.h"
 #include "MooseTypes.h"
 #include "PstreamReduceOps.H"
 #include "Registry.h"

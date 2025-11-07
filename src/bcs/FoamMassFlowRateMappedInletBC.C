@@ -40,8 +40,7 @@ FoamMassFlowRateMappedInletBC::imposeBoundaryCondition()
   auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
   auto & Sf = boundary_patch.Sf();
 
-  auto m_dot = Foam::sum(g_map & -Sf);
-  Foam::reduce(m_dot, Foam::sumOp<Real>());
+  auto m_dot = Foam::returnReduce(Foam::sum(g_map & -Sf), Foam::sumOp<Real>());
 
   auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
       boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
