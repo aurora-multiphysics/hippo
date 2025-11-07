@@ -1,7 +1,6 @@
 #pragma once
 
 #include "FoamPostprocessorBCBase.h"
-#include "InputParameters.h"
 
 class FoamFixedValuePostprocessorBC : public FoamPostprocessorBCBase
 {
