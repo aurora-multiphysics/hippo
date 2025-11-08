@@ -34,6 +34,32 @@
             test_case = 'TestFoamBCMappedInlet.test_mapped_inlet'
         []
     []
+    [mapped_mass_flow_subtract]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = mapped_mass_flow_receiver/setup
+            allow_warnings = true
+            min_parallel = 5
+            max_parallel = 5
+            cli_args = "FoamBCs/tempx/scale_method=subtract FoamBCs/tempy/scale_method=subtract FoamBCs/tempz/scale_method=subtract"
+        []
+        [reconstruct]
+            type = RunCommand
+            command = 'reconstructPar -case foam'
+            prereq = mapped_mass_flow_receiver/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = mapped_mass_flow_receiver/reconstruct
+            test_case = 'TestFoamBCMappedInlet.test_mapped_inlet_subtract'
+        []
+    []
     [mapped_mass_flow]
         [setup]
             type = RunCommand

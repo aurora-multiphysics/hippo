@@ -22,12 +22,20 @@ class TestFoamBCMappedInlet(unittest.TestCase):
             self._check_u_temp_refs(i, 'bottom', [0, 0.5, 0])
             self._check_u_temp_refs(i, 'front', [0, 0, 0.5])
 
+    def test_mapped_inlet_subtract(self):
+        """Test case for mapped inlet when temperature is scaled by subtracting the difference in bulk."""
+
+        for i in range(len(TIMES)):
+            self._check_u_temp_refs(i, 'left', [0.5, 0, 0], False)
+            self._check_u_temp_refs(i, 'bottom', [0, 0.5, 0], False)
+            self._check_u_temp_refs(i, 'front', [0, 0, 0.5], False)
+
     def test_mapped_inlet_rotated(self):
         """Test case for when inlet's are not aligned with the axis."""
         for i in range(len(TIMES)):
             self._check_u_temp_refs(i, 'left', [np.sqrt(0.125), np.sqrt(0.125), 0])
 
-    def _check_u_temp_refs(self, idx, boundary, offset):
+    def _check_u_temp_refs(self, idx, boundary, offset, use_scale=True):
         rho = 0.5
         mdot_pp = 1
         t_pp = 1
@@ -55,7 +63,11 @@ class TestFoamBCMappedInlet(unittest.TestCase):
         u_ref *= mdot_pp/mdot
 
         t_bulk = np.mean(temp_ref)
-        temp_ref *= t_pp/t_bulk
+        if use_scale:
+            temp_ref *= t_pp/t_bulk
+        else:
+            temp_ref += (t_pp - t_bulk)
+
 
         assert np.allclose(u_ref, u, rtol=1e-7, atol=1e-12),\
                     f"Max diff ({boundary}) (velocity) ({TIMES[idx]}): {abs(u-u_ref).max()} "
