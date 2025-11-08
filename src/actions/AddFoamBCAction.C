@@ -30,6 +30,7 @@ AddFoamBCAction::act()
     if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
 
+    // Create receiver if pp not provided and pp is an allowed parameter
     if (findParamKey(_moose_object_pars, "pp") && !_moose_object_pars.isParamSetByUser("pp"))
       createReceiver(*foam_problem);
 

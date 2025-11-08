@@ -9,13 +9,13 @@
         type=FoamMassFlowRateMappedInletBC
         boundary = 'left'
         default = 1
-        translation_vector = '${fparse sqrt(0.125)} ${fparse sqrt(0.125)} 0'
+        translation_vector = '${fparse sqrt(0.5)} ${fparse sqrt(0.5)} 0'
     []
     [tempx]
         type=FoamScalarBulkMappedInletBC
         boundary = 'left'
         default = 1
-        translation_vector = '${fparse sqrt(0.125)} ${fparse sqrt(0.125)} 0'
+        translation_vector = '${fparse sqrt(0.5)} ${fparse sqrt(0.5)} 0'
         foam_variable = 'T'
     []
 []
