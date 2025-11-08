@@ -4,6 +4,16 @@
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
         []
+        [run_err]
+            type = RunException
+            input = main.i
+            prereq = mapped_mass_flow_receiver/setup
+            allow_warnings = true
+            min_parallel = 5
+            max_parallel = 5
+            cli_args = "FoamBCs/mass_flowx/translation_vector='-0.5 0 0'"
+            expect_err = "does not have a mapped plane location"
+        []
         [run]
             type = RunApp
             input = main.i
@@ -21,6 +31,7 @@
             type = PythonUnitTest
             input = test.py
             prereq = mapped_mass_flow_receiver/reconstruct
+            test_case = 'TestFoamBCMappedInlet.test_mapped_inlet'
         []
     []
     [mapped_mass_flow]
@@ -36,7 +47,7 @@
             allow_warnings = true
             min_parallel = 5
             max_parallel = 5
-            cli_args = 'FoamBCs/mass_flow/pp=pp FoamBCs/temp/pp=pp Postprocessors/pp/expression=1'
+            cli_args = 'FoamBCs/mass_flowx/pp=pp FoamBCs/tempx/pp=pp FoamBCs/mass_flowy/pp=pp FoamBCs/tempy/pp=pp FoamBCs/mass_flowz/pp=pp FoamBCs/tempz/pp=pp Postprocessors/pp/expression=1'
         []
         [reconstruct]
             type = RunCommand
@@ -47,6 +58,33 @@
             type = PythonUnitTest
             input = test.py
             prereq = mapped_mass_flow/reconstruct
+            test_case = 'TestFoamBCMappedInlet.test_mapped_inlet'
+        []
+    []
+    [mapped_rotated]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam &&  transformPoints -case foam "Rz=45" && decomposePar -case foam"'
+            prereq = mapped_mass_flow/reconstruct
+        []
+        [run]
+            type = RunApp
+            input = main_rotated.i
+            prereq = mapped_rotated/setup
+            allow_warnings = true
+            min_parallel = 5
+            max_parallel = 5
+        []
+        [reconstruct]
+            type = RunCommand
+            command = 'reconstructPar -case foam'
+            prereq = mapped_rotated/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = mapped_rotated/reconstruct
+            test_case = 'TestFoamBCMappedInlet.test_mapped_inlet_rotated'
         []
     []
 []

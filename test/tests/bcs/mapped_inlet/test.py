@@ -7,40 +7,58 @@ import numpy as np
 
 from read_hippo_data import get_foam_times
 
+CASE_DIR = 'foam/'
+TIMES = get_foam_times(CASE_DIR)[1:]
+
+
 class TestFoamBCMappedInlet(unittest.TestCase):
     """Test class for mapped inlet BCs in Hippo."""
     def test_mapped_inlet(self):
         """Test case for mapped inlet."""
-        case_dir = 'foam/'
-        times = get_foam_times(case_dir)[1:]
 
+
+        for i in range(len(TIMES)):
+            self._check_u_temp_refs(i, 'left', [0.5, 0, 0])
+            self._check_u_temp_refs(i, 'bottom', [0, 0.5, 0])
+            self._check_u_temp_refs(i, 'front', [0, 0, 0.5])
+
+    def test_mapped_inlet_rotated(self):
+        """Test case for when inlet's are not aligned with the axis."""
+        for i in range(len(TIMES)):
+            self._check_u_temp_refs(i, 'left', [np.sqrt(0.125), np.sqrt(0.125), 0])
+
+    def _check_u_temp_refs(self, idx, boundary, offset):
         rho = 0.5
-        for i, time in enumerate(times):
-            u = ff.readof.readvector(case_dir, time, "U", boundary='left')
-            temp = ff.readof.readscalar(case_dir, time, "T", boundary='left')
+        mdot_pp = 1
+        t_pp = 1
+        time = TIMES[idx]
 
-            if time != times[0]:
-                x, y, z = ff.readof.readmesh(case_dir, boundary='left')
-                t = np.float64(times[i-1])
-                x += 0.5
-                u_ref = np.array([x + y + z + t, x - y + z + t, x + y - z + t,])
-                temp_ref = np.sqrt(x*x + y*y + z*z) + t
-            else:
-                # first time step uses initialised value
-                u_ref = np.array([1, -0.5, 0.25])[:,None]
-                temp_ref = 2
+        x, y, z = ff.readof.readmesh(CASE_DIR, boundary=boundary)
+        u = ff.readof.readvector(CASE_DIR, time, "U", boundary=boundary).T
+        temp = ff.readof.readscalar(CASE_DIR, time, "T", boundary=boundary)
 
-            rho = 0.5
-            mdot = rho*np.mean(u_ref[0])
-            mdot_pp = 1
-            u_ref *= mdot_pp/mdot
+        x += offset[0]
+        y += offset[1]
+        z += offset[2]
 
-            t_pp = 1
-            t_bulk = np.mean(temp_ref)
-            temp_ref *= t_pp/t_bulk
+        if idx != 0:
+            t = np.float64(TIMES[idx-1])
+            u_ref = np.array([x + y + z + t, x - y + z + t, x + y - z + t,]).T
+            temp_ref = np.sqrt(x*x + y*y + z*z) + t
+        else:
+            # first time step uses initialised value
+            u_ref = np.array([[1, -0.5, 0.25]])
+            temp_ref = 2
 
-            assert np.allclose(u_ref, u, rtol=1e-7, atol=1e-12),\
-                        f"Max diff (velocity) ({time}): {abs(u-u_ref).max()} "
+        normal = np.array(offset)/np.linalg.norm(offset)
+        mdot = rho*np.mean(np.vecdot(u_ref, normal))
+        u_ref *= mdot_pp/mdot
 
-            assert np.allclose(temp_ref, temp, rtol=1e-7, atol=1e-12),\
-                        f"Max diff (temperature) ({time}): {abs(temp-temp_ref).max()} {temp} {temp_ref}"
+        t_bulk = np.mean(temp_ref)
+        temp_ref *= t_pp/t_bulk
+
+        assert np.allclose(u_ref, u, rtol=1e-7, atol=1e-12),\
+                    f"Max diff ({boundary}) (velocity) ({TIMES[idx]}): {abs(u-u_ref).max()} "
+
+        assert np.allclose(temp_ref, temp, rtol=1e-7, atol=1e-12),\
+                    f"Max diff ({boundary}) (temperature) ({time}): {abs(temp-temp_ref).max()} {temp} {temp_ref}"
