@@ -213,6 +213,7 @@ FoamMappedInletBCBase::createPatchProcMap()
 
   if (isInletProc)
   {
+    std::set<int> all_indices;
     for (auto & proc : map_procs)
     {
       int size;
@@ -222,6 +223,20 @@ FoamMappedInletBCBase::createPatchProcMap()
       MPI_Recv(recv_indices.data(), size, MPI_INT, proc, 1, _mpi_comm, MPI_STATUS_IGNORE);
       for (auto index : recv_indices)
         _recv_map[proc].push_back(index);
+
+      all_indices.insert(recv_indices.begin(), recv_indices.end());
+    }
+
+    for (int i = 0; i < face_centres.size(); ++i)
+    {
+      if (all_indices.count(i) == 0)
+        mooseError("Face centre at location (",
+                   face_centres[i][0],
+                   ",",
+                   face_centres[i][1],
+                   ",",
+                   face_centres[i][2],
+                   ") does not have a mapped plane location");
     }
   }
 }
