@@ -32,7 +32,7 @@ FoamMassFlowRateMappedInletBC::imposeBoundaryCondition()
   auto & foam_mesh = _mesh->fvMesh();
   auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
 
-  // should we mapping rho U or just U? Fo now U but we can change it
+  // currently we map mass flux rather than velocity, maybe useful to have option
   auto && U_map = getMappedArray<Foam::vector>("U");
   auto && rho_map = getMappedArray<Foam::scalar>("rho");
   auto g_map = rho_map * U_map;

@@ -56,6 +56,7 @@ FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
       auto & coeff = foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
           _diffusivity_coefficient);
 
+      // Calculate the bulk value of the diffusivity coefficient
       auto area = boundary.magSf();
       auto total_area = Foam::returnReduce(Foam::sum(area), Foam::sumOp<Foam::scalar>());
       auto coeff_bulk =

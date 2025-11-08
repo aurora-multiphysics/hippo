@@ -12,6 +12,7 @@
 
 namespace
 {
+// Get the cartesian bounding box of the mapped inlet plane
 void
 getBBox(const Foam::vectorField points, Real bbox[6])
 {
@@ -58,6 +59,8 @@ FoamMappedInletBCBase::intersectMapPlane(const Foam::fvMesh & mesh, Real cart_bb
       }
     }
 
+    // The bbox could by narrower than the cell, check in each direction whether bbox is within the
+    // cell bbox
     Real cell_bbox[6] = {DBL_MAX, DBL_MIN, DBL_MAX, DBL_MIN, DBL_MAX, DBL_MIN};
     for (auto point : points)
     {
@@ -118,6 +121,7 @@ FoamMappedInletBCBase::createMapComm(const Foam::fvMesh & mesh,
   map_process.clear();
   inlet_process.clear();
 
+  // create list of processes in new communicator and whether they are in the inlet or mapped plane
   Foam::labelList processes;
   int j = 0;
   for (int i = 0; i < Foam::UPstream::nProcs(); ++i)
@@ -154,7 +158,7 @@ FoamMappedInletBCBase::createPatchProcMap()
   std::vector<int> map_procs, inlet_procs;
   createMapComm(foam_mesh, face_centres, map_procs, inlet_procs);
 
-  if (_mpi_comm == MPI_COMM_NULL)
+  if (_mpi_comm == MPI_COMM_NULL) // process not in mapped or inlet planes
     return;
 
   Foam::PstreamBuffers send_points(
@@ -163,7 +167,7 @@ FoamMappedInletBCBase::createPatchProcMap()
   bool isMapProc = std::find(map_procs.begin(), map_procs.end(), rank) != map_procs.end();
   bool isInletProc = std::find(inlet_procs.begin(), inlet_procs.end(), rank) != inlet_procs.end();
 
-  if (isInletProc)
+  if (isInletProc) // send points from inlet process to all map processes
   {
     for (int proc : map_procs)
     {
@@ -177,7 +181,7 @@ FoamMappedInletBCBase::createPatchProcMap()
   std::vector<MPI_Request> size_requests(inlet_procs.size());
   std::vector<MPI_Request> data_requests(inlet_procs.size());
 
-  if (isMapProc)
+  if (isMapProc) // check points from each process to see if they are local
   {
     for (int proc : inlet_procs)
     {
@@ -211,7 +215,7 @@ FoamMappedInletBCBase::createPatchProcMap()
     }
   }
 
-  if (isInletProc)
+  if (isInletProc) // create map to determine where data from map processes should go
   {
     std::set<int> all_indices;
     for (auto & proc : map_procs)
