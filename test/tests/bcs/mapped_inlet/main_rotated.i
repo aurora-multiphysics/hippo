@@ -9,39 +9,13 @@
         type=FoamMassFlowRateMappedInletBC
         boundary = 'left'
         default = 1
-        translation_vector = '0.5 0 0'
+        translation_vector = '${fparse sqrt(0.125)} ${fparse sqrt(0.125)} 0'
     []
     [tempx]
         type=FoamScalarBulkMappedInletBC
         boundary = 'left'
         default = 1
-        translation_vector = '0.5 0 0'
-        foam_variable = 'T'
-    []
-    [mass_flowy]
-        type=FoamMassFlowRateMappedInletBC
-        boundary = 'bottom'
-        default = 1
-        translation_vector = '0 0.5 0'
-    []
-    [tempy]
-        type=FoamScalarBulkMappedInletBC
-        boundary = 'bottom'
-        default = 1
-        translation_vector = '0 0.5 0'
-        foam_variable = 'T'
-    []
-    [mass_flowz]
-        type=FoamMassFlowRateMappedInletBC
-        boundary = 'front'
-        default = 1
-        translation_vector = '0 0 0.5'
-    []
-    [tempz]
-        type=FoamScalarBulkMappedInletBC
-        boundary = 'front'
-        default = 1
-        translation_vector = '0 0 0.5'
+        translation_vector = '${fparse sqrt(0.125)} ${fparse sqrt(0.125)} 0'
         foam_variable = 'T'
     []
 []

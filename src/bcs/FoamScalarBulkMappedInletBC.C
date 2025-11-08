@@ -56,7 +56,6 @@ FoamScalarBulkMappedInletBC::applyScaleMethod(T & var, const Real bulk_ref, cons
 {
   if (_scale_method == "SCALE")
   {
-    std::cout << bulk << " " << bulk_ref << std::endl;
     return (var * bulk_ref / bulk)();
   }
   else if (_scale_method == "SUBTRACT")
