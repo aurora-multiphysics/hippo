@@ -37,7 +37,7 @@ boundaryField
     }
     bottom
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
     back
@@ -47,7 +47,7 @@ boundaryField
     }
     front
     {
-        type            calculated;
+        type            fixedValue;
         value           uniform 0.;
     }
 }
