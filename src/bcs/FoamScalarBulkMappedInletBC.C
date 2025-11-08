@@ -45,7 +45,7 @@ FoamScalarBulkMappedInletBC::imposeBoundaryCondition()
   Foam::reduce(var_bulk, Foam::sumOp<Real>());
 
   auto & var = const_cast<Foam::fvPatchField<Foam::scalar> &>(
-      boundary_patch.lookupPatchField<Foam::volScalarField, double>("T"));
+      boundary_patch.lookupPatchField<Foam::volScalarField, double>(_foam_variable));
 
   var == applyScaleMethod(var_map, _pp_value, var_bulk);
 }

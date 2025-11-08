@@ -16,24 +16,23 @@ class TestFoamBCMappedInlet(unittest.TestCase):
     def test_mapped_inlet(self):
         """Test case for mapped inlet."""
 
-
         for i in range(len(TIMES)):
-            self._check_u_temp_refs(i, 'left', [0.5, 0, 0])
-            self._check_u_temp_refs(i, 'bottom', [0, 0.5, 0])
-            self._check_u_temp_refs(i, 'front', [0, 0, 0.5])
+            self._check_u_temp_refs(i, 'left', [1., 0, 0])
+            self._check_u_temp_refs(i, 'bottom', [0, 1., 0])
+            self._check_u_temp_refs(i, 'front', [0, 0, 1.])
 
     def test_mapped_inlet_subtract(self):
         """Test case for mapped inlet when temperature is scaled by subtracting the difference in bulk."""
 
         for i in range(len(TIMES)):
-            self._check_u_temp_refs(i, 'left', [0.5, 0, 0], False)
-            self._check_u_temp_refs(i, 'bottom', [0, 0.5, 0], False)
-            self._check_u_temp_refs(i, 'front', [0, 0, 0.5], False)
+            self._check_u_temp_refs(i, 'left', [1., 0, 0], False)
+            self._check_u_temp_refs(i, 'bottom', [0, 1., 0], False)
+            self._check_u_temp_refs(i, 'front', [0, 0, 1.], False)
 
     def test_mapped_inlet_rotated(self):
         """Test case for when inlet's are not aligned with the axis."""
         for i in range(len(TIMES)):
-            self._check_u_temp_refs(i, 'left', [np.sqrt(0.125), np.sqrt(0.125), 0])
+            self._check_u_temp_refs(i, 'left', [np.sqrt(0.5), np.sqrt(0.5), 0])
 
     def _check_u_temp_refs(self, idx, boundary, offset, use_scale=True):
         rho = 0.5
@@ -58,8 +57,9 @@ class TestFoamBCMappedInlet(unittest.TestCase):
             u_ref = np.array([[1, -0.5, 0.25]])
             temp_ref = 2
 
+        area = 4.
         normal = np.array(offset)/np.linalg.norm(offset)
-        mdot = rho*np.mean(np.vecdot(u_ref, normal))
+        mdot = rho*np.mean(np.vecdot(u_ref, normal))*area
         u_ref *= mdot_pp/mdot
 
         t_bulk = np.mean(temp_ref)

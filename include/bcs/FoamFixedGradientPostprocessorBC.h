@@ -10,6 +10,7 @@ public:
 
   FoamFixedGradientPostprocessorBC(const InputParameters & params);
 
+  // impose boundary condition
   virtual void imposeBoundaryCondition() override;
 
 protected:

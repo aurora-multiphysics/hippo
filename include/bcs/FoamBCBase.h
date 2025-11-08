@@ -46,6 +46,7 @@ public:
 
   virtual void initialSetup() = 0;
 
+  // Add information about BC to table
   virtual void addInfoRow(BCInfoTable & table) = 0;
 
 protected:

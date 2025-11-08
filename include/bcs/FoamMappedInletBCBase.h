@@ -27,13 +27,17 @@ protected:
 
   MPI_Comm _mpi_comm;
 
+  // create send and receive information for mapping
   void createPatchProcMap();
 
+  // get array from mapped plane on the inlet processes
   template <typename T>
   Foam::Field<T> getMappedArray(const Foam::word & name);
 
+  // check if bounding box intersects with rank
   bool intersectMapPlane(const Foam::fvMesh & mesh, Real cart_bbox[6]);
 
+  // create/assign communicators for the transfers between map and inlet planes
   void createMapComm(const Foam::fvMesh & mesh,
                      Foam::vectorField face_centres,
                      std::vector<int> & send_process,

@@ -23,7 +23,7 @@ FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params)
     _pp_value(getPostprocessorValueByName(_pp_name))
 {
   if (params.isParamSetByUser("pp") && params.isParamSetByUser("default"))
-    mooseWarning("'pp' and 'default' should not be set. 'default' ignored.");
+    mooseWarning("'pp' and 'default' should not both be set. 'default' ignored.");
 }
 
 void
