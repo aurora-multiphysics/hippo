@@ -1,0 +1,63 @@
+#include "AddFoamVariableAction.h"
+#include "FoamProblem.h"
+#include "FoamVariableField.h"
+#include "hippoUtils.h"
+
+#include "InputParameters.h"
+#include "MooseObjectAction.h"
+#include "Registry.h"
+
+registerMooseAction("hippoApp", AddFoamVariableAction, "add_foam_variable");
+
+InputParameters
+AddFoamVariableAction::validParams()
+{
+  auto params = MooseObjectAction::validParams();
+  params.addClassDescription("Adds a FoamVariable that shadows an OpenFOAM scalar field.");
+  return params;
+}
+
+AddFoamVariableAction::AddFoamVariableAction(const InputParameters & parameters)
+  : MooseObjectAction(parameters)
+{
+}
+
+void
+AddFoamVariableAction::act()
+{
+  auto * foam_problem = dynamic_cast<FoamProblem *>(_problem.get());
+
+  // Add variable through [FoamVariables] block
+  if (_current_task == "add_foam_variable")
+  {
+    if (!foam_problem)
+      mooseError("FoamVariables system can only be used with FoamProblem.");
+
+    createAuxVariable();
+
+    foam_problem->addObject<FoamVariableField>(_type, _name, _moose_object_pars, false);
+  }
+}
+
+void
+AddFoamVariableAction::createAuxVariable()
+{
+  // Use AddAuxVariableAction to create AuxVariable that also allows additional
+  // parameters such as initial conditions to be set
+  const std::string class_name = "AddAuxVariableAction";
+
+  InputParameters action_params = _action_factory.getValidParams(class_name);
+  action_params.set<std::string>("task") = "add_aux_variable";
+
+  // The MOOSE variable has to be constant monomial
+  action_params.set<MooseEnum>("order") = "CONSTANT";
+  action_params.set<MooseEnum>("family") = "MONOMIAL";
+
+  // Copy desired parameters from FoamVariable action
+  Hippo::internal::copyParamFromParam<std::vector<Real>>(
+      action_params, _moose_object_pars, "initial_condition");
+
+  std::shared_ptr<Action> action =
+      std::static_pointer_cast<Action>(_action_factory.create(class_name, name(), action_params));
+  _awh.addActionBlock(action);
+}
