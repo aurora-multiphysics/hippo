@@ -140,7 +140,8 @@ Hippo also implements the `FoamBC` system that allows you to impose boundary con
 []
 ```
 
-Similar to `FoamVariable`, this creates an `AuxVariable` of the same name under the hood, so the transfer system can be used to provide value of the heat flux to imposed on OpenFOAM.
+Similar to `FoamVariable`, this creates an `AuxVariable` with name `solid_heat_flux` under the hood. 
+MOOSE's transfers system can be used to set the values in the `AuxVariable`, that are then imposed on the OpenFOAM solver's boundary.
 
 ### Executioner
 
