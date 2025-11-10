@@ -10,11 +10,7 @@ public:
 
   FoamMappedInletBCBase(const InputParameters & params);
 
-  virtual ~FoamMappedInletBCBase()
-  {
-    if (Foam::UPstream::parRun())
-      Foam::UPstream::freeCommunicator(_foam_comm);
-  }
+  virtual ~FoamMappedInletBCBase() { destroyCommunicator(_foam_comm); }
 
 protected:
   Foam::vector _offset;
@@ -42,4 +38,33 @@ protected:
                      Foam::vectorField face_centres,
                      std::vector<int> & send_process,
                      std::vector<int> & recv_process);
+
+  // find index of cell containing point or raise error if not found
+  int findIndex(const Foam::point & location, const MPI_Comm & comm);
+
+  // handle creation of new communicators in parallel or serial
+  Foam::label
+  createCommunicator(const Foam::label parent_comm, std::vector<int> procs, MPI_Comm & new_comm)
+  {
+    Foam::label foam_comm;
+    if (Foam::UPstream::parRun())
+    {
+      Foam::labelList foam_procs(procs.begin(), procs.end());
+      foam_comm = Foam::UPstream::allocateCommunicator(parent_comm, foam_procs, true);
+      new_comm = Foam::PstreamGlobals::MPICommunicators_[foam_comm];
+    }
+    else
+    {
+      foam_comm = Foam::UPstream::worldComm;
+      new_comm = MPI_COMM_WORLD;
+    }
+    return foam_comm;
+  }
+
+  // free communicators if parallel run
+  void destroyCommunicator(Foam::label comm)
+  {
+    if (Foam::UPstream::parRun())
+      Foam::UPstream::freeCommunicator(comm);
+  }
 };
