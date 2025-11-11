@@ -1,14 +1,13 @@
 #include "FoamMappedInletBCBase.h"
-#include "InputParameters.h"
-#include "MooseError.h"
-#include "MooseTypes.h"
-#include "Pstream.H"
 
-#include "mpi.h"
-#include "UPstream.H"
-#include "petsclog.h"
-#include "vectorField.H"
-#include "volFieldsFwd.H"
+#include <InputParameters.h>
+#include <MooseTypes.h>
+#include <mpi.h>
+#include <UPstream.H>
+#include <vectorField.H>
+#include <volFieldsFwd.H>
+#include <Pstream.H>
+
 #include <algorithm>
 #include <cassert>
 #include <cfloat>

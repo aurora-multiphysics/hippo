@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FoamPostprocessorBCBase.h"
-#include "UPstream.H"
+#include <UPstream.H>
 
 class FoamMappedInletBCBase : public FoamPostprocessorBCBase
 {

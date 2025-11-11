@@ -1,5 +1,6 @@
 #pragma once
 #include "FoamMappedInletBCBase.h"
+#include "MooseEnum.h"
 
 class FoamMassFlowRateMappedInletBC : public FoamMappedInletBCBase
 {
@@ -9,4 +10,7 @@ public:
   FoamMassFlowRateMappedInletBC(const InputParameters & params);
 
   virtual void imposeBoundaryCondition() override;
+
+protected:
+  MooseEnum _scale_method;
 };
