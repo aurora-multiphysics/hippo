@@ -13,12 +13,13 @@ InputParameters
 FoamScalarBulkMappedInletBC::validParams()
 {
   auto params = FoamMappedInletBCBase::validParams();
-  MooseEnum scaleEnum("SCALE SUBTRACT", "SCALE");
+  MooseEnum scaleEnum("SCALE SUBTRACT NONE", "SCALE");
   params.addParam<MooseEnum>("scale_method",
                              scaleEnum,
                              "Method used to maintain inlet bulk variable. "
                              "SCALE means the variable is multiplied by a factor, "
-                             "SUBTRACT means the variable is reduced by constant.");
+                             "SUBTRACT means the variable is reduced by constant,"
+                             "NONE means the variable is not scaled.");
 
   return params;
 }
@@ -61,6 +62,10 @@ FoamScalarBulkMappedInletBC::applyScaleMethod(T & var, const Real bulk_ref, cons
   else if (_scale_method == "SUBTRACT")
   {
     return (var + bulk_ref - bulk)();
+  }
+  else if (_scale_method == "NONE")
+  {
+    return var;
   }
   else
   {
