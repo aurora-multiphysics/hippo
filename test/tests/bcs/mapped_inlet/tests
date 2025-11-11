@@ -113,4 +113,41 @@
             test_case = 'TestFoamBCMappedInlet.test_mapped_inlet_rotated'
         []
     []
+    [face_edge_case]
+        [update_mesh]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && cp foam/system/blockMeshDict.face_edge foam/system/blockMeshDict && cp foam/system/decomposeParDict.face_edge foam/system/decomposeParDict"'
+            prereq = mapped_rotated/verify
+        []
+        [setup]
+            type = RunCommand
+            command = 'bash -c "blockMesh -case foam && decomposePar -case foam"'
+            prereq = face_edge_case/update_mesh
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = face_edge_case/setup
+            allow_warnings = true
+            min_parallel = 2
+            max_parallel = 2
+        []
+        [reconstruct]
+            type = RunCommand
+            command = 'reconstructPar -case foam'
+            prereq = face_edge_case/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = face_edge_case/reconstruct
+            test_case = 'TestFoamBCMappedInlet.test_mapped_inlet_face_point'
+        []
+        [reset_mesh]
+            type = RunCommand
+            command = 'bash -c "cp foam/system/blockMeshDict.orig foam/system/blockMeshDict && cp foam/system/decomposeParDict.orig foam/system/decomposeParDict"'
+            prereq = 'face_edge_case/update_mesh'
+        []
+    []
+
 []

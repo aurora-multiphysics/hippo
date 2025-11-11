@@ -34,6 +34,14 @@ class TestFoamBCMappedInlet(unittest.TestCase):
         for i in range(len(TIMES)):
             self._check_u_temp_refs(i, 'left', [np.sqrt(0.5), np.sqrt(0.5), 0])
 
+    def test_mapped_inlet_face_point(self):
+        """Test case for mapped inlet where the point is on the interface between boundaries."""
+
+        for i in range(len(TIMES)):
+            self._check_u_temp_refs(i, 'left', [7./8, 0, 0])
+            self._check_u_temp_refs(i, 'bottom', [0, 7./8, 0])
+            self._check_u_temp_refs(i, 'front', [0, 0, 7./8])
+
     def _check_u_temp_refs(self, idx, boundary, offset, use_scale=True):
         rho = 0.5
         mdot_pp = 1
