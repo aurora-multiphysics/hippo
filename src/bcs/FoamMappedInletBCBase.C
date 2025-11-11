@@ -1,12 +1,16 @@
 #include "FoamMappedInletBCBase.h"
 #include "InputParameters.h"
+#include "MooseError.h"
 #include "MooseTypes.h"
 #include "Pstream.H"
 
 #include "mpi.h"
 #include "UPstream.H"
+#include "petsclog.h"
 #include "vectorField.H"
 #include "volFieldsFwd.H"
+#include <algorithm>
+#include <cassert>
 #include <cfloat>
 
 namespace
@@ -171,19 +175,19 @@ FoamMappedInletBCBase::createPatchProcMap()
 
   std::vector<MPI_Request> size_requests(inlet_procs.size());
   std::vector<MPI_Request> data_requests(inlet_procs.size());
-
+  std::vector<std::vector<int>> recv_indices_procs(inlet_procs.size());
   MPI_Comm map_comm;
   auto foam_map_comm = createCommunicator(_foam_comm, map_procs, map_comm);
 
   if (isMapProc) // check points from each process to see if they are local
   {
-    for (int proc : inlet_procs)
+    for (auto i = 0lu; i < inlet_procs.size(); ++i)
     {
       Foam::vectorField field;
-      Foam::UIPstream recieve(proc, send_points);
+      Foam::UIPstream recieve(inlet_procs[i], send_points);
       recieve >> field;
-      auto & vec = _send_map[proc];
-      std::vector<int> recv_indices;
+      auto & vec = _send_map[inlet_procs[i]];
+      auto & recv_indices = recv_indices_procs[i];
       for (int j = 0; j < field.size(); ++j)
       {
         auto index = findIndex(field[j] + _offset, map_comm);
@@ -194,18 +198,18 @@ FoamMappedInletBCBase::createPatchProcMap()
         }
       }
       if (vec.size() == 0)
-        _send_map.erase(proc);
+        _send_map.erase(inlet_procs[i]);
 
       // Let original processes know which points will come from each rank
-      auto size = static_cast<int>(vec.size());
-      MPI_Isend(&size, 1, MPI_INT, proc, 0, _mpi_comm, &size_requests[proc]);
+      int size = recv_indices.size();
+      MPI_Isend(&size, 1, MPI_INT, inlet_procs[i], 0, _mpi_comm, &size_requests.at(i));
       MPI_Isend(recv_indices.data(),
                 recv_indices.size(),
                 MPI_INT,
-                proc,
+                inlet_procs[i],
                 1,
                 _mpi_comm,
-                &data_requests[proc]);
+                &data_requests.at(i));
     }
   }
 
@@ -213,7 +217,6 @@ FoamMappedInletBCBase::createPatchProcMap()
 
   if (isInletProc) // create map to determine where data from map processes should go
   {
-    std::set<int> all_indices;
     for (auto & proc : map_procs)
     {
       int size;
@@ -221,29 +224,31 @@ FoamMappedInletBCBase::createPatchProcMap()
 
       std::vector<int> recv_indices(size);
       MPI_Recv(recv_indices.data(), size, MPI_INT, proc, 1, _mpi_comm, MPI_STATUS_IGNORE);
-      for (auto index : recv_indices)
+      for (auto & index : recv_indices)
+      {
+        assert(index < face_centres.size());
         _recv_map[proc].push_back(index);
-
-      all_indices.insert(recv_indices.begin(), recv_indices.end());
-    }
-
-    for (int i = 0; i < face_centres.size(); ++i)
-    {
-      if (all_indices.count(i) == 0)
-        mooseError("Face centre at location (",
-                   face_centres[i][0],
-                   ",",
-                   face_centres[i][1],
-                   ",",
-                   face_centres[i][2],
-                   ") does not have a mapped plane location");
+      }
     }
   }
+  MPI_Barrier(_mpi_comm);
 }
 
 int
 FoamMappedInletBCBase::findIndex(const Foam::point & location, const MPI_Comm & comm)
 {
+  /*
+  This function uses several ways of finding the mapped plane cell
+  1. use findCell function
+    - Sometimes on cell boundaries it may not find the cell or two processes with both find it
+  2. If none found, find the closest point and do an expanded bounding box search, raise error
+     if none still found.
+  3. If multiple found, use the cell with cell centre closer to desired location
+  4. If still multiple found, use the cell closer to the inlet.
+    - In the unlikely chance there are still multiple cells detected, raise a warning
+  Note that it is possible there is some non-deterministic behaviour in the function but this
+  shouldn't be a problem in practice.
+  */
   int index = _mesh->fvMesh().findCell(location, Foam::polyMesh::FACE_PLANES);
   int gl_index;
   MPI_Allreduce(&index, &gl_index, 1, MPI_INT, MPI_MAX, comm);
@@ -271,8 +276,7 @@ FoamMappedInletBCBase::findIndex(const Foam::point & location, const MPI_Comm & 
     }
   }
 
-  // handle if more than one cell found globally: use closest point
-  // to inlet point
+  // use cell with cell centre closest to the location
   Foam::scalar dist{DBL_MAX}, gl_dist;
   if (index != -1)
     dist = Foam::mag(_mesh->fvMesh().cellCentres()[index] - location);
@@ -281,6 +285,28 @@ FoamMappedInletBCBase::findIndex(const Foam::point & location, const MPI_Comm & 
   if (dist != gl_dist)
     index = -1;
 
+  // 2. use cell centre closest to inlet point
+  int in_cell = index != -1;
+  MPI_Allreduce(MPI_IN_PLACE, &in_cell, 1, MPI_INT, MPI_SUM, comm);
+  if (in_cell > 1)
+  {
+    if (index != -1)
+      dist = Foam::mag(_mesh->fvMesh().cellCentres()[index] - (location - _offset));
+    MPI_Allreduce(&dist, &gl_dist, 1, MPI_DOUBLE, MPI_MIN, comm);
+    if (dist != gl_dist)
+      index = -1;
+  }
+  in_cell = index != -1;
+  MPI_Allreduce(MPI_IN_PLACE, &in_cell, 1, MPI_INT, MPI_SUM, comm);
+
+  if (in_cell > 1)
+    mooseWarning("More than 1 process found location (",
+                 location[0],
+                 ",",
+                 location[1],
+                 ",",
+                 location[2],
+                 ")");
   return index;
 }
 
