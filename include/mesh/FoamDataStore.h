@@ -158,7 +158,7 @@ template <typename T, bool strict>
 inline void
 storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
 {
-  const auto && cur_fields{getFieldkeys<T, strict>(mesh)};
+  const auto cur_fields{getFieldkeys<T, strict>(mesh)};
   auto nFields{static_cast<int>(cur_fields.size())};
 
   storeHelper(stream, nFields, context);

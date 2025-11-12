@@ -12,10 +12,11 @@
     []
 []
 
-[AuxVariables]
+[FoamBCs]
     [fluid_heat_flux]
-        family = MONOMIAL
-        order = CONSTANT
+        type = FoamFixedGradientBC
+        foam_variable = 'T'
+        diffusivity_coefficient = kappa
         initial_condition = 0.075
     []
 []
@@ -31,8 +32,6 @@
 
 [Problem]
     type = FoamProblem
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
-    heat_flux = fluid_heat_flux
 []
 
 [Executioner]

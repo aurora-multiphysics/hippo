@@ -12,15 +12,10 @@
     []
 []
 
-[AuxVariables]
+[FoamBCs]
     [fluid_wall_temp]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 0.0
-    []
-    [heat_flux]
-        family = MONOMIAL
-        order = CONSTANT
+        type = FoamFixedValueBC
+        foam_variable = 'T'
         initial_condition = 0.0
     []
 []
@@ -36,8 +31,6 @@
 
 [Problem]
     type = FoamProblem
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
-    temp = fluid_wall_temp
 []
 
 [Executioner]
