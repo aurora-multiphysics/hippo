@@ -1,3 +1,4 @@
+#include "ActionFactory.h"
 #include "hippoApp.h"
 
 #include <AppFactory.h>
@@ -32,6 +33,16 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   Registry::registerActionsTo(af, {"hippoApp"});
 
   /* register custom execute flags, action syntax, etc. here */
+
+  // Add input file syntax for the [FoamVariables] block
+  registerSyntaxTask("AddFoamVariableAction", "FoamVariables/*", "add_foam_variable");
+  registerMooseObjectTask("add_foam_variable", FoamVariable, false);
+  addTaskDependency("add_aux_variable", "add_foam_variable");
+
+  // Add input file syntax for the [FoamBCs] block
+  registerSyntaxTask("AddFoamBCAction", "FoamBCs/*", "add_foam_bc");
+  registerMooseObjectTask("add_foam_bc", FoamBC, false);
+  addTaskDependency("add_aux_variable", "add_foam_bc");
 }
 
 void

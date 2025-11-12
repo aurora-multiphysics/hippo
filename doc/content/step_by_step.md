@@ -68,6 +68,19 @@ For more info on the OpenFOAM case structure, see the
 
 ## Write a MOOSE Input File for the OpenFOAM Case
 
+### Problem
+
+First, we define the `Problem` block, which tells Hippo we are running an OpenFOAM case
+and provides the functionality to couple OpenFOAM into the MOOSE framework.
+
+```toml
+# fluid.i
+
+[Problem]
+    type = FoamProblem
+[]
+```
+
 ### Mesh
 
 The first block to define is the mesh block.
@@ -95,71 +108,53 @@ $ hippo-opt -i fluid.i --mesh-only
 $ paraview fluid_in.e
 ```
 
-### Auxiliary Variables
+### Transferring data from OpenFOAM to MOOSE
 
-To transfer quantities between the OpenFOAM and MOOSE solves,
-you must use MOOSE's
-[AuxVariable system](https://mooseframework.inl.gov/syntax/AuxVariables/).
-For this problem we need two variables,
-one for the solid heat flux and one for the fluid wall temperature.
+To access OpenFOAM variables from MOOSE, Hippo provides the `FoamVariable` system,
+which allows you to shadow OpenFOAM volume fields and function objects with MOOSE variables,
+which are automatically updated after each OpenFOAM solve. For this problem,
+the fluid temperature is required by MOOSE. In OpenFOAM, the temperature is stored
+in the `volScalarField` named `T`:
 
-At present, all AuxVariables used for these transfers must
-be constant and monomial.
 
 ```toml
 # fluid.i
 
-[AuxVariables]
+[FoamVariables]
     [fluid_wall_temp]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 300
-    []
-    [solid_heat_flux]
-        family = MONOMIAL
-        order = CONSTANT
-        initial_condition = 0
+        type = FoamVariableField
+        foam_variable = T
     []
 []
 ```
+Internally, Hippo creates `AuxVariable`s which can use MOOSE's transfer system
+and so can be transferred between MOOSE apps.
 
-> +Note:+ *To save on memory, you could actually define a single AuxVariable
-> and transfer the heat flux one way and temperature the other in the same
-> variable. However, for clarity, we use separate variables here.*
+### Imposing boundary conditions on OpenFOAM from MOOSE
 
-### Problem
-
-Next we define the 'Problem' block.
-Hippo provides the `FoamProblem` class to run the OpenFOAM case
-provided in the `[Mesh]` block.
-
-`FoamProblem` has a set of parameters that defines which quantities are
-copied to and from OpenFOAM:
-
-- `foam_heat_flux` -
-  the name of the AuxVariable to copy OpenFOAM's heat flux into.
-- `foam_temp` -
-  the name of the AuxVariable to copy OpenFOAM's wall temperature into.
-- `temp` -
-  the name of an AuxVariable whose values will be used to set
-  a Dirichlet boundary condition on the OpenFOAM solve.
-- `heat_flux`
-  the name of an AuxVariable whose values will be used to set
-  a Neumann boundary condition on the OpenFOAM solve.
-
-In our example, we'll need to set `heat_flux` and `foam_temp`.
+Hippo also implements the `FoamBC` system that allows you to impose boundary conditions
+on OpenFOAM from the Hippo input file. In this case, we wish to impose a heat flux BC
+on the temperature field. This requires the `FoamFixedGradientBC`, which mirrors OpenFOAM's
+`fixedGradient` BC type. As in this case, we provide a heat flux, we must also provide the
+thermal conductivity, which is specified as the `diffusivity_coefficient`.
+`kappa` is the name of the thermal conductivity variable in OpenFOAM.
 
 ```toml
 # fluid.i
 
-[Problem]
-    type = FoamProblem
-    # Take the heat flux from MOOSE and set it on the OpenFOAM mesh.
-    heat_flux = solid_heat_flux
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
-    foam_temp = fluid_wall_temp
+[FoamBCs]
+    [solid_heat_flux]
+        type = FoamFixedGradientBC
+        foam_variable = T
+        diffusivity_coefficient = kappa
+    []
 []
 ```
+
+Similar to `FoamVariable`, this creates an `AuxVariable` with name `solid_heat_flux`
+under the hood.
+MOOSE's transfers system can be used to set the values in the `AuxVariable`,
+that are then imposed on the OpenFOAM solver's boundary.
 
 ### Executioner
 
@@ -372,6 +367,7 @@ To couple the solves we're going to:
 
 [Transfers]
     # Copy the wall temperature from the fluid into an AuxVariable.
+    # This was stored in the FoamVariable fluid_wall_temp
     [wall_temperature_from_fluid]
         type = MultiAppGeometricInterpolationTransfer
         source_variable = fluid_wall_temp
@@ -381,9 +377,7 @@ To couple the solves we're going to:
     []
 
     # Copy the heat flux from the 'wall_heat_flux' aux variable into the
-    # multiapp.
-    # Remember we marked the 'solid_heat_flux' variable in 'fluid.i' to be
-    # used as a heat flux boundary condition on the OpenFOAM solve.
+    # 'solid_heat_flux' FoamBC in the multiapp.
     [heat_flux_to_fluid]
         type = MultiAppGeometricInterpolationTransfer
         source_variable = wall_heat_flux

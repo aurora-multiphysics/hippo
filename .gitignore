@@ -148,7 +148,7 @@ moose/include/base/Precompiled.h.gch
 # clang
 .clangd
 
-#direnv
+# direnv
 .envrc
 
 # OpenFOAM mesh object files
@@ -157,6 +157,10 @@ test/**/*.obj
 # downloaded mesh tarballs
 test/tests/**/*.tar.gz
 !**/gold/*.tar.gz
+
+# OpenFOAM build files
+test/OpenFOAM/**/lnInclude
+test/OpenFOAM/**/linux*
 
 framework/contrib/exodiff/exodiff
 

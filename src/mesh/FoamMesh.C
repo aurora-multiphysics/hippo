@@ -1,21 +1,21 @@
 #include "FoamMesh.h"
-
+#include "FoamDataStore.h"
 #include "Foam2MooseMeshGen.h"
-#include "libmesh/elem.h"
-#include "libmesh/enum_elem_type.h"
-#include "libmesh/face_quad4.h"
-#include "libmesh/face_c0polygon.h"
-#include "libmesh/face_tri3.h"
-#include "libmesh/point.h"
+
+#include <MooseError.h>
+#include <libmesh/elem.h>
+#include <libmesh/enum_elem_type.h>
+#include <libmesh/face_quad4.h>
+#include <libmesh/face_c0polygon.h>
+#include <libmesh/face_tri3.h>
+#include <libmesh/point.h>
 
 #include <IOobject.H>
-#include <Pstream/mpi/PstreamGlobals.H>
 #include <Time.H>
 #include <argList.H>
 #include <mpi.h>
 
 #include <memory>
-#include "FoamDataStore.h"
 
 registerMooseObject("hippoApp", FoamMesh);
 
@@ -67,7 +67,7 @@ FoamMesh::safeClone() const
   return std::make_unique<FoamMesh>(*this);
 }
 
-std::vector<int> &
+std::vector<SubdomainID> &
 FoamMesh::getSubdomainList()
 {
   return _subdomain_list;
@@ -190,6 +190,15 @@ FoamMesh::buildMesh()
   _mesh->recalculate_n_partitions();
   libMesh::Partitioner::set_node_processor_ids(*_mesh);
   _mesh->prepare_for_use();
+
+  auto count = 0;
+  for (auto i = 0U; i < _subdomain_list.size(); ++i)
+  {
+    auto tmp = _foam_mesh.boundary()[_subdomain_list[i]].size();
+    _patch_counts[_subdomain_list[i]] = tmp;
+    _patch_offsets[_subdomain_list[i]] = count;
+    count += tmp;
+  }
 }
 
 libMesh::Elem *

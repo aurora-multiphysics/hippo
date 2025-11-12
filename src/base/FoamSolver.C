@@ -131,19 +131,6 @@ FoamSolver::run()
 }
 
 std::size_t
-FoamSolver::appendPatchTemperatures(const int patch_id, std::vector<double> & foam_t)
-{
-  if (!_solver)
-  {
-    return 0;
-  }
-  auto & mesh = _solver->mesh;
-  auto & temp = mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T");
-  std::copy(temp.begin(), temp.end(), std::back_inserter(foam_t));
-  return temp.size();
-}
-
-std::size_t
 FoamSolver::patchSize(int patch_id)
 {
   if (!_solver)
@@ -152,68 +139,6 @@ FoamSolver::patchSize(int patch_id)
   }
   auto & mesh = _solver->mesh;
   return mesh.boundary()[patch_id].size();
-}
-
-void
-FoamSolver::setPatchTemperatures(const int patch_id, const std::vector<double> & moose_t)
-{
-  if (!_solver)
-  {
-    return;
-  }
-  auto & mesh = _solver->mesh;
-  auto & temp = const_cast<Foam::fvPatchField<double> &>(
-      mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T"));
-  assert(moose_t.size() == static_cast<std::size_t>(temp.size()));
-  std::copy(moose_t.begin(), moose_t.end(), temp.begin());
-}
-
-void
-FoamSolver::setPatchNegativeHeatFlux(const int patch_id, std::vector<double> & negative_hf)
-{
-  if (!_solver)
-  {
-    return;
-  }
-  auto & mesh = _solver->mesh;
-  auto & temp = const_cast<Foam::fvPatchField<double> &>(
-      mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("T"));
-  Foam::scalarField & temp_gradient(
-      Foam::refCast<Foam::fixedGradientFvPatchScalarField>(temp).gradient());
-  auto & thermal_conductivity =
-      mesh.boundary()[patch_id].lookupPatchField<Foam::volScalarField, double>("kappa");
-  assert(temp_gradient.size() == thermal_conductivity.size());
-  for (auto i = 0; i < temp_gradient.size(); ++i)
-  {
-    temp_gradient[i] = negative_hf[i] / thermal_conductivity[i];
-  }
-}
-
-std::size_t
-FoamSolver::wallHeatFlux(const int patch_id, std::vector<double> & fill_vector)
-{
-  if (!_solver)
-  {
-    return 0;
-  }
-
-  static const Foam::word WALL_HEAT_FLUX = "wallHeatFlux";
-
-  auto whf_dict =
-      _solver->runTime.controlDict().lookupOrDefault(WALL_HEAT_FLUX, Foam::dictionary());
-  auto patch = _solver->mesh.boundaryMesh()[patch_id];
-  whf_dict.set("patches", Foam::wordList({patch.name()}));
-  whf_dict.set("writeToFile", false);
-  Foam::functionObjects::wallHeatFlux whf_func(WALL_HEAT_FLUX, _solver->runTime, whf_dict);
-  whf_func.execute();
-
-  auto wall_heat_flux = _solver->mesh.lookupObject<Foam::volScalarField>(WALL_HEAT_FLUX);
-  auto & whf_boundary = wall_heat_flux.boundaryField()[patch.index()];
-  for (const auto value : whf_boundary)
-  {
-    fill_vector.emplace_back(value);
-  }
-  return whf_boundary.size();
 }
 
 void
