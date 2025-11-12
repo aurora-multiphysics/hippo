@@ -4,7 +4,7 @@
 
 #include <fvCFD_moose.h>
 
-// This method extracts the keys associated with fields of type T from the
+// This function extracts the keys associated with fields of type T from the
 // mesh object registry. Note for some fields, the field.name() and the
 // key are not the same. *strict* indicates whether types derived from T are
 // collected
@@ -18,8 +18,7 @@ getFieldkeys(const Foam::fvMesh & mesh)
     if (mesh.foundObject<T>(key))
     {
       auto & field = mesh.lookupObjectRef<T>(key);
-      if (!field.isOldTime() &&
-          ((Foam::isType<T>(field) && strict) || (Foam::isA<T>(field) && !strict)))
+      if (!field.isOldTime() && (Foam::isType<T>(field) || (Foam::isA<T>(field) && !strict)))
       {
         fieldKeyList.push_back(key);
       }
@@ -31,10 +30,9 @@ getFieldkeys(const Foam::fvMesh & mesh)
 
 template <class Type, class GeomMesh>
 inline void
-readBoundary(istream & stream, Foam::DimensionedField<Type, GeomMesh> & field)
+readBoundary([[maybe_unused]] istream & stream,
+             [[maybe_unused]] Foam::DimensionedField<Type, GeomMesh> & field)
 {
-  (void)stream;
-  (void)field;
 }
 
 template <typename GeoField>
@@ -45,50 +43,34 @@ readBoundary(istream & stream, GeoField & field)
   {
     std::vector<typename GeoField::value_type> data(bField.size());
     loadHelper(stream, data, nullptr);
-    for (auto i = 0lu; i < data.size(); ++i)
-      bField[i] = data[i];
+    std::copy(data.begin(), data.end(), bField.begin());
   }
 }
 
 // readField for GeometricFields and DimensionedFields
 template <typename GeoField>
-inline GeoField &
-readField(std::istream & stream,
-          Foam::fvMesh & mesh,
-          GeoField * parent_field,
-          unsigned int old_time_index)
+inline void
+readField(std::istream & stream, GeoField & field)
 {
-  assert(old_time_index == 0 || parent_field);
-
-  std::string field_name;
-  loadHelper(stream, field_name, nullptr);
-  auto & field = (old_time_index > 0 && parent_field) ? parent_field->oldTimeRef(old_time_index)
-                                                      : mesh.lookupObjectRef<GeoField>(field_name);
 
   std::vector<typename GeoField::value_type> internal_data(field.size());
   loadHelper(stream, internal_data, nullptr);
 
   for (auto i = 0lu; i < internal_data.size(); ++i)
+  {
     field.primitiveFieldRef()[i] = internal_data[i];
+  }
 
   readBoundary(stream, field);
-
-  return field;
 }
 
 template <>
-inline Foam::uniformDimensionedScalarField &
-readField(std::istream & stream,
-          Foam::fvMesh & mesh,
-          Foam::uniformDimensionedScalarField * parent_field,
-          unsigned int old_time_index)
+inline void
+readField(std::istream & stream, Foam::uniformDimensionedScalarField & field)
 {
-  std::pair<std::string, Foam::scalar> field_data;
-  loadHelper(stream, field_data, nullptr);
-  auto & field = mesh.lookupObjectRef<Foam::uniformDimensionedScalarField>(field_data.first);
-  field.value() = field_data.second;
-
-  return field;
+  Foam::scalar value;
+  loadHelper(stream, value, nullptr);
+  field.value() = value;
 }
 
 template <class Type, class GeomMesh>
@@ -114,13 +96,11 @@ writeBoundary(ostream & stream, const GeoField & field)
 // writeField for GeometricFields and DimensionedFields
 template <typename GeoField>
 inline void
-writeField(ostream & stream, const Foam::string & name, const GeoField & field)
+writeField(ostream & stream, const GeoField & field)
 {
   std::vector<typename GeoField::value_type> internal_field(field.primitiveField().size());
   std::copy(field.primitiveField().begin(), field.primitiveField().end(), internal_field.begin());
 
-  std::string field_name{name};
-  storeHelper(stream, field_name, nullptr);
   storeHelper(stream, internal_field, nullptr);
 
   writeBoundary(stream, field);
@@ -129,12 +109,9 @@ writeField(ostream & stream, const Foam::string & name, const GeoField & field)
 // writeField for UniformDimensionedFields
 template <typename Type>
 inline void
-writeField(ostream & stream,
-           const Foam::string & name,
-           const Foam::UniformDimensionedField<Type> & field)
+writeField(ostream & stream, const Foam::UniformDimensionedField<Type> & field)
 {
-  auto store_pair{std::pair(std::string(name), field.value())};
-  storeHelper(stream, store_pair, nullptr);
+  storeHelper(stream, field.value(), nullptr);
 }
 
 // Generic function for serialising any field and its old times
@@ -145,13 +122,13 @@ dataStoreField(std::ostream & stream, const Foam::string & name, T & field, void
   auto nOldTimes{field.nOldTimes(false)};
   storeHelper(stream, nOldTimes, context);
 
-  writeField(stream, name, field);
+  std::string field_name{name};
+  storeHelper(stream, field_name, nullptr);
+  writeField(stream, field);
 
-  auto old_name = name;
   for (int n = 1; n <= nOldTimes; ++n)
   {
-    old_name += "_0";
-    writeField(stream, old_name, field.oldTime(n));
+    writeField(stream, field.oldTime(n));
   }
 }
 
@@ -164,10 +141,15 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
   Foam::label nOldTimes;
   loadHelper(stream, nOldTimes, nullptr);
 
-  auto & field = readField<T>(stream, foam_mesh, nullptr, 0);
+  std::string field_name;
+  loadHelper(stream, field_name, nullptr);
+  auto & field = foam_mesh.lookupObjectRef<T>(field_name);
+  readField(stream, field);
+
   for (int nOld = 1; nOld <= nOldTimes; ++nOld)
   {
-    auto & old_field = readField<T>(stream, foam_mesh, &field, nOld);
+    auto & old_field = field.oldTimeRef(nOld);
+    readField(stream, old_field);
   }
 }
 
@@ -176,7 +158,7 @@ template <typename T, bool strict>
 inline void
 storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
 {
-  auto && cur_fields{getFieldkeys<T, strict>(mesh)};
+  const auto && cur_fields{getFieldkeys<T, strict>(mesh)};
   auto nFields{static_cast<int>(cur_fields.size())};
 
   storeHelper(stream, nFields, context);

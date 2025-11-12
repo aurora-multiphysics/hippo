@@ -39,9 +39,9 @@
 #include <volFields.H>
 #include <pointFields.H>
 #include <typeInfo.H>
-#include "symmTensorField.H"
-#include "DimensionedField.H"
-#include "uniformDimensionedFields.H"
-#include "ddtScheme.H"
+#include <symmTensorField.H>
+#include <DimensionedField.H>
+#include <uniformDimensionedFields.H>
+#include <ddtScheme.H>
 
 #undef NotImplemented

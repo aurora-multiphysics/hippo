@@ -1,12 +1,9 @@
 #include "hippoApp.h"
-#include "FoamProblem.h"
 
 #include <AppFactory.h>
 #include <ModulesApp.h>
 #include <Moose.h>
 #include <MooseSyntax.h>
-
-#include <cstdlib>
 
 InputParameters
 hippoApp::validParams()
