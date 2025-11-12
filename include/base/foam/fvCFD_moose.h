@@ -33,4 +33,15 @@
 #include <argList.H>
 #include <fvMesh.H>
 
+// FoamDataStore.h
+#include <error.H>
+#include <surfaceFields.H>
+#include <volFields.H>
+#include <pointFields.H>
+#include <typeInfo.H>
+#include <symmTensorField.H>
+#include <DimensionedField.H>
+#include <uniformDimensionedFields.H>
+#include <ddtScheme.H>
+
 #undef NotImplemented
