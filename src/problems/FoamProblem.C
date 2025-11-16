@@ -1,3 +1,4 @@
+#include "Attributes.h"
 #include "ExternalProblem.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
@@ -17,7 +18,9 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
-#include <string>
+
+#include <IOobjectList.H>
+#include <volFields.H>
 
 registerMooseObject("hippoApp", FoamProblem);
 
@@ -55,7 +58,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
                               _foam_mesh->fvMesh())
                 .ptr()),
     _foam_variables(),
-    _foam_bcs()
+    _foam_bcs(),
+    _foam_postprocessor()
 {
   assert(_foam_mesh);
 }
@@ -76,6 +80,8 @@ FoamProblem::initialSetup()
   query_bcs.queryInto(_foam_bcs);
 
   verifyFoamBCs();
+
+  verifyFoamPostprocessors();
 }
 
 void
@@ -100,6 +106,10 @@ FoamProblem::syncSolutions(Direction dir)
     for (auto & var : _foam_variables)
     {
       var->transferVariable();
+    }
+    for (auto & fpp : _foam_postprocessor)
+    {
+      fpp->compute();
     }
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
@@ -190,5 +200,32 @@ FoamProblem::verifyFoamBCs()
     if (unused_bcs.size() > 0)
       vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
   }
+  vt.print(_console);
+}
+
+void
+FoamProblem::verifyFoamPostprocessors()
+{
+  std::vector<Postprocessor *> pps;
+  TheWarehouse::Query query_uos =
+      theWarehouse().query().condition<AttribInterfaces>(Interfaces::Postprocessor);
+  query_uos.queryInto(pps);
+
+  VariadicTable<std::string, std::string, std::string> vt({
+      "Foam postprocessor",
+      "Type",
+      "Boundaries",
+  });
+
+  for (auto pp : pps)
+  {
+    auto fpp = dynamic_cast<FoamPostprocessorBase *>(pp);
+    if (fpp)
+    {
+      _foam_postprocessor.push_back(fpp);
+      vt.addRow(fpp->name(), fpp->type(), listFromVector(fpp->blocks()));
+    }
+  }
+
   vt.print(_console);
 }
