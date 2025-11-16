@@ -43,11 +43,6 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   registerSyntaxTask("AddFoamBCAction", "FoamBCs/*", "add_foam_bc");
   registerMooseObjectTask("add_foam_bc", FoamBC, false);
   addTaskDependency("add_aux_variable", "add_foam_bc");
-
-  // Add [FoamPostprocessors] block
-  registerSyntax("AddPostprocessorAction", "FoamPostprocessors/*");
-  syntax.registerSyntaxType("FoamPostprocessors/*", "PostprocessorName");
-  syntax.registerSyntaxType("FoamPostprocessors/*", "UserObjectName");
 }
 
 void
