@@ -13,4 +13,6 @@ public:
 
 protected:
   MooseEnum _scale_method;
+
+  Real _scale_factor;
 };
