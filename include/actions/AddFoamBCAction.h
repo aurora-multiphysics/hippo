@@ -1,7 +1,9 @@
 #pragma once
 
 #include "InputParameters.h"
-#include "MooseObjectAction.h"
+#include "FoamProblem.h"
+
+#include <MooseObjectAction.h>
 
 class AddFoamBCAction : public MooseObjectAction
 {

@@ -7,6 +7,17 @@
 
 registerMooseAction("hippoApp", AddFoamBCAction, "add_foam_bc");
 
+namespace
+{
+inline bool
+findParamKey(const InputParameters & params, const std::string & key)
+{
+  return std::find_if(params.begin(),
+                      params.end(),
+                      [&](const auto & param) { return param.first == key; }) != params.end();
+}
+}
+
 InputParameters
 AddFoamBCAction::validParams()
 {
@@ -59,4 +70,13 @@ AddFoamBCAction::createAuxVariable()
   std::shared_ptr<Action> action =
       std::static_pointer_cast<Action>(_action_factory.create(class_name, name(), action_params));
   _awh.addActionBlock(action);
+}
+
+void
+AddFoamBCAction::createReceiver(FoamProblem & problem)
+{
+  auto params = _factory.getValidParams("Receiver");
+
+  Hippo::internal::copyParamFromParam<Real>(params, _moose_object_pars, "default");
+  problem.addPostprocessor("Receiver", name(), params);
 }
