@@ -45,7 +45,8 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   _mesh = &problem->mesh();
 
   // check that the foam variable exists
-  if (!_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
+  if (!params.isPrivate("foam_variable") &&
+      !_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
     mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
 
   // check that the boundary is in the FoamMesh
