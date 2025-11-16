@@ -14,6 +14,8 @@ InputParameters
 FoamMassFlowRateMappedInletBC::validParams()
 {
   auto params = FoamMappedInletBCBase::validParams();
+
+  params.addParam<Real>("scale_factor", 1., "Scale factor multiply mass flow rate pp by.");
   MooseEnum scaleEnum("SCALE NONE", "SCALE");
   params.addParam<MooseEnum>("scale_method",
                              scaleEnum,
@@ -28,7 +30,9 @@ FoamMassFlowRateMappedInletBC::validParams()
 }
 
 FoamMassFlowRateMappedInletBC::FoamMassFlowRateMappedInletBC(const InputParameters & params)
-  : FoamMappedInletBCBase(params), _scale_method(params.get<MooseEnum>("scale_method"))
+  : FoamMappedInletBCBase(params),
+    _scale_method(params.get<MooseEnum>("scale_method")),
+    _scale_factor(params.get<Real>("scale_factor"))
 {
 }
 
@@ -54,7 +58,15 @@ FoamMassFlowRateMappedInletBC::imposeBoundaryCondition()
     auto & Sf = boundary_patch.Sf();
 
     auto m_dot = Foam::returnReduce(Foam::sum(g_map & -Sf), Foam::sumOp<Real>());
-    g_var *= _pp_value / m_dot;
+    if (fabs(m_dot) > 1e-8)
+    {
+      g_var *= _scale_factor * _pp_value / m_dot;
+    }
+    else
+    {
+      auto area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
+      g_var -= _scale_factor * boundary_patch.nf() * _pp_value / area;
+    }
   }
 
   U_var == g_var / rho;

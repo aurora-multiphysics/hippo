@@ -11,4 +11,7 @@ public:
   FoamMassFlowRateInletBC(const InputParameters & params);
 
   virtual void imposeBoundaryCondition() override;
+
+protected:
+  const Real _scale_factor;
 };
