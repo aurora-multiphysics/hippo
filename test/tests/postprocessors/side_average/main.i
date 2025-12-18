@@ -1,7 +1,7 @@
 [Mesh]
     type = FoamMesh
     case = 'foam'
-    foam_patch = 'left right bottom top back front'
+    foam_patch = 'right top'
 []
 
 [Variables]
@@ -30,40 +30,40 @@
     [t_avg]
         type = FoamSideAverageValue
         foam_variable = 'T'
-        block = top
+        boundary = top
         execute_on = TIMESTEP_END
     []
     [U_avg_magnitude]
         type = FoamSideAverageValue
         foam_variable = 'U'
-        block = right
+        boundary = right
         execute_on = TIMESTEP_END
     []
     [U_avg_normal]
         type = FoamSideAverageValue
         foam_variable = 'U'
-        block = right
+        boundary = right
         component = normal
         execute_on = TIMESTEP_END
     []
     [U_avg_x]
         type = FoamSideAverageValue
         foam_variable = 'U'
-        block = right
+        boundary = right
         component = x
         execute_on = TIMESTEP_END
     []
     [U_avg_y]
         type = FoamSideAverageValue
         foam_variable = 'U'
-        block = right
+        boundary = right
         component = y
         execute_on = TIMESTEP_END
     []
     [U_avg_z]
         type = FoamSideAverageValue
         foam_variable = 'U'
-        block = right
+        boundary = right
         component = z
         execute_on = TIMESTEP_END
     []

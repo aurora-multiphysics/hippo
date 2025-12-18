@@ -21,7 +21,7 @@
     []
     [m_dot]
         type = FoamSideAdvectiveFluxIntegral
-        block = left
+        boundary = left
         foam_scalar = rho
     []
 []

@@ -25,8 +25,8 @@
             input = main.i
             prereq = postprocessor_test/setup
             allow_warnings = true
-            cli_args='Postprocessors/t_avg/block=top1'
-            expect_err = "do not exist on the mesh: top1"
+            cli_args='Postprocessors/t_avg/boundary=top1'
+            expect_err = "Boundary 'top1' not found in FoamMesh."
         []
         [invalid_foam_scalar]
             type = RunException

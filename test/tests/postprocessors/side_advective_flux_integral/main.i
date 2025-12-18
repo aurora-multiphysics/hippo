@@ -30,32 +30,32 @@
     [m_dot_x1]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
-        block = left
+        boundary = left
     []
     [m_dot_x2]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
-        block = right
+        boundary = right
     []
     [m_dot_y1]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
-        block = bottom
+        boundary = bottom
     []
     [m_dot_y2]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
-        block = top
+        boundary = top
     []
     [m_dot_z1]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
-        block = back
+        boundary = back
     []
     [m_dot_z2]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
-        block = front
+        boundary = front
     []
 []
 

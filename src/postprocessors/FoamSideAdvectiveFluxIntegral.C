@@ -35,16 +35,18 @@ void
 FoamSideAdvectiveFluxIntegral::compute()
 {
   _value = 0.;
-  for (auto & block : ElementUserObject::blocks())
+  for (auto & boundary : _boundary)
   {
     auto & var_array =
-        _foam_mesh->boundary()[block].lookupPatchField<Foam::volScalarField, double>(_foam_scalar);
+        _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(
+            _foam_scalar);
 
-    auto & vel_array = _foam_mesh->boundary()[block].lookupPatchField<Foam::volVectorField, double>(
-        _advection_velocity);
+    auto & vel_array =
+        _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(
+            _advection_velocity);
 
-    auto & areas = _foam_mesh->boundary()[block].magSf();
-    auto && normals = _foam_mesh->boundary()[block].nf();
+    auto & areas = _foam_mesh->boundary()[boundary].magSf();
+    auto && normals = _foam_mesh->boundary()[boundary].nf();
 
     // integrate locally
     for (int i = 0; i < var_array.size(); ++i)

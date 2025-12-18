@@ -8,7 +8,6 @@
 InputParameters
 FoamPostprocessorBase::validParams()
 {
-
   auto params = ElementUserObject::validParams();
   params += Postprocessor::validParams();
   return params;

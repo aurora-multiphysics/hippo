@@ -1,23 +1,22 @@
-#include "BlockRestrictable.h"
 #include "FoamSidePostprocessor.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "FoamProblem.h"
 
 InputParameters
 FoamSidePostprocessor::validParams()
 {
   auto params = FoamPostprocessorBase::validParams();
-  // Eventually change to BoundaryRestrictable
-  params += BlockRestrictable::validParams();
-
+  params.addRequiredParam<std::vector<SubdomainName>>(
+      "boundary", "List of boundaries where postprocessor applies.");
   return params;
 }
 
 FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
-  : FoamPostprocessorBase(params)
+  : FoamPostprocessorBase(params), _boundary(params.get<std::vector<SubdomainName>>("boundary"))
 {
-  FoamProblem * problem = dynamic_cast<FoamProblem *>(&getSubProblem());
-  if (!problem)
-    mooseError("FoamPostprocessors can only be used with FoamProblem");
+  for (auto & boundary : _boundary)
+  {
+    if (_foam_mesh->boundary().findIndex(boundary) == -1)
+      mooseError("Boundary '", boundary, "' not found in FoamMesh.");
+  }
 }
