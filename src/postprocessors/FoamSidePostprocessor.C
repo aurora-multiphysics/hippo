@@ -1,7 +1,6 @@
 #include "FoamSidePostprocessor.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "FoamProblem.h"
 
 InputParameters
 FoamSidePostprocessor::validParams()
