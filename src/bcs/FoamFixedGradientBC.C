@@ -10,7 +10,7 @@ registerMooseObject("hippoApp", FoamFixedGradientBC);
 InputParameters
 FoamFixedGradientBC::validParams()
 {
-  auto params = FoamBCBase::validParams();
+  auto params = FoamVariableBCBase::validParams();
   params.addClassDescription("A FoamBC that imposes a fixed gradient dirichlet boundary condition "
                              "on the OpenFOAM simulation");
   params.addParam<std::string>("diffusivity_coefficient",
@@ -20,7 +20,7 @@ FoamFixedGradientBC::validParams()
 }
 
 FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
-  : FoamBCBase(parameters),
+  : FoamVariableBCBase(parameters),
     _diffusivity_coefficient(parameters.get<std::string>("diffusivity_coefficient"))
 {
   // check that the diffusivity coefficient is a OpenFOAM scalar field

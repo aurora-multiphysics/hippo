@@ -7,6 +7,17 @@
 
 registerMooseAction("hippoApp", AddFoamBCAction, "add_foam_bc");
 
+namespace
+{
+inline bool
+findParamKey(const InputParameters & params, const std::string & key)
+{
+  return std::find_if(params.begin(),
+                      params.end(),
+                      [&](const auto & param) { return param.first == key; }) != params.end();
+}
+}
+
 InputParameters
 AddFoamBCAction::validParams()
 {
@@ -27,8 +38,12 @@ AddFoamBCAction::act()
       mooseError("FoamBCs system can only be used with FoamProblem.");
 
     // Do not create aux variable if variable provided.
-    if (!_moose_object_pars.isParamSetByUser("v"))
+    if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
+
+    // Create receiver if pp not provided and pp is an allowed parameter
+    if (findParamKey(_moose_object_pars, "pp") && !_moose_object_pars.isParamSetByUser("pp"))
+      createReceiver(*foam_problem);
 
     foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
   }
@@ -55,4 +70,13 @@ AddFoamBCAction::createAuxVariable()
   std::shared_ptr<Action> action =
       std::static_pointer_cast<Action>(_action_factory.create(class_name, name(), action_params));
   _awh.addActionBlock(action);
+}
+
+void
+AddFoamBCAction::createReceiver(FoamProblem & problem)
+{
+  auto params = _factory.getValidParams("Receiver");
+
+  Hippo::internal::copyParamFromParam<Real>(params, _moose_object_pars, "default");
+  problem.addPostprocessor("Receiver", name(), params);
 }

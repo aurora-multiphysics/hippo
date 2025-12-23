@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FoamMesh.h"
+#include "FoamPostprocessorBase.h"
 #include "FoamSolver.h"
 #include "FoamVariableField.h"
 #include "FoamBCBase.h"
@@ -42,8 +43,13 @@ protected:
   // check FoamBCs and print summarising table
   void verifyFoamBCs();
 
+  // check FoamPostprocessors and print summarising table
+  void verifyFoamPostprocessors();
+
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
+
   std::vector<FoamVariableField *> _foam_variables;
   std::vector<FoamBCBase *> _foam_bcs;
+  std::vector<FoamPostprocessorBase *> _foam_postprocessor;
 };

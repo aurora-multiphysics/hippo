@@ -1,3 +1,4 @@
+#include "Attributes.h"
 #include "ExternalProblem.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
@@ -17,28 +18,11 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
-#include <string>
+
+#include <IOobjectList.H>
+#include <volFields.H>
 
 registerMooseObject("hippoApp", FoamProblem);
-
-namespace
-{
-// Create comma separated list from vector
-template <typename StrType>
-inline std::string
-listFromVector(std::vector<StrType> vec, StrType sep = ", ")
-{
-  if (vec.size() == 0)
-    return std::string();
-  else if (vec.size() == 1)
-    return vec.at(0);
-
-  std::string str;
-  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
-  std::accumulate(vec.begin(), vec.end(), str, binary_op);
-  return str;
-}
-}
 
 InputParameters
 FoamProblem::validParams()
@@ -55,7 +39,8 @@ FoamProblem::FoamProblem(InputParameters const & params)
                               _foam_mesh->fvMesh())
                 .ptr()),
     _foam_variables(),
-    _foam_bcs()
+    _foam_bcs(),
+    _foam_postprocessor()
 {
   assert(_foam_mesh);
 }
@@ -76,6 +61,8 @@ FoamProblem::initialSetup()
   query_bcs.queryInto(_foam_bcs);
 
   verifyFoamBCs();
+
+  verifyFoamPostprocessors();
 }
 
 void
@@ -100,6 +87,10 @@ FoamProblem::syncSolutions(Direction dir)
     for (auto & var : _foam_variables)
     {
       var->transferVariable();
+    }
+    for (auto & fpp : _foam_postprocessor)
+    {
+      fpp->compute();
     }
   }
   else if (dir == ExternalProblem::Direction::TO_EXTERNAL_APP)
@@ -144,7 +135,7 @@ FoamProblem::verifyFoamBCs()
       "FoamBC name",
       "Type",
       "Foam variable",
-      "Moose variable",
+      "Moose variable/postprocessor",
       "Boundaries",
   });
 
@@ -162,11 +153,7 @@ FoamProblem::verifyFoamBCs()
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
         // List info about BC
-        vt.addRow(bc->name(),
-                  bc->type(),
-                  bc->foamVariable(),
-                  bc->mooseVariable(),
-                  listFromVector(boundary));
+        bc->addInfoRow(vt);
       }
     }
 
@@ -190,5 +177,32 @@ FoamProblem::verifyFoamBCs()
     if (unused_bcs.size() > 0)
       vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
   }
+  vt.print(_console);
+}
+
+void
+FoamProblem::verifyFoamPostprocessors()
+{
+  std::vector<Postprocessor *> pps;
+  TheWarehouse::Query query_uos =
+      theWarehouse().query().condition<AttribInterfaces>(Interfaces::Postprocessor);
+  query_uos.queryInto(pps);
+
+  VariadicTable<std::string, std::string, std::string> vt({
+      "Foam postprocessor",
+      "Type",
+      "Boundaries",
+  });
+
+  for (auto pp : pps)
+  {
+    auto fpp = dynamic_cast<FoamPostprocessorBase *>(pp);
+    if (fpp)
+    {
+      _foam_postprocessor.push_back(fpp);
+      vt.addRow(fpp->name(), fpp->type(), listFromVector(fpp->blocks()));
+    }
+  }
+
   vt.print(_console);
 }

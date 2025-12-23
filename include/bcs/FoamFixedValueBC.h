@@ -1,9 +1,9 @@
 #pragma once
 
-#include "FoamBCBase.h"
+#include "FoamVariableBCBase.h"
 #include "InputParameters.h"
 
-class FoamFixedValueBC : public FoamBCBase
+class FoamFixedValueBC : public FoamVariableBCBase
 {
 public:
   // Validate input file parameters

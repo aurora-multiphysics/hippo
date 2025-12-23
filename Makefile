@@ -46,6 +46,7 @@ RDG                         := no
 RICHARDS                    := no
 STOCHASTIC_TOOLS            := no
 TENSOR_MECHANICS            := no
+THERMAL_HYDRAULICS          := yes
 XFEM                        := no
 
 include $(MOOSE_DIR)/modules/modules.mk
@@ -61,7 +62,4 @@ include            $(FRAMEWORK_DIR)/app.mk
 ###############################################################################
 # Additional special case targets should be added here
 
-# Add foam modules
-# TODO: Reorganise build: consider single mk for all OpenFOAM modules
-# as they are written.
 include test/OpenFOAM/foam_modules.mk

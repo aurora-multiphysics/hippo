@@ -1,0 +1,33 @@
+[Tests]
+    [flow_over_heated_plate_regression]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+        []
+        [run]
+            type = Exodiff
+            input = heated_plate.i
+            prereq = 'flow_over_heated_plate_regression/setup'
+            exodiff = heated_plate_out.e
+            allow_warnings = true
+            min_parallel=4
+            max_parallel=4
+            rel_err = 1e-4
+        []
+        [prep_verify]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case fluid-openfoam && tar xvf gold/heated_plate_regression.tar.gz -C gold/"'
+            prereq = flow_over_heated_plate_regression/run
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = flow_over_heated_plate_regression/prep_verify
+        []
+        [clean]
+            type = RunCommand
+            command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
+            prereq = flow_over_heated_plate_regression/prep_verify
+        []
+    []
+[]
