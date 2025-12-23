@@ -17,7 +17,9 @@
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
-#include <string>
+
+#include <IOobjectList.H>
+#include <volFields.H>
 
 registerMooseObject("hippoApp", FoamProblem);
 

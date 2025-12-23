@@ -3,8 +3,11 @@
 #include <fixedGradientFvPatchFields.H>
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <fvPatchField.H>
+#include <iostream>
+#include <ostream>
 #include <pimpleSingleRegionControl.H>
 #include <scalarField.H>
+#include <unistd.h>
 #include <volFieldsFwd.H>
 
 #include <algorithm>
@@ -95,7 +98,6 @@ FoamSolver::run()
 
   // Update PIMPLE outer-loop parameters if changed
   pimple.read();
-
   solver.preSolve();
 
   // Adjust the time-step according to the solver maxDeltaT

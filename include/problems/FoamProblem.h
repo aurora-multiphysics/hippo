@@ -44,6 +44,7 @@ protected:
 
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
+
   std::vector<FoamVariableField *> _foam_variables;
   std::vector<FoamBCBase *> _foam_bcs;
 };

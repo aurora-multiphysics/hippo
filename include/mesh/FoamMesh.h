@@ -72,7 +72,7 @@ public:
 protected:
   std::vector<std::string> _foam_patch;
   Hippo::FoamRuntime _foam_runtime;
-  Foam::fvMesh _foam_mesh;
+  Foam::fvMesh & _foam_mesh;
   std::vector<int32_t> _patch_id;
   std::vector<SubdomainID> _subdomain_list;
   bool _serial = true;

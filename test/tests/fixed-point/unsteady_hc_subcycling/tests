@@ -1,0 +1,30 @@
+[Tests]
+  [unsteady_1d_subcycling]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd foam && ./Allclean && blockMesh"'
+    []
+    [run]
+      type = Exodiff
+      input = main.i
+      prereq = unsteady_1d_subcycling/setup
+      exodiff = main_out.e
+    []
+    [prep_verify]
+      type = RunCommand
+      command = 'bash -c "tar xvf gold/unsteady_subcycling.tar.gz -C gold/"'
+      prereq = unsteady_1d_subcycling/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = unsteady_1d_subcycling/run
+      requirement = 'Compare against reference results without fixed point iteration'
+    []
+    [prep_clean]
+      type = RunCommand
+      command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
+      prereq = unsteady_1d_subcycling/prep_verify
+    []
+  []
+[]
