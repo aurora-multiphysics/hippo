@@ -1,9 +1,13 @@
 #pragma once
 
+#include "fvCFD_moose.h"
+
 #include <DataIO.h>
 
-#include <fvCFD_moose.h>
-
+#ifdef DEBUG
+// In order to store the backed-up field names
+static std::unordered_set<std::string> field_list;
+#endif
 // This function extracts the keys associated with fields of type T from the
 // mesh object registry. Note for some fields, the field.name() and the
 // key are not the same. *strict* indicates whether types derived from T are
@@ -75,10 +79,9 @@ readField(std::istream & stream, Foam::uniformDimensionedScalarField & field)
 
 template <class Type, class GeomMesh>
 inline void
-writeBoundary(ostream & stream, const Foam::DimensionedField<Type, GeomMesh> & field)
+writeBoundary([[maybe_unused]] ostream & stream,
+              [[maybe_unused]] const Foam::DimensionedField<Type, GeomMesh> & field)
 {
-  (void)stream;
-  (void)field;
 }
 
 template <class GeoField>
@@ -126,9 +129,15 @@ dataStoreField(std::ostream & stream, const Foam::string & name, T & field, void
   storeHelper(stream, field_name, nullptr);
   writeField(stream, field);
 
+#ifdef DEBUG
+  field_list.insert(name);
+#endif
   for (int n = 1; n <= nOldTimes; ++n)
   {
     writeField(stream, field.oldTime(n));
+#ifdef DEBUG
+    field_list.insert(field.oldTime(n).name());
+#endif
   }
 }
 
@@ -229,7 +238,7 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
   for (auto & field : mesh.curFields<T>())
   {
     // Remove fields that haven't been stored. Important for subcycling to prevent the old
-    // fields being which haven't been stored being used on the first time step.
+    // fields which haven't been stored being used on the first time step.
     if (mesh.time().timeIndex() == 0)
     {
       removeOldTime(mesh, field);
@@ -275,6 +284,28 @@ dataLoad(std::istream & stream, Foam::Time & time, void * context)
   time.setTime(timeValue, timeIndex);
 }
 
+#ifdef DEBUG
+inline void
+debug_print_field_names(const Foam::fvMesh & mesh)
+{
+  std::cout << "Backed up fields: ";
+  for (const auto & field : field_list)
+  {
+    std::cout << field << " ";
+  }
+  std::cout << "\nNot backed up keys in fvMesh: ";
+  for (const auto & field : mesh.toc())
+  {
+    if (std::find(field_list.begin(), field_list.end(), field) == field_list.end())
+    {
+      std::cout << field << " ";
+    }
+  }
+  std::cout << "\n";
+  field_list.clear();
+}
+#endif
+
 // Main function for storing data called as a result of the
 // declareDataRecoverable in FoamMesh
 template <>
@@ -299,6 +330,10 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
   storeFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>, true>(stream, mesh, context);
 
   storeFields<Foam::uniformDimensionedScalarField, true>(stream, mesh, context);
+
+#ifdef DEBUG
+  debug_print_field_names(mesh);
+#endif
 }
 
 // Main function for loading data called as a result of the
