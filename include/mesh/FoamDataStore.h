@@ -205,6 +205,8 @@ removeOldTime(Foam::fvMesh & mesh, T & field)
   //   - Euler (implicit)
   // Schemes known not to work
   //   - Crank-Nicolson
+  // Current behaviour do not clear the old time base field for CN even though this would result in
+  // a small error compared to not using fixed-point. Potentially add warning.
   auto scheme = Foam::fv::ddtScheme<typename T::cmptType>::New(
                     mesh, mesh.schemes().ddt("ddt(" + field.name() + ')'))
                     ->type();
