@@ -119,7 +119,7 @@ inline void
 dataStoreField(std::ostream & stream,
                const Foam::string & name,
                T & field,
-               std::unordered_set<std::string> field_list)
+               std::set<std::string> & field_list)
 {
   auto nOldTimes{field.nOldTimes(false)};
   storeHelper(stream, nOldTimes, nullptr);
@@ -160,9 +160,7 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
 // serialises all fields of type T
 template <typename T, bool strict>
 inline void
-storeFields(std::ostream & stream,
-            const Foam::fvMesh & mesh,
-            std::unordered_set<std::string> & field_list)
+storeFields(std::ostream & stream, const Foam::fvMesh & mesh, std::set<std::string> & field_list)
 {
   const auto cur_fields{getFieldkeys<T, strict>(mesh)};
   auto nFields{static_cast<int>(cur_fields.size())};
@@ -285,23 +283,23 @@ dataLoad(std::istream & stream, Foam::Time & time, void * context)
 
 // Print names of mesh table of contents entries stored and not stored
 inline void
-debug_print_field_names(const Foam::fvMesh & mesh,
-                        const std::unordered_set<std::string> & field_list)
+debug_print_field_names(const Foam::fvMesh & mesh, const std::set<std::string> & field_list)
 {
-  std::cout << "Backed up fields: ";
+  std::string dbg_msg = "Backed up fields: ";
   for (const auto & field : field_list)
   {
-    std::cout << field << " ";
+    dbg_msg += field + " ";
   }
-  std::cout << "\nNot backed up keys in fvMesh: ";
+  dbg_msg += "\nNot backed up keys in fvMesh: ";
   for (const auto & field : mesh.toc())
   {
     if (std::find(field_list.begin(), field_list.end(), field) == field_list.end())
     {
-      std::cout << field << " ";
+      dbg_msg += field + " ";
     }
   }
-  std::cout << "\n";
+  dbg_msg += "\n";
+  mooseInfoRepeated(dbg_msg);
 }
 
 // Main function for storing data called as a result of the
@@ -312,7 +310,7 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
 {
   storeHelper(stream, mesh.time(), context);
 
-  std::unordered_set<std::string> dbg_field_list;
+  std::set<std::string> dbg_field_list;
 
   storeFields<Foam::volScalarField, false>(stream, mesh, dbg_field_list);
   storeFields<Foam::volVectorField, false>(stream, mesh, dbg_field_list);
