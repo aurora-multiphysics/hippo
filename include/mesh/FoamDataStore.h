@@ -4,10 +4,6 @@
 
 #include <DataIO.h>
 
-#ifdef DEBUG
-// In order to store the backed-up field names
-static std::unordered_set<std::string> field_list;
-#endif
 // This function extracts the keys associated with fields of type T from the
 // mesh object registry. Note for some fields, the field.name() and the
 // key are not the same. *strict* indicates whether types derived from T are
@@ -120,24 +116,23 @@ writeField(ostream & stream, const Foam::UniformDimensionedField<Type> & field)
 // Generic function for serialising any field and its old times
 template <typename T>
 inline void
-dataStoreField(std::ostream & stream, const Foam::string & name, T & field, void * context)
+dataStoreField(std::ostream & stream,
+               const Foam::string & name,
+               T & field,
+               std::unordered_set<std::string> field_list)
 {
   auto nOldTimes{field.nOldTimes(false)};
-  storeHelper(stream, nOldTimes, context);
+  storeHelper(stream, nOldTimes, nullptr);
 
   std::string field_name{name};
   storeHelper(stream, field_name, nullptr);
   writeField(stream, field);
 
-#ifdef DEBUG
   field_list.insert(name);
-#endif
   for (int n = 1; n <= nOldTimes; ++n)
   {
     writeField(stream, field.oldTime(n));
-#ifdef DEBUG
     field_list.insert(field.oldTime(n).name());
-#endif
   }
 }
 
@@ -165,17 +160,19 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
 // serialises all fields of type T
 template <typename T, bool strict>
 inline void
-storeFields(std::ostream & stream, const Foam::fvMesh & mesh, void * context)
+storeFields(std::ostream & stream,
+            const Foam::fvMesh & mesh,
+            std::unordered_set<std::string> & field_list)
 {
   const auto cur_fields{getFieldkeys<T, strict>(mesh)};
   auto nFields{static_cast<int>(cur_fields.size())};
 
-  storeHelper(stream, nFields, context);
+  storeHelper(stream, nFields, nullptr);
   for (auto & key : cur_fields)
   {
     auto & field = mesh.lookupObjectRef<T>(key);
 
-    dataStoreField<T>(stream, key, field, context);
+    dataStoreField<T>(stream, key, field, field_list);
   }
 }
 
@@ -286,9 +283,10 @@ dataLoad(std::istream & stream, Foam::Time & time, void * context)
   time.setTime(timeValue, timeIndex);
 }
 
-#ifdef DEBUG
+// Print names of mesh table of contents entries stored and not stored
 inline void
-debug_print_field_names(const Foam::fvMesh & mesh)
+debug_print_field_names(const Foam::fvMesh & mesh,
+                        const std::unordered_set<std::string> & field_list)
 {
   std::cout << "Backed up fields: ";
   for (const auto & field : field_list)
@@ -304,9 +302,7 @@ debug_print_field_names(const Foam::fvMesh & mesh)
     }
   }
   std::cout << "\n";
-  field_list.clear();
 }
-#endif
 
 // Main function for storing data called as a result of the
 // declareDataRecoverable in FoamMesh
@@ -316,25 +312,31 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
 {
   storeHelper(stream, mesh.time(), context);
 
-  storeFields<Foam::volScalarField, false>(stream, mesh, context);
-  storeFields<Foam::volVectorField, false>(stream, mesh, context);
-  storeFields<Foam::volTensorField, false>(stream, mesh, context);
-  storeFields<Foam::volSymmTensorField, false>(stream, mesh, context);
+  std::unordered_set<std::string> dbg_field_list;
 
-  storeFields<Foam::surfaceScalarField, false>(stream, mesh, context);
-  storeFields<Foam::surfaceVectorField, false>(stream, mesh, context);
-  storeFields<Foam::surfaceTensorField, false>(stream, mesh, context);
-  storeFields<Foam::surfaceSymmTensorField, false>(stream, mesh, context);
+  storeFields<Foam::volScalarField, false>(stream, mesh, dbg_field_list);
+  storeFields<Foam::volVectorField, false>(stream, mesh, dbg_field_list);
+  storeFields<Foam::volTensorField, false>(stream, mesh, dbg_field_list);
+  storeFields<Foam::volSymmTensorField, false>(stream, mesh, dbg_field_list);
 
-  storeFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>, true>(stream, mesh, context);
-  storeFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>, true>(stream, mesh, context);
-  storeFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>, true>(stream, mesh, context);
-  storeFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>, true>(stream, mesh, context);
+  storeFields<Foam::surfaceScalarField, false>(stream, mesh, dbg_field_list);
+  storeFields<Foam::surfaceVectorField, false>(stream, mesh, dbg_field_list);
+  storeFields<Foam::surfaceTensorField, false>(stream, mesh, dbg_field_list);
+  storeFields<Foam::surfaceSymmTensorField, false>(stream, mesh, dbg_field_list);
 
-  storeFields<Foam::uniformDimensionedScalarField, true>(stream, mesh, context);
+  storeFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>, true>(
+      stream, mesh, dbg_field_list);
+  storeFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>, true>(
+      stream, mesh, dbg_field_list);
+  storeFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>, true>(
+      stream, mesh, dbg_field_list);
+  storeFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>, true>(
+      stream, mesh, dbg_field_list);
+
+  storeFields<Foam::uniformDimensionedScalarField, true>(stream, mesh, dbg_field_list);
 
 #ifdef DEBUG
-  debug_print_field_names(mesh);
+  debug_print_field_names(mesh, dbg_field_list);
 #endif
 }
 
