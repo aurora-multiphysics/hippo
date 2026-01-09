@@ -9,6 +9,7 @@
       input = main.i
       prereq = unsteady_1d_subcycling/setup
       exodiff = main_out.e
+      allow_warnings = true
     []
     [prep_verify]
       type = RunCommand

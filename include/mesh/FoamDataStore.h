@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MooseError.h"
 #include "fvCFD_moose.h"
 
 #include <DataIO.h>
@@ -218,6 +219,17 @@ removeOldTime(Foam::fvMesh & mesh, T & field)
       otbf.nullOldestTime();
     }
     field.clearOldTimes();
+  }
+  else
+  {
+    mooseDoOnce(mooseWarning("Temporal scheme '",
+                             scheme,
+                             "' may result in slightly different behaviour on the first time step "
+                             "when using fixed-point iteration. See comments at ",
+                             __FILE__,
+                             ":",
+                             __LINE__ - 34,
+                             " for more detail."));
   }
 }
 
