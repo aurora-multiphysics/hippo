@@ -225,20 +225,20 @@ removeOldTime(Foam::fvMesh & mesh, T & field)
     mooseDoOnce(mooseWarning("Temporal scheme '",
                              scheme,
                              "' may result in slightly different behaviour on the first time step "
-                             "when using fixed-point iteration. See comments at ",
+                             "when using fixed-point iteration. See comments above ",
+                             __LINE__,
+                             " in file ",
                              __FILE__,
-                             ":",
-                             __LINE__ - 34,
-                             " for more detail."));
+                             " for more details."));
   }
 }
 
 template <typename T>
 inline void
-loadFields(std::istream & stream, Foam::fvMesh & mesh, void * context)
+loadFields(std::istream & stream, Foam::fvMesh & mesh)
 {
   int nFields{};
-  loadHelper(stream, nFields, context);
+  loadHelper(stream, nFields, nullptr);
   for (int i = 0; i < nFields; ++i)
   {
     dataLoadField<T>(stream, mesh);
@@ -358,20 +358,20 @@ dataLoad(std::istream & stream, Foam::fvMesh & mesh, void * context)
 {
   loadHelper(stream, const_cast<Foam::Time &>(mesh.time()), context);
 
-  loadFields<Foam::volScalarField>(stream, mesh, context);
-  loadFields<Foam::volVectorField>(stream, mesh, context);
-  loadFields<Foam::volTensorField>(stream, mesh, context);
-  loadFields<Foam::volSymmTensorField>(stream, mesh, context);
+  loadFields<Foam::volScalarField>(stream, mesh);
+  loadFields<Foam::volVectorField>(stream, mesh);
+  loadFields<Foam::volTensorField>(stream, mesh);
+  loadFields<Foam::volSymmTensorField>(stream, mesh);
 
-  loadFields<Foam::surfaceScalarField>(stream, mesh, context);
-  loadFields<Foam::surfaceVectorField>(stream, mesh, context);
-  loadFields<Foam::surfaceTensorField>(stream, mesh, context);
-  loadFields<Foam::surfaceSymmTensorField>(stream, mesh, context);
+  loadFields<Foam::surfaceScalarField>(stream, mesh);
+  loadFields<Foam::surfaceVectorField>(stream, mesh);
+  loadFields<Foam::surfaceTensorField>(stream, mesh);
+  loadFields<Foam::surfaceSymmTensorField>(stream, mesh);
 
-  loadFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>>(stream, mesh, context);
-  loadFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>>(stream, mesh, context);
-  loadFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>>(stream, mesh, context);
-  loadFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>>(stream, mesh, context);
+  loadFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>>(stream, mesh);
 
-  loadFields<Foam::uniformDimensionedScalarField>(stream, mesh, context);
+  loadFields<Foam::uniformDimensionedScalarField>(stream, mesh);
 }
