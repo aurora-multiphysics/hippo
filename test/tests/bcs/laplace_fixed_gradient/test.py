@@ -13,7 +13,7 @@ class TestFoamBCFixedGradient(unittest.TestCase):
     def test_fixed_gradient_x(self):
         """Test case for imposing fixed value."""
         case_dir = "foam/"
-        times = get_foam_times(case_dir)[1:]
+        times = get_foam_times(case_dir, string=True)[1:]
 
         for time in times:
             coords = dict(zip(("x", "y", "z"), ff.readof.readmesh(case_dir)))

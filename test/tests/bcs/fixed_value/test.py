@@ -14,7 +14,7 @@ class TestFoamBCFixedValue(unittest.TestCase):
         """Test case for imposing fixed value."""
         case_dir = "foam/"
         boundaries = ["top", "bottom", "front", "back", "left", "right"]
-        times = get_foam_times(case_dir)[1:]
+        times = get_foam_times(case_dir, string=True)[1:]
 
         for time in times:
             for boundary in boundaries:

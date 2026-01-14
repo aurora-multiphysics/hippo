@@ -12,14 +12,12 @@
       max_parallel = 4
       prereq = test/setup
       group = 'cube_slice'
-      tags = 'test_8'
     []
     [verify_num_nodes]
       type = RunCommand
       command = '../scripts/check.sh config run_out.e'
       prereq = test/run
       group = 'cube_slice'
-      tags = 'test_8'
     []
   []
 []
