@@ -25,17 +25,17 @@ Class
     Foam::solvers::functionTestSolver
 
 Description
-    Solver module for thermal transport in solid domains and regions for
-    conjugate heat transfer, HVAC and similar applications, with optional mesh
-    motion and mesh topology changes.
+    A test solver for fixed-point iteration that checks that fields are restored
+    correctly between fixed-points and that consistant behaviour is observed
+    for time derivataives.
 
 SourceFiles
     functionTestSolver.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef solid_H
-#define solid_H
+#ifndef FunctionTestSolver_H
+#define FunctionTestSolver_H
 
 #include "solver.H"
 #include "solidThermophysicalTransportModel.H"

@@ -25,9 +25,9 @@ Class
     Foam::solvers::odeTestSolver
 
 Description
-    Solver module for thermal transport in solid domains and regions for
-    conjugate heat transfer, HVAC and similar applications, with optional mesh
-    motion and mesh topology changes.
+    A test solver for fixed-point iteration that checks that checks
+    that different time schemes work correctly with fixed-point
+    iteration
 
 SourceFiles
     odeTestSolver.C

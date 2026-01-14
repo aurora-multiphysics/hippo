@@ -25,9 +25,9 @@ Class
     Foam::solvers::laplacianTestSolver
 
 Description
-    Solver module for thermal transport in solid domains and regions for
-    conjugate heat transfer, HVAC and similar applications, with optional mesh
-    motion and mesh topology changes.
+    A test solver for fixed-point iteration to check that PDEs with
+    spatial derivatives are correctly solved. In particular, this
+    checks that the boundary conditions are restored correctly.
 
 SourceFiles
     laplacianTestSolver.C
