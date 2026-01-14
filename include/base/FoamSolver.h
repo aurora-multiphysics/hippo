@@ -53,17 +53,8 @@ public:
   std::size_t patchSize(int patch_id);
   // Set the solver's time step size.
   void setTimeDelta(double dt) { runTime().setDeltaTNoAdjust(dt); }
-  // Get the current time from the solver.
-  double currentTime() const { return _solver->time().userTimeValue(); }
-  // Get the current time index from the solver.
-  int currentTimeIdx() const
-  {
-    return _solver->time().findClosestTimeIndex(runTime().times(), currentTime());
-  }
   // Set the solver to the given time.
   void setCurrentTime(double time) { runTime().setTime(time, runTime().timeIndex()); }
-  // set the time index of the solver
-  void setCurrentTimeIdx(int timeIdx) { runTime().setTime(runTime().userTimeValue(), timeIdx); }
   // Set the time at which the solver should terminate.
   void setEndTime(double time) { runTime().setEndTime(time); }
   // Run the presolve from MOOSE objects.
@@ -79,17 +70,6 @@ public:
   void appendDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
-  // Get the path to the current time directory, this may or may not exist.
-  fs::path currentTimePath() const { return fs::path(runTime().timePath()); }
-  // Write the current OpenFOAM timestep to its time directory.
-  void write() const { _solver->mesh.write(); }
-  // Reset the solver to the given time.
-  void readTime(const double time)
-  {
-    auto idx = _solver->time().findClosestTimeIndex(runTime().times(), time);
-    runTime().setTime(time, idx);
-    runTime().readModifiedObjects();
-  }
 
 private:
   Foam::solver * _solver = nullptr;
