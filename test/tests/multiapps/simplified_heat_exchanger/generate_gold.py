@@ -10,6 +10,7 @@ boundaries of the OpenFOAM meshes.
 
 [1] https://precice.org/tutorials-heat-exchanger-simplified.html
 """
+
 import argparse
 from dataclasses import dataclass
 from pathlib import Path

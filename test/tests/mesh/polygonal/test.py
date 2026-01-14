@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-#import Hippo test python functions
+# import Hippo test python functions
 from analytical import unsteady1d_temp
 from read_hippo_data import read_moose_exodus_data, read_openfoam_data
 
@@ -16,24 +16,23 @@ K_SOLID = 1
 RHO_CP_SOLID = 1
 K_FLUID = 4
 RHO_CP_FLUID = 16
-T_HOT = 2.
-T_COLD = 1.
+T_HOT = 2.0
+T_COLD = 1.0
 L = 1
 
 
 class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
     """Test class for 1D unsteady problem with polygonal elements for OpenFOAM"""
+
     def test_matches_analytic_solution_at_times(self):
         """Compare against analytical solution."""
         times = [0.0025, 0.005, 0.01]  # seconds
         for time in times:
-            moose_coords, moose_temperature = read_moose_exodus_data(RUN_DIR / "run_out.e",
-                                                                time,
-                                                                "temp")
-            foam_coords, foam_temperature = read_openfoam_data(FOAM_CASE,
-                                                          time,
-                                                          'T')
-            x = np.concatenate([moose_coords['x'], foam_coords['x']])
+            moose_coords, moose_temperature = read_moose_exodus_data(
+                RUN_DIR / "run_out.e", time, "temp"
+            )
+            foam_coords, foam_temperature = read_openfoam_data(FOAM_CASE, time, "T")
+            x = np.concatenate([moose_coords["x"], foam_coords["x"]])
             temp = np.concatenate([moose_temperature, foam_temperature])
 
             analytic_temp = unsteady1d_temp(

@@ -1,5 +1,4 @@
-"""Helper functions for reading OpenFOAM and MOOSE exodus data
-"""
+"""Helper functions for reading OpenFOAM and MOOSE exodus data"""
 
 import os
 import re
@@ -9,6 +8,7 @@ from typing import Literal
 
 import numpy as np
 import pyvista as pv
+
 
 def get_exodus_times(exo_file: Path | str | bytes) -> list[float]:
     """Get the times from the exodus file.
@@ -26,7 +26,8 @@ def get_exodus_times(exo_file: Path | str | bytes) -> list[float]:
     reader: pv.ExodusIIReader = pv.get_reader(exo_file)
     return reader.time_values
 
-def get_foam_times(case_dir: str | bytes) -> list[str]:
+
+def get_foam_times(case_dir: str | bytes, string=False) -> list[str]:
     """Get the times from the foam case directory
 
     Parameters
@@ -39,14 +40,16 @@ def get_foam_times(case_dir: str | bytes) -> list[str]:
     list[str]
         Sorted list of times
     """
-    return sorted(folder
-                  for folder in os.listdir(case_dir)
-                  if re.match(r"[-+]?([0-9]*\.[0-9]+|[0-9]+)", folder))
+    return sorted(
+        folder if string else np.float64(folder)
+        for folder in os.listdir(case_dir)
+        if re.match(r"[-+]?([0-9]*\.[0-9]+|[0-9]+)", folder)
+    )
 
-def read_moose_exodus_data(exo_file: Path | str | bytes,
-                        time: float,
-                        variable: str,
-                        block: int | str=0) -> tuple[dict[str, np.ndarray], np.ndarray]:
+
+def read_moose_exodus_data(
+    exo_file: Path | str | bytes, time: float, variable: str, block: int | str = 0
+) -> tuple[dict[str, np.ndarray], np.ndarray]:
     """Read Exodus file and return coordinate and variable data
 
     Parameters
@@ -73,7 +76,7 @@ def read_moose_exodus_data(exo_file: Path | str | bytes,
     reader: pv.ExodusIIReader = pv.get_reader(exo_file)
     reader.set_active_time_value(time)
 
-    if block != 0 or block != 'Element blocks':
+    if block != 0 or block != "Element blocks":
         reader.node_sets.enable_all()
         reader.side_sets.enable_all()
         reader.node_sets.enable_all_arrays()
@@ -91,15 +94,17 @@ def read_moose_exodus_data(exo_file: Path | str | bytes,
     else:
         raise KeyError(f"Variable {variable} not found")
 
-    foam_coords = dict(zip(('x', 'y', 'z'), coords.T))
+    foam_coords = dict(zip(("x", "y", "z"), coords.T))
     return foam_coords, foam_variable
 
-def read_openfoam_data(case_dir: Path | str | bytes,
-                       time: float,
-                       variable: str,
-                       block: str = 'internalMesh',
-                       case_type: Literal['decomposed', 'reconstructed'] = 'reconstructed'
-                       ) -> tuple[dict[str, np.ndarray], np.ndarray]:
+
+def read_openfoam_data(
+    case_dir: Path | str | bytes,
+    time: float,
+    variable: str,
+    block: str = "internalMesh",
+    case_type: Literal["decomposed", "reconstructed"] = "reconstructed",
+) -> tuple[dict[str, np.ndarray], np.ndarray]:
     """Read OpenFOAM data file and return coordinate and variable data
 
     Parameters
@@ -130,5 +135,5 @@ def read_openfoam_data(case_dir: Path | str | bytes,
 
     coords = data.cell_centers().points
     foam_variable = data.cell_data[variable]
-    foam_coords = dict(zip(('x', 'y', 'z'), coords.T))
+    foam_coords = dict(zip(("x", "y", "z"), coords.T))
     return foam_coords, foam_variable
