@@ -84,10 +84,6 @@ Foam::solvers::laplacianTestSolver::laplacianTestSolver(fvMesh & mesh)
   read();
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::solvers::laplacianTestSolver::~laplacianTestSolver() {}
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 Foam::scalar
@@ -121,21 +117,6 @@ Foam::solvers::laplacianTestSolver::moveMesh()
 }
 
 void
-Foam::solvers::laplacianTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::laplacianTestSolver::prePredictor()
-{
-}
-
-void
-Foam::solvers::laplacianTestSolver::momentumPredictor()
-{
-}
-
-void
 Foam::solvers::laplacianTestSolver::thermophysicalPredictor()
 {
   fvModels().correct();
@@ -151,21 +132,6 @@ Foam::solvers::laplacianTestSolver::thermophysicalPredictor()
     TEqn.solve();
     fvConstraints().constrain(T_);
   }
-}
-
-void
-Foam::solvers::laplacianTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::laplacianTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::laplacianTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //

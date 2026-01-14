@@ -85,10 +85,6 @@ Foam::solvers::odeTestSolver::odeTestSolver(fvMesh & mesh)
   read();
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::solvers::odeTestSolver::~odeTestSolver() {}
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 Foam::scalar
@@ -122,21 +118,6 @@ Foam::solvers::odeTestSolver::moveMesh()
 }
 
 void
-Foam::solvers::odeTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::odeTestSolver::prePredictor()
-{
-}
-
-void
-Foam::solvers::odeTestSolver::momentumPredictor()
-{
-}
-
-void
 Foam::solvers::odeTestSolver::thermophysicalPredictor()
 {
   fvModels().correct();
@@ -151,21 +132,6 @@ Foam::solvers::odeTestSolver::thermophysicalPredictor()
     TEqn.solve();
     fvConstraints().constrain(T_);
   }
-}
-
-void
-Foam::solvers::odeTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::odeTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::odeTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //

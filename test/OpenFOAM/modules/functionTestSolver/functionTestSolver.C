@@ -81,10 +81,6 @@ Foam::solvers::functionTestSolver::functionTestSolver(fvMesh & mesh)
   read();
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::solvers::functionTestSolver::~functionTestSolver() {}
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 Foam::scalar
@@ -118,21 +114,6 @@ Foam::solvers::functionTestSolver::moveMesh()
 }
 
 void
-Foam::solvers::functionTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::functionTestSolver::prePredictor()
-{
-}
-
-void
-Foam::solvers::functionTestSolver::momentumPredictor()
-{
-}
-
-void
 Foam::solvers::functionTestSolver::thermophysicalPredictor()
 {
   // Set T to the current time
@@ -142,21 +123,6 @@ Foam::solvers::functionTestSolver::thermophysicalPredictor()
   // compute time derivative will be 0 on the first step (even if this is stupid)
   // and 1 on all others
   dTdt_ = fvc::ddt(T_);
-}
-
-void
-Foam::solvers::functionTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::functionTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::functionTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //
