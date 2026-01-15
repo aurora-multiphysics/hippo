@@ -1,0 +1,5 @@
+# Exclude files inherited from MOOSE
+extend-exclude = [
+    "run_tests",
+    "doc/moosedocs.py",
+]
