@@ -11,7 +11,6 @@ REF_TIME = "1"  # second
 
 
 class TestSimplifiedHeatExchanger(unittest.TestCase):
-
     def test_bottom_interface_temperature_matches_reference(self):
         data = read_openfoam_interface_boundary_1(ROOT_DIR / BOTTOM_CASE, REF_TIME)
         gold = read_gold_csv(ROOT_DIR / "gold" / f"{BOTTOM_CASE}.csv")

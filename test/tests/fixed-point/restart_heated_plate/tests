@@ -1,0 +1,38 @@
+[Tests]
+    [heated_plate_restart]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+        []
+        [first]
+            type = RunApp
+            prereq = heated_plate_restart/setup
+            input = heated_plate.i
+            cli_args = '--test-checkpoint-half-transient'
+            min_parallel = 4
+            max_parallel = 4
+        []
+        [restart]
+            type = Exodiff
+            input = heated_plate.i
+            prereq = 'heated_plate_restart/first'
+            cli_args = '--recover heated_plate_out_cp/LATEST'
+            delete_output_before_running = false
+            exodiff = heated_plate_out.e
+            gold_dir = '../heated_plate_converge'
+            allow_warnings = true
+            min_parallel=4
+            max_parallel=4
+        []
+        [prep_verify]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case fluid-openfoam"'
+            prereq = heated_plate_restart/restart
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = heated_plate_restart/prep_verify
+        []
+    []
+[]

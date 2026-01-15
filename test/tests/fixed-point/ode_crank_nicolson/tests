@@ -1,0 +1,43 @@
+[Tests]
+    [create_reference]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = 'create_reference/setup'
+            cli_args = 'Executioner/fixed_point_min_its=1 Executioner/fixed_point_max_its=1'
+            allow_warnings = true
+        []
+        [copy]
+            type = RunCommand
+            command = 'bash -c "mkdir -p gold && cp main_out.e gold/main_out.e && cp -r foam/* gold/"'
+            prereq = create_reference/run
+        []
+    []
+    [ode_crank_nicolson]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+            prereq = create_reference/copy
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = ode_crank_nicolson/setup
+            allow_warnings = true
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = ode_crank_nicolson/run
+        []
+        [prep_clean]
+            type = RunCommand
+            command = 'bash -c "rm -rf gold"'
+            prereq = create_reference/copy
+        []
+    []
+[]

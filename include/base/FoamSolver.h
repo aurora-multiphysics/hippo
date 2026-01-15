@@ -1,9 +1,15 @@
 #pragma once
 
+#include "fvMesh.H"
+#include "scalar.H"
 #include "solver.H"
 #include "functionObject.H"
 
-#include <vector>
+#include <Time.H>
+#include <TimeState.H>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace Foam
 {
@@ -36,7 +42,6 @@ public:
 
 namespace Hippo
 {
-
 class FoamSolver
 {
 public:
@@ -64,12 +69,13 @@ public:
   // time step is.
   void appendDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
-  Foam::scalar getTimeDelta() { return runTime().deltaTValue(); };
+  Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
 
 private:
   Foam::solver * _solver = nullptr;
 
   Foam::Time & runTime() { return const_cast<Foam::Time &>(_solver->runTime); }
+  const Foam::Time & runTime() const { return _solver->runTime; }
 };
 
 } // namespace Hippo

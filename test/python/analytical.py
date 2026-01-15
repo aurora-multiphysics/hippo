@@ -1,4 +1,4 @@
-""" # analytical.py
+"""# analytical.py
 
 Module contains analytical solutions used in the test scripts
 """
@@ -6,14 +6,17 @@ Module contains analytical solutions used in the test scripts
 import numpy as np
 from scipy.special import erfc
 
-def unsteady1d_temp(x: np.ndarray,
-                    time: float,
-                    temp_cold: float,
-                    temp_hot: float,
-                    k1: float,
-                    k2: float,
-                    rho_cp1: float,
-                    rho_cp2: float) -> np.ndarray:
+
+def unsteady1d_temp(
+    x: np.ndarray,
+    time: float,
+    temp_cold: float,
+    temp_hot: float,
+    k1: float,
+    k2: float,
+    rho_cp1: float,
+    rho_cp2: float,
+) -> np.ndarray:
     """Returns the analytical solution to 1D unsteady heat conduction problem.
 
     Parameters

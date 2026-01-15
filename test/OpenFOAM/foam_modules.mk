@@ -2,7 +2,12 @@
 all: build_foam_tests
 
 MAKE=wmake
+MAKEFLAGS += --no-print-directory
+
 build_foam_tests:
 	$(info Building Hippo's OpenFOAM test modules)
-	@$(MAKE) -j $(MOOSE_JOBS) test/OpenFOAM/modules/transferTestSolver/ 1>/dev/null
-	@$(MAKE) -j $(MOOSE_JOBS) test/OpenFOAM/modules/bcTestSolver/ 1>/dev/null
+	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/transferTestSolver/
+	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/bcTestSolver/
+	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/functionTestSolver/
+	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/laplacianTestSolver/
+	@$(MAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/odeTestSolver/

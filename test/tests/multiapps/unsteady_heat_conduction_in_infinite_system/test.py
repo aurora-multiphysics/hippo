@@ -8,7 +8,7 @@ import pyvista as pv
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-#import Hippo test python functions
+# import Hippo test python functions
 from analytical import unsteady1d_temp
 from read_hippo_data import read_moose_exodus_data, read_openfoam_data
 
@@ -18,24 +18,23 @@ K_SOLID = 1
 RHO_CP_SOLID = 1
 K_FLUID = 4
 RHO_CP_FLUID = 16
-T_HOT = 1.
-T_COLD = 0.
+T_HOT = 1.0
+T_COLD = 0.0
 L = 1
 
 
 class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
     """Test class for 1D unsteady heat conduction problem"""
+
     def test_matches_analytic_solution_at_times(self):
         """Compare against analytical solution."""
         times = [0.0025, 0.005, 0.01]  # seconds
         for time in times:
-            moose_coords, moose_temperature = read_moose_exodus_data(RUN_DIR / "run_out.e",
-                                                                time,
-                                                                "temp")
-            foam_coords, foam_temperature = read_openfoam_data(FOAM_CASE,
-                                                          time,
-                                                          'T')
-            x = np.concatenate([moose_coords['x'], foam_coords['x']])
+            moose_coords, moose_temperature = read_moose_exodus_data(
+                RUN_DIR / "run_out.e", time, "temp"
+            )
+            foam_coords, foam_temperature = read_openfoam_data(FOAM_CASE, time, "T")
+            x = np.concatenate([moose_coords["x"], foam_coords["x"]])
             temp = np.concatenate([moose_temperature, foam_temperature])
 
             analytic_temp = unsteady1d_temp(
@@ -53,8 +52,9 @@ class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
             self.assertLess(rmse, 5e-3, msg=f"for time = {time} s")
 
 
-def moose_get_temp_x(exo_file: Path,
-                     time: float | int)-> tuple[np.ndarray, np.ndarray]:
+def moose_get_temp_x(
+    exo_file: Path, time: float | int
+) -> tuple[np.ndarray, np.ndarray]:
     """Get x coordinate and temperature on a line though the solid.
 
     Parameters
@@ -74,11 +74,11 @@ def moose_get_temp_x(exo_file: Path,
     moose_reader = pv.get_reader(exo_file)
     moose_reader.set_active_time_value(time)
     moose_data = moose_reader.read()[0].combine(True)
-    moose_line = moose_data.sample_over_line((-1,0,0), (0,0,0), 100)
-    return moose_line.points[:,0], moose_line['temp']
+    moose_line = moose_data.sample_over_line((-1, 0, 0), (0, 0, 0), 100)
+    return moose_line.points[:, 0], moose_line["temp"]
 
-def foam_get_temp_x(foam_dir,
-                     time):
+
+def foam_get_temp_x(foam_dir, time):
     """Get x coordinate and temperature on a line though the fluid.
 
     Parameters
@@ -101,11 +101,12 @@ def foam_get_temp_x(foam_dir,
 
     reader: pv.POpenFOAMReader = pv.get_reader(file_name)
     reader.set_active_time_value(time)
-    foam_data: pv.UnstructuredGrid = reader.read()['internalMesh']
+    foam_data: pv.UnstructuredGrid = reader.read()["internalMesh"]
 
-    foam_line = foam_data.sample_over_line((0,0,0), (1,0,0), 100)
+    foam_line = foam_data.sample_over_line((0, 0, 0), (1, 0, 0), 100)
 
-    return foam_line.points[:,0], foam_line['T']
+    return foam_line.points[:, 0], foam_line["T"]
+
 
 def main():
     """Main function for plotting output of 1D test."""
@@ -128,7 +129,6 @@ def main():
 
     _, axs = plt.subplot_mosaic([["1", "2"], ["3", "3"]])
     for i, time in enumerate([0.0025, 0.005, 0.01]):
-
         moose_x, moose_temperature = moose_get_temp_x(RUN_DIR / "run_out.e", time)
         foam_x, foam_temperature = foam_get_temp_x(FOAM_CASE, time)
         # Sample down the OpenFOAM values so the plot is less busy

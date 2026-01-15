@@ -45,6 +45,7 @@
         from_multi_app = fluid_top
         variable = top_fluid_wall_temperature
         execute_on = same_as_multiapp
+        error_on_miss = false
     []
 
     [top_heat_flux_to_fluid]
@@ -53,6 +54,7 @@
         to_multi_app = fluid_top
         variable = solid_heat_flux
         execute_on = same_as_multiapp
+        error_on_miss = false
     []
 
     [bottom_wall_temperature_from_fluid]
@@ -61,6 +63,7 @@
         from_multi_app = fluid_bottom
         variable = bottom_fluid_wall_temperature
         execute_on = same_as_multiapp
+        error_on_miss = false
     []
 
     [bottom_heat_flux_to_fluid]
@@ -69,6 +72,7 @@
         to_multi_app = fluid_bottom
         variable = solid_heat_flux
         execute_on = same_as_multiapp
+        error_on_miss = false
     []
 []
 
