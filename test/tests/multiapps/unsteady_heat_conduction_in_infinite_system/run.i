@@ -39,7 +39,7 @@
         from_multi_app = hippo
         variable = fluid_wall_temperature
         execute_on = same_as_multiapp
-        error_on_miss = False
+        error_on_miss = false
     []
 
     [heat_flux_to_fluid]
@@ -48,7 +48,7 @@
         to_multi_app = hippo
         variable = solid_heat_flux
         execute_on = same_as_multiapp
-        error_on_miss = False
+        error_on_miss = false
     []
 []
 
