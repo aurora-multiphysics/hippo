@@ -20,5 +20,21 @@
             min_parallel = 2
             max_parallel = 2
         []
+        [boundary_err]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            cli_args='Postprocessors/t_avg/boundary=top1'
+            expect_err = "Boundary 'top1' not found in FoamMesh."
+        []
+        [invalid_foam_scalar]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            cli_args='Postprocessors/t_avg/foam_variable=T1'
+            expect_err = "No Foam scalar, vector or function object called 'T1'."
+        []
     []
 []

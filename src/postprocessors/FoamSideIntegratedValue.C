@@ -39,7 +39,7 @@ FoamSideIntegratedValue::FoamSideIntegratedValue(const InputParameters & params)
   if (_foam_mesh->foundObject<Foam::volVectorField>(_foam_variable))
     _is_vector = true;
   else if (!_foam_mesh->foundObject<Foam::volScalarField>(_foam_variable))
-    mooseError("No Foam scalar or function object called '", _foam_variable, "'.");
+    mooseError("No Foam scalar, vector or function object called '", _foam_variable, "'.");
 }
 
 void
