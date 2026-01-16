@@ -23,6 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "DimensionedField.H"
 #include "dimensionSets.H"
 #include "dimensionedScalar.H"
 #include "dimensionedVector.H"
@@ -30,6 +31,9 @@ License
 #include "postprocessorTestSolver.H"
 #include "fvMeshMover.H"
 #include "addToRunTimeSelectionTable.H"
+#include "scalar.H"
+#include "volFieldsFwd.H"
+#include "volMesh.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -92,7 +96,12 @@ Foam::solvers::postprocessorTestSolver::thermophysicalPredictor()
 
   // Set e to Cv*(xy + yz + xz)t which gives a non-uniform be first order value of wall heat flux at
   // all boundaries.
-  dimensioned<Foam::scalar> t("t", thermo_.T().dimensions(), mesh_.time().userTimeValue());
+  // auto x_mesh =
+  volScalarField t(IOobject("0", "0", mesh_),
+                   mesh_,
+                   dimTemperature,
+                   time().userTimeValue() * mesh_.C().component(0)->internalField(),
+                   time().userTimeValue() * mesh_.C().component(0)->boundaryField());
   h = Cp * t;
 
   thermo_.correct();

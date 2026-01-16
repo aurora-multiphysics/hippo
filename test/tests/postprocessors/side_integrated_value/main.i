@@ -67,6 +67,13 @@
         component = z
         execute_on = TIMESTEP_END
     []
+    [heat_flux]
+        type = FoamSideIntegratedValue
+        foam_variable = 'wallHeatFlux'
+        boundary = right
+        component = x
+        execute_on = TIMESTEP_END
+    []
 []
 
 [Outputs]
