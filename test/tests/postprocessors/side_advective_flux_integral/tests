@@ -28,5 +28,13 @@
             cli_args='Postprocessors/m_dot_x1/advective_velocity=U1'
             expect_err = "advective_velocity 'U1' not found."
         []
+        [invalid_scalar]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            cli_args='Postprocessors/m_dot_x1/foam_scalar=rho1'
+            expect_err = "foam_scalar 'rho1' not found."
+        []
     []
 []
