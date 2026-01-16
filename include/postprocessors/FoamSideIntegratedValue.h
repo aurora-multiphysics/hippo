@@ -17,6 +17,7 @@ public:
   virtual void compute() override;
 
 protected:
+  /// Creates function objects to be executed by compute
   void createFunctionObject();
 
   Real _value;

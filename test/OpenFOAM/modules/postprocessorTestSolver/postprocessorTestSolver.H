@@ -74,13 +74,13 @@ public:
   virtual void moveMesh();
 
   //- Corrections that follow mesh motion
-  virtual void motionCorrector();
+  virtual void motionCorrector() {};
 
   //- Called at the beginning of the PIMPLE loop
-  virtual void prePredictor();
+  virtual void prePredictor() {};
 
   //- Construct and optionally solve the momentum equation
-  virtual void momentumPredictor();
+  virtual void momentumPredictor() {};
 
   //- Construct and solve the energy equation,
   //  convert to temperature
@@ -88,13 +88,13 @@ public:
   virtual void thermophysicalPredictor();
 
   //- Construct and solve the pressure equation in the PISO loop
-  virtual void pressureCorrector();
+  virtual void pressureCorrector() {};
 
   //- Correct the thermophysical transport modelling
-  virtual void postCorrector();
+  virtual void postCorrector() {};
 
   //- Called after the PIMPLE loop at the end of the time-step
-  virtual void postSolve();
+  virtual void postSolve() {};
 
   // Member Operators
 

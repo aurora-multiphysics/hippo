@@ -81,21 +81,6 @@ Foam::solvers::postprocessorTestSolver::moveMesh()
 }
 
 void
-Foam::solvers::postprocessorTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::postprocessorTestSolver::prePredictor()
-{
-}
-
-void
-Foam::solvers::postprocessorTestSolver::momentumPredictor()
-{
-}
-
-void
 Foam::solvers::postprocessorTestSolver::thermophysicalPredictor()
 {
   // To set temperature for testing, internal energy must be set. The
@@ -111,21 +96,6 @@ Foam::solvers::postprocessorTestSolver::thermophysicalPredictor()
   h = Cp * t;
 
   thermo_.correct();
-}
-
-void
-Foam::solvers::postprocessorTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::postprocessorTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::postprocessorTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //

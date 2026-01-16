@@ -1,6 +1,7 @@
 #pragma once
 #include "FoamSideIntegratedValue.h"
 #include "InputParameters.h"
+
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <functionObjects/field/wallShearStress/wallShearStress.H>
 
@@ -10,5 +11,6 @@ public:
   static InputParameters validParams() { return FoamSideIntegratedValue::validParams(); }
 
   FoamSideAverageValue(const InputParameters & params);
+
   virtual void compute() override;
 };
