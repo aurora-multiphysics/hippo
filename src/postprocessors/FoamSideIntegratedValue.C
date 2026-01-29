@@ -1,7 +1,6 @@
 #include "FoamSideIntegratedValue.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "FoamMesh.h"
 
 registerMooseObject("hippoApp", FoamSideIntegratedValue);
 

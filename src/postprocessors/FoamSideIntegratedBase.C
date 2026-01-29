@@ -1,7 +1,6 @@
 #include "FoamSideIntegratedBase.h"
 #include "MooseEnum.h"
 #include "MooseTypes.h"
-#include "FoamMesh.h"
 
 InputParameters
 FoamSideIntegratedBase::validParams()

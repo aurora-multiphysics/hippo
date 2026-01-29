@@ -2,9 +2,7 @@
 
 #include "FoamSideIntegratedBase.h"
 #include "InputParameters.h"
-#include <functionObject.H>
-#include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
-#include <functionObjects/field/wallShearStress/wallShearStress.H>
+
 #include <memory>
 
 class FoamSideIntegratedFunctionObject : public FoamSideIntegratedBase
