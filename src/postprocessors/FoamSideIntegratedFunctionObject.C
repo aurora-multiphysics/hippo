@@ -1,8 +1,6 @@
-#include "FoamSideIntegratedBase.h"
 #include "FoamSideIntegratedFunctionObject.h"
 #include "InputParameters.h"
 #include "MooseEnum.h"
-#include <volFieldsFwd.H>
 
 static MooseEnum _pp_function_objects("wallHeatFlux wallShearStress");
 

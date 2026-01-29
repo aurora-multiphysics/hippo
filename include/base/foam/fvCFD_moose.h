@@ -44,4 +44,9 @@
 #include <uniformDimensionedFields.H>
 #include <ddtScheme.H>
 
+// FoamSideIntegratedFunctionObject.h
+#include <functionObject.H>
+#include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
+#include <functionObjects/field/wallShearStress/wallShearStress.H>
+
 #undef NotImplemented

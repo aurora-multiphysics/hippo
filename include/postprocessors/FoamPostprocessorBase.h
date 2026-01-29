@@ -1,9 +1,10 @@
 #pragma once
 
+#include "fvCFD_moose.h"
+
 #include "InputParameters.h"
 #include "Postprocessor.h"
 #include "ElementUserObject.h"
-#include "fvMesh.H"
 
 class FoamPostprocessorBase : public ElementUserObject, public Postprocessor
 {
