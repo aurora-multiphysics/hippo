@@ -1,6 +1,5 @@
 #include "Field.H"
 #include "FoamSideAverageValue.h"
-#include "FoamSideIntegratedValue.h"
 #include "InputParameters.h"
 
 registerMooseObject("hippoApp", FoamSideAverageValue);
@@ -14,7 +13,7 @@ void
 FoamSideAverageValue::compute()
 {
 
-  FoamSideIntegratedValue::compute();
+  Real value = integrateValue();
 
   Real area = 0.;
   // loop over boundary ids
@@ -30,5 +29,5 @@ FoamSideAverageValue::compute()
   gatherSum(area);
 
   // divide by area
-  _value /= area;
+  _value = value / area;
 }
