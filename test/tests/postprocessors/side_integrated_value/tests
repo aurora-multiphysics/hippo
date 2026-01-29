@@ -34,7 +34,7 @@
             prereq = postprocessor_test/setup
             allow_warnings = true
             cli_args='Postprocessors/t_avg/foam_variable=T1'
-            expect_err = "No Foam scalar, vector or function object called 'T1'."
+            expect_err = "No Foam scalar or vector called 'T1'."
         []
     []
 []
