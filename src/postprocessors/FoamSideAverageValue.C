@@ -16,19 +16,19 @@ FoamSideAverageValue::compute()
 
   FoamSideIntegratedValue::compute();
 
-  Real volume = 0.;
+  Real area = 0.;
   // loop over boundary ids
   for (auto & boundary : _boundary)
   {
     auto & areas = _foam_mesh->boundary()[boundary].magSf();
     for (int i = 0; i < areas.size(); ++i)
     {
-      volume += areas[i];
+      area += areas[i];
     }
   }
   // sum over ranks
-  gatherSum(volume);
+  gatherSum(area);
 
   // divide by area
-  _value /= volume;
+  _value /= area;
 }

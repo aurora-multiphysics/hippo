@@ -25,7 +25,7 @@ Class
     Foam::solvers::postprocessorTestSolver
 
 Description
-    Solver module for to test transfers between OpenFOAM and MOOSE. Based on Solid
+    Solver module to test OpenFOAM-specifc Postprocessors. Based on Solid
     solver
 
 SourceFiles

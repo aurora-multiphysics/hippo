@@ -32,8 +32,7 @@ FoamSideIntegratedValue::FoamSideIntegratedValue(const InputParameters & params)
 {
   // Create function object if the foam variable matches one of the
   // available function objects
-  if (_pp_function_objects.find(_foam_variable) != _pp_function_objects.items().end())
-    createFunctionObject();
+  createFunctionObject();
 
   // determine if this is a vector scalar, ahead of computation
   if (_foam_mesh->foundObject<Foam::volVectorField>(_foam_variable))
@@ -45,6 +44,9 @@ FoamSideIntegratedValue::FoamSideIntegratedValue(const InputParameters & params)
 void
 FoamSideIntegratedValue::createFunctionObject()
 {
+  if (_pp_function_objects.find(_foam_variable) == _pp_function_objects.items().end())
+    return;
+
   auto fo_dict =
       _foam_mesh->time().controlDict().lookupOrDefault(_foam_variable, Foam::dictionary());
 
@@ -55,15 +57,17 @@ FoamSideIntegratedValue::createFunctionObject()
 
   if (_foam_variable == "wallHeatFlux")
   {
-    _function_object = static_cast<Foam::functionObject *>(
-        new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _foam_mesh->time(), fo_dict));
+    _function_object.reset(static_cast<Foam::functionObject *>(
+        new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _foam_mesh->time(), fo_dict)));
   }
   else if (_foam_variable == "wallShearStress")
   {
-    _function_object = static_cast<Foam::functionObject *>(
-        new Foam::functionObjects::wallShearStress("wallShearStress", _foam_mesh->time(), fo_dict));
+    _function_object.reset(
+        static_cast<Foam::functionObject *>(new Foam::functionObjects::wallShearStress(
+            "wallShearStress", _foam_mesh->time(), fo_dict)));
   }
 
+  // This is required to create scalar or vector fields at initialisation.
   _function_object->execute();
 }
 

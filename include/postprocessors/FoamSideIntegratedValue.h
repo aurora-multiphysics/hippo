@@ -2,6 +2,7 @@
 #include "FoamSidePostprocessor.h"
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <functionObjects/field/wallShearStress/wallShearStress.H>
+#include <memory>
 
 static MooseEnum _pp_function_objects("wallHeatFlux wallShearStress");
 
@@ -26,5 +27,5 @@ protected:
 
   bool _is_vector;
 
-  Foam::functionObject * _function_object;
+  std::unique_ptr<Foam::functionObject> _function_object;
 };

@@ -37,9 +37,3 @@ void
 FoamPostprocessorBase::finalize()
 {
 }
-
-void
-FoamPostprocessorBase::threadJoin(const UserObject & uo)
-{
-  (void)uo;
-}

@@ -21,7 +21,7 @@ public:
 
   virtual void finalize() final;
 
-  virtual void threadJoin(const UserObject & uo) final;
+  virtual void threadJoin([[maybe_unused]] const UserObject & uo) final {};
 
   // Compute postprocessor, to be called within FoamProblem
   virtual void compute() = 0;
