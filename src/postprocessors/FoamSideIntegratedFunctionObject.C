@@ -50,9 +50,9 @@ FoamSideIntegratedFunctionObject::createFunctionObject()
   }
 }
 
-void
-FoamSideIntegratedFunctionObject::compute()
+Real
+FoamSideIntegratedFunctionObject::integrateValue()
 {
   _function_object->execute();
-  _value = integrateValue();
+  return FoamSideIntegratedBase::integrateValue();
 }

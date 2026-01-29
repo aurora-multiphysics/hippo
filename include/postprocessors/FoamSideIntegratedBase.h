@@ -10,8 +10,12 @@ public:
 
   virtual PostprocessorValue getValue() const override;
 
+  virtual void compute() override;
+
 protected:
-  Real integrateValue();
+  virtual Real integrateValue();
+
+  Real getArea();
 
   Real _value;
 

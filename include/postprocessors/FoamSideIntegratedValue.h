@@ -7,6 +7,4 @@ public:
   static InputParameters validParams();
 
   FoamSideIntegratedValue(const InputParameters & params);
-
-  virtual void compute() override;
 };

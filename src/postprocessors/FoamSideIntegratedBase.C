@@ -75,3 +75,27 @@ FoamSideIntegratedBase::integrateValue()
 
   return value;
 }
+
+void
+FoamSideIntegratedBase::compute()
+{
+  _value = integrateValue();
+}
+
+Real
+FoamSideIntegratedBase::getArea()
+{
+  Real area = 0.;
+  // loop over boundary ids
+  for (auto & boundary : _boundary)
+  {
+    auto & areas = _foam_mesh->boundary()[boundary].magSf();
+    for (int i = 0; i < areas.size(); ++i)
+    {
+      area += areas[i];
+    }
+  }
+  // sum over ranks
+  gatherSum(area);
+  return area;
+}

@@ -1,3 +1,4 @@
+#pragma once
 
 #include "FoamSideIntegratedBase.h"
 #include "InputParameters.h"
@@ -13,9 +14,9 @@ public:
 
   FoamSideIntegratedFunctionObject(const InputParameters & params);
 
-  virtual void compute() override;
-
 protected:
+  virtual Real integrateValue() override;
+
   /// Creates function objects to be executed by compute
   Foam::functionObject * createFunctionObject();
 
