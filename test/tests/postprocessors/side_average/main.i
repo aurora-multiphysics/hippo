@@ -100,6 +100,20 @@
         component = z
         execute_on = TIMESTEP_END
     []
+    [heat_flux]
+        type = FoamSideAverageFunctionObject
+        function_object = 'wallHeatFlux'
+        boundary = right
+        component = x
+        execute_on = TIMESTEP_END
+    []
+    [heat_flux_multiple] # should be zero
+        type = FoamSideAverageFunctionObject
+        function_object = 'wallHeatFlux'
+        boundary = 'left right'
+        component = x
+        execute_on = TIMESTEP_END
+    []
 []
 
 [Outputs]
