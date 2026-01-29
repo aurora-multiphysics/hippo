@@ -37,6 +37,11 @@
         foam_scalar = 'rho'
         boundary = right
     []
+    [m_dot_x12]
+        type = FoamSideAdvectiveFluxIntegral
+        foam_scalar = 'rho'
+        boundary = 'left right'
+    []
     [m_dot_y1]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
@@ -47,6 +52,11 @@
         foam_scalar = 'rho'
         boundary = top
     []
+    [m_dot_y12]
+        type = FoamSideAdvectiveFluxIntegral
+        foam_scalar = 'rho'
+        boundary = 'bottom top'
+    []
     [m_dot_z1]
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
@@ -56,6 +66,11 @@
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
         boundary = front
+    []
+    [m_dot_z12]
+        type = FoamSideAdvectiveFluxIntegral
+        foam_scalar = 'rho'
+        boundary = 'front back'
     []
 []
 
