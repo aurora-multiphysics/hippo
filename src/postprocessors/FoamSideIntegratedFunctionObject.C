@@ -2,6 +2,7 @@
 #include "FoamSideIntegratedFunctionObject.h"
 #include "InputParameters.h"
 #include "MooseEnum.h"
+#include <volFieldsFwd.H>
 
 static MooseEnum _pp_function_objects("wallHeatFlux wallShearStress");
 
@@ -36,17 +37,15 @@ FoamSideIntegratedFunctionObject::createFunctionObject()
 
   if (_foam_variable == "wallHeatFlux")
   {
+    _is_vector = false;
     return static_cast<Foam::functionObject *>(
         new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _foam_mesh->time(), fo_dict));
   }
-  else if (_foam_variable == "wallShearStress")
+  else // wallShearStress
   {
+    _is_vector = true;
     return static_cast<Foam::functionObject *>(
         new Foam::functionObjects::wallShearStress("wallShearStress", _foam_mesh->time(), fo_dict));
-  }
-  else
-  {
-    mooseError("Invalid function_object. Valid options: ", _pp_function_objects.getRawNames());
   }
 }
 

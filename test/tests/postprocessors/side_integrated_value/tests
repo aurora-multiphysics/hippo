@@ -36,5 +36,11 @@
             cli_args='Postprocessors/t_avg/foam_variable=T1'
             expect_err = "No Foam scalar or vector called 'T1'."
         []
+        [check_valid_func_obj]
+            type = RunException
+            input = main.i
+            expect_err = 'Invalid option "wallHeatFlux1" in MooseEnum'
+            cli_args = "Postprocessors/heat_flux/function_object='wallHeatFlux1'"
+        []
     []
 []
