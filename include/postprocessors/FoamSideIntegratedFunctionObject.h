@@ -12,11 +12,11 @@ public:
 
   FoamSideIntegratedFunctionObject(const InputParameters & params);
 
-protected:
-  virtual Real integrateValue() override;
+  virtual void compute() override;
 
+protected:
   /// Creates function objects to be executed by compute
-  Foam::functionObject * createFunctionObject();
+  Foam::functionObject * createFunctionObject(const std::string & fo_name);
 
   std::unique_ptr<Foam::functionObject> _function_object;
 };

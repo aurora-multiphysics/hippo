@@ -10,16 +10,10 @@ public:
 
   virtual PostprocessorValue getValue() const override;
 
-  virtual void compute() override;
-
 protected:
-  virtual Real integrateValue();
+  virtual Real integrateValue(const std::string & variable);
 
   Real getArea();
 
   Real _value;
-
-  std::string _foam_variable;
-
-  bool _is_vector;
 };

@@ -7,4 +7,9 @@ public:
   static InputParameters validParams();
 
   FoamSideIntegratedValue(const InputParameters & params);
+
+  virtual void compute() override;
+
+protected:
+  const std::string & _foam_variable;
 };

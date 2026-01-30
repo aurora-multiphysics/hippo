@@ -16,40 +16,36 @@ FoamSideIntegratedFunctionObject::validParams()
 }
 
 FoamSideIntegratedFunctionObject::FoamSideIntegratedFunctionObject(const InputParameters & params)
-  : FoamSideIntegratedBase(params), _function_object()
+  : FoamSideIntegratedBase(params),
+    _function_object(createFunctionObject(getParam<MooseEnum>("function_object")))
 {
-  _foam_variable = std::string(getParam<MooseEnum>("function_object"));
-  _function_object.reset(createFunctionObject());
 }
 
 Foam::functionObject *
-FoamSideIntegratedFunctionObject::createFunctionObject()
+FoamSideIntegratedFunctionObject::createFunctionObject(const std::string & fo_name)
 {
-  auto fo_dict =
-      _foam_mesh->time().controlDict().lookupOrDefault(_foam_variable, Foam::dictionary());
+  auto fo_dict = _foam_mesh->time().controlDict().lookupOrDefault(fo_name, Foam::dictionary());
 
-  Foam::wordList patch_names(blocks().begin(), blocks().end());
+  Foam::wordList patch_names(_boundary.begin(), _boundary.end());
 
   fo_dict.set("patches", patch_names);
   fo_dict.set("writeToFile", false);
 
-  if (_foam_variable == "wallHeatFlux")
+  if (fo_name == "wallHeatFlux")
   {
-    _is_vector = false;
     return static_cast<Foam::functionObject *>(
         new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _foam_mesh->time(), fo_dict));
   }
   else // wallShearStress
   {
-    _is_vector = true;
     return static_cast<Foam::functionObject *>(
         new Foam::functionObjects::wallShearStress("wallShearStress", _foam_mesh->time(), fo_dict));
   }
 }
 
-Real
-FoamSideIntegratedFunctionObject::integrateValue()
+void
+FoamSideIntegratedFunctionObject::compute()
 {
   _function_object->execute();
-  return FoamSideIntegratedBase::integrateValue();
+  _value = integrateValue(_function_object->name());
 }

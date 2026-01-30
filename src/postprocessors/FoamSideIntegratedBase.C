@@ -1,6 +1,7 @@
 #include "FoamSideIntegratedBase.h"
 #include "MooseEnum.h"
 #include "MooseTypes.h"
+#include <volFieldsFwd.H>
 
 InputParameters
 FoamSideIntegratedBase::validParams()
@@ -15,7 +16,7 @@ FoamSideIntegratedBase::validParams()
 }
 
 FoamSideIntegratedBase::FoamSideIntegratedBase(const InputParameters & params)
-  : FoamSidePostprocessor(params), _value(0.), _foam_variable(), _is_vector(false)
+  : FoamSidePostprocessor(params), _value(0.)
 {
 }
 
@@ -26,7 +27,7 @@ FoamSideIntegratedBase::getValue() const
 }
 
 Real
-FoamSideIntegratedBase::integrateValue()
+FoamSideIntegratedBase::integrateValue(const std::string & variable)
 {
 
   Real value = 0.;
@@ -36,12 +37,11 @@ FoamSideIntegratedBase::integrateValue()
     auto & areas = _foam_mesh->boundary()[boundary].magSf();
     Foam::Field<double> var_array;
 
-    if (_is_vector)
+    if (_foam_mesh->foundObject<Foam::volVectorField>(variable))
     {
       // get vector data associated with the boundary
       auto & vec_data =
-          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(
-              _foam_variable);
+          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(variable);
 
       // get the component specified in parameters and get the
       // component of the vector in that direction
@@ -58,8 +58,8 @@ FoamSideIntegratedBase::integrateValue()
     }
     else
     {
-      var_array = _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(
-          _foam_variable);
+      var_array =
+          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(variable);
     }
 
     // Integrate
@@ -73,12 +73,6 @@ FoamSideIntegratedBase::integrateValue()
   gatherSum(value);
 
   return value;
-}
-
-void
-FoamSideIntegratedBase::compute()
-{
-  _value = integrateValue();
 }
 
 Real

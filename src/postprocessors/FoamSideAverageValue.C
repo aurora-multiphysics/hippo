@@ -11,5 +11,5 @@ FoamSideAverageValue::FoamSideAverageValue(const InputParameters & params)
 void
 FoamSideAverageValue::compute()
 {
-  _value = integrateValue() / getArea();
+  _value = integrateValue(_foam_variable) / getArea();
 }
