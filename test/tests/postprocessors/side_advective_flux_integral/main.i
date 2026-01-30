@@ -37,7 +37,7 @@
         foam_scalar = 'rho'
         boundary = right
     []
-    [m_dot_x12]
+    [m_dot_x12] # should be zero
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
         boundary = 'left right'
@@ -52,7 +52,7 @@
         foam_scalar = 'rho'
         boundary = top
     []
-    [m_dot_y12]
+    [m_dot_y12] # should be zero
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
         boundary = 'bottom top'
@@ -67,7 +67,7 @@
         foam_scalar = 'rho'
         boundary = front
     []
-    [m_dot_z12]
+    [m_dot_z12] # should be zero
         type = FoamSideAdvectiveFluxIntegral
         foam_scalar = 'rho'
         boundary = 'front back'

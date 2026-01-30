@@ -15,7 +15,7 @@ FoamSideIntegratedBase::validParams()
 }
 
 FoamSideIntegratedBase::FoamSideIntegratedBase(const InputParameters & params)
-  : FoamSidePostprocessor(params), _value(0.), _foam_variable(""), _is_vector(false)
+  : FoamSidePostprocessor(params), _value(0.), _foam_variable(), _is_vector(false)
 {
 }
 
