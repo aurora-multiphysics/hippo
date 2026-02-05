@@ -8,8 +8,8 @@ InputParameters
 FoamSideIntegratedValue::validParams()
 {
   auto params = FoamSideIntegratedBase::validParams();
-  params.addRequiredParam<std::string>(
-      "foam_variable", "Foam variable or function object to be averaged over a boundary patch.");
+  params.addRequiredParam<std::string>("foam_variable",
+                                       "Foam variable to be averaged over a boundary patch.");
   return params;
 }
 

@@ -2,16 +2,16 @@
 #include "InputParameters.h"
 #include "MooseEnum.h"
 
-static MooseEnum _pp_function_objects("wallHeatFlux wallShearStress");
-
 registerMooseObject("hippoApp", FoamSideIntegratedFunctionObject);
 
 InputParameters
 FoamSideIntegratedFunctionObject::validParams()
 {
   InputParameters params = FoamSideIntegratedBase::validParams();
+
+  MooseEnum function_objects("wallHeatFlux wallShearStress");
   params.addRequiredParam<MooseEnum>(
-      "function_object", _pp_function_objects, "Foam function object");
+      "function_object", function_objects, "OpenFOAM function object");
   return params;
 }
 
@@ -21,7 +21,7 @@ FoamSideIntegratedFunctionObject::FoamSideIntegratedFunctionObject(const InputPa
 {
 }
 
-Foam::functionObject *
+std::unique_ptr<Foam::functionObject>
 FoamSideIntegratedFunctionObject::createFunctionObject(const std::string & fo_name)
 {
   auto fo_dict = _foam_mesh->time().controlDict().lookupOrDefault(fo_name, Foam::dictionary());
@@ -33,13 +33,13 @@ FoamSideIntegratedFunctionObject::createFunctionObject(const std::string & fo_na
 
   if (fo_name == "wallHeatFlux")
   {
-    return static_cast<Foam::functionObject *>(
-        new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _foam_mesh->time(), fo_dict));
+    return std::make_unique<Foam::functionObjects::wallHeatFlux>(
+        "wallHeatFlux", _foam_mesh->time(), fo_dict);
   }
   else // wallShearStress
   {
-    return static_cast<Foam::functionObject *>(
-        new Foam::functionObjects::wallShearStress("wallShearStress", _foam_mesh->time(), fo_dict));
+    return std::make_unique<Foam::functionObjects::wallShearStress>(
+        "wallShearStress", _foam_mesh->time(), fo_dict);
   }
 }
 

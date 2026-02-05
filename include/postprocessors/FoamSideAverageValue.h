@@ -2,9 +2,6 @@
 #include "FoamSideIntegratedValue.h"
 #include "InputParameters.h"
 
-#include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
-#include <functionObjects/field/wallShearStress/wallShearStress.H>
-
 class FoamSideAverageValue : public FoamSideIntegratedValue
 {
 public:

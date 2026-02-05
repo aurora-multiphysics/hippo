@@ -11,7 +11,7 @@ FoamSideAdvectiveFluxIntegral::validParams()
 {
   auto params = FoamSidePostprocessor::validParams();
   params.addClassDescription(
-      "Class that calculates the average or scalar on a OpenFOAM boundary patch.");
+      "Class that calculates the advected flux of a scalar on an OpenFOAM boundary patch.");
   params.addRequiredParam<std::string>("foam_scalar", "Foam scalar being advected.");
   params.addParam<std::string>("advective_velocity", "U", "Advection velocity");
   return params;

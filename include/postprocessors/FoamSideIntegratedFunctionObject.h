@@ -16,7 +16,7 @@ public:
 
 protected:
   /// Creates function objects to be executed by compute
-  Foam::functionObject * createFunctionObject(const std::string & fo_name);
+  std::unique_ptr<Foam::functionObject> createFunctionObject(const std::string & fo_name);
 
   std::unique_ptr<Foam::functionObject> _function_object;
 };

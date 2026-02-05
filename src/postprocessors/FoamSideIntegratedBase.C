@@ -8,8 +8,6 @@ FoamSideIntegratedBase::validParams()
 {
   MooseEnum components("x y z normal magnitude", "magnitude");
   auto params = FoamSidePostprocessor::validParams();
-  params.addClassDescription(
-      "Class that calculates the average or scalar on a OpenFOAM boundary patch.");
   params.addParam<MooseEnum>(
       "component", components, "If foam variable is a vector, which component to output");
   return params;

@@ -45,7 +45,7 @@
         boundary = back
         execute_on = TIMESTEP_END
     []
-    [U_avg_magnitude_multiple] # should be double U_avg_magnitude_multiple
+    [U_avg_magnitude_multiple] # should be double U_avg_magnitude
         type = FoamSideIntegratedValue
         foam_variable = 'U'
         boundary = 'back front'
