@@ -1,0 +1,15 @@
+#pragma once
+#include "FoamSideIntegratedBase.h"
+
+class FoamSideIntegratedValue : public FoamSideIntegratedBase
+{
+public:
+  static InputParameters validParams();
+
+  FoamSideIntegratedValue(const InputParameters & params);
+
+  virtual void compute() override;
+
+protected:
+  const std::string & _foam_variable;
+};
