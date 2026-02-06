@@ -1,8 +1,6 @@
-#include "ElementUserObject.h"
 #include "FoamSideAdvectiveFluxIntegral.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "FoamMesh.h"
 
 registerMooseObject("hippoApp", FoamSideAdvectiveFluxIntegral);
 
@@ -10,8 +8,8 @@ InputParameters
 FoamSideAdvectiveFluxIntegral::validParams()
 {
   auto params = FoamSidePostprocessor::validParams();
-  params.addClassDescription(
-      "Class that calculates the advected flux of a scalar on an OpenFOAM boundary patch.");
+  params.addClassDescription("Class that calculates the integrated advective flux of a scalar over "
+                             "OpenFOAM boundary patches.");
   params.addRequiredParam<std::string>("foam_scalar", "Foam scalar being advected.");
   params.addParam<std::string>("advective_velocity", "U", "Advection velocity");
   return params;

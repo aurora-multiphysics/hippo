@@ -6,7 +6,7 @@
 class FoamSideAverageFunctionObject : public FoamSideIntegratedFunctionObject
 {
 public:
-  static InputParameters validParams() { return FoamSideIntegratedFunctionObject::validParams(); }
+  static InputParameters validParams();
 
   FoamSideAverageFunctionObject(const InputParameters & params)
     : FoamSideIntegratedFunctionObject(params)

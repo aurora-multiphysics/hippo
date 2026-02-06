@@ -12,6 +12,8 @@ FoamSideIntegratedFunctionObject::validParams()
   MooseEnum function_objects("wallHeatFlux wallShearStress");
   params.addRequiredParam<MooseEnum>(
       "function_object", function_objects, "OpenFOAM function object");
+  params.addClassDescription(
+      "Class that integrates a function object over OpenFOAM boundary patches.");
   return params;
 }
 
