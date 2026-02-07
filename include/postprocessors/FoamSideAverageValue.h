@@ -5,7 +5,7 @@
 class FoamSideAverageValue : public FoamSideIntegratedValue
 {
 public:
-  static InputParameters validParams() { return FoamSideIntegratedValue::validParams(); }
+  static InputParameters validParams();
 
   FoamSideAverageValue(const InputParameters & params);
 
