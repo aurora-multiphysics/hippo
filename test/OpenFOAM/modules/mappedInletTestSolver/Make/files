@@ -1,3 +1,0 @@
-SOURCE += mappedInletTestSolver.C
-
-LIB = $(FOAM_USER_LIBBIN)/libmappedInletTestSolver
