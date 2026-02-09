@@ -7,18 +7,24 @@ The tutorial is based on one for the [preCICE coupling framework](https://precic
 and at the end we directly compare with the preCICE results. The complete example can be found in Hippo's `examples` directory.
 
 ## Overview
+
 This tutorial contains three regions:
-1. *Tube (inner) region:* cold fluid region in the core of the heat exchanger.
-2. *Shell (outer) region:* hot fluid region on the outside of the tubes
-containing baffles to enhance heat transfer
-3. *Solid region:* metal between the tube and shell regions.
+
+1. **Tube (inner) region:** cold fluid region in the core of the heat exchanger.
+2. **Shell (outer) region:** hot fluid region on the outside of the tubes
+   containing baffles to enhance heat transfer
+3. **Solid region:** metal between the tube and shell regions.
+
+!media images/shell_tube_hx/shell_tube_geom.png style=width:75%;align=center
 
 ### Coupling strategy
+
 Hippo is currently capable of two CHT coupling strategies
+
 1. **Temperature-forward flux-back (TFFB):** temperature imposed on solid,
-heat flux imposed on fluid. This was used in the step-by step example.
-1. **Flux-forward temperature-back (FFTB):** heat flux imposed on solid,
-temperature imposed on fluid.
+   heat flux imposed on fluid. This was used in the step-by step example.
+1. **Flux-forward temperature-back (FFTB):** heat flux imposed  on solid,
+   temperature imposed on fluid.
 
 FFTB is used in this example. The choice between TFFB and FFTB is usually
 determined by the material properties of the fluid and solid region,
@@ -30,6 +36,7 @@ must be used, which can dramatically increase wall clock time.
 
 
 ## Directory layout
+
 1. `download_meshes.sh`: Downloads OpenFOAM meshes from the preCICE tutorial
 2. `solid.exo`: mesh for the solid region in the Exodus II file format
 3. `fluid-inner-openfoam`: OpenFOAM case directory for the tube region
@@ -48,6 +55,7 @@ Below we highlight some keys features of the solid solve that differ from
 the step-by-step example
 
 ### Variables and kernels
+
 A suble difference is the use of MOOSE's auto-differentiation kernels,
 with the `AD` prefix. This permits the automatic calculation of the
 Jacobian, allowing the Newton-Krylov solver to be used for more
@@ -76,6 +84,7 @@ For more information about the AD system see [MOOSE's documentation](https://moo
 ```
 
 ### Materials
+
 The material propertes are set to those of copper, noting that the skin friction coefficient is initially reduced by a factor of 1000 to speed up the temperature development in the solid.
 
 ```toml
@@ -101,6 +110,7 @@ The material propertes are set to those of copper, noting that the skin friction
 ```
 
 ## Fluid-Solid Coupling
+
 Coupling is similar to the step-bystep example except there are two fluid domains and the FFTB scheme is being used. The `MultiApps` block looks like
 ```toml
 [MultiApps]
@@ -122,6 +132,7 @@ Coupling is similar to the step-bystep example except there are two fluid domain
 ```
 
 ### Imposing the solid temperature on OpenFOAM
+
 The primary difference with the step-by-step example is that we now impose the
 temperature rather than heat flux on the fluid.
 
@@ -192,6 +203,7 @@ The `Transfers` block is used to define the howthe variables are transferred to 
 ```
 
 ## Imposing the fluid heat flux on the solid
+
 First, the heat flux must be computed for the OpenFOAM simulations.
 For both `inner.i` and `outer.i`, the `FoamFunctionObject` is
 used in the `FoamVariables` block:
@@ -222,6 +234,7 @@ As the name suggests, this executes the `wallHeatFlux` OpenFOAM function object 
     ...
 []
 ```
+
 `solid.i` must also transfer the heat flux from the inner and outer OpenFOAM simulations into the `AuxVariables`.
 
 ```toml
@@ -274,8 +287,21 @@ The `AuxVariables` must then be imposed as boundary conditions using `coupledVar
 The case, including downloading the meshes, can be run using `./run.sh`.
 
 ### Visualisation using `pyvista`
+
 `pyvista` is pythonic VTK (Visualisation Toolkit) wrapper that allows high quality 3D data to be plotted. This can be installed using
+
 ```sh
 pip install pyvista
 ```
+
 Use `python post.py` to display the heat exchanger.
+
+!media images/shell_tube_hx/shell_tube_hx.png style=width:50%;align=center
+
+The results can also be compared with the preCICE tutorial as the same meshes
+have been used. For the fluid domains the relative errors are shown below
+
+!media images/shell_tube_hx/error.png style=width:50%;align=center
+
+The differences are small except close to the boundaries and particularly
+in the corners, this is likely due to the different coupling strategies,
