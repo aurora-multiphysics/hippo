@@ -130,6 +130,7 @@ between finite element and finite volume methods. In the former, the temperature
 defined continuously across element faces, whereas for the latter they are uniform.
 
 This conversion is performed using a `ProjectionAux` on the `inner` and `outer` solid:
+
 ```toml
 [AuxVariables]
     ...
@@ -152,6 +153,7 @@ This conversion is performed using a `ProjectionAux` on the `inner` and `outer` 
 ```
 
 In the Hippo input files, we use a `FoamBCs` block to impose the bounary conditions. Both `inner.i` and `outer.i` are the same:
+
 ```toml
 [FoamBCs]
     [solid_wall_temp]
@@ -164,6 +166,7 @@ In the Hippo input files, we use a `FoamBCs` block to impose the bounary conditi
 Note that this is a different type to the step-by-step example where a `FoamFixedGradientBC` is used.
 
 The `Transfers` block is used to define the howthe variables are transferred to the Hippo apps:
+
 ```toml
 [Transfers]
     ...
@@ -220,6 +223,7 @@ As the name suggests, this executes the `wallHeatFlux` OpenFOAM function object 
 []
 ```
 `solid.i` must also transfer the heat flux from the inner and outer OpenFOAM simulations into the `AuxVariables`.
+
 ```toml
 [Transfers]
     ...
@@ -244,6 +248,7 @@ As the name suggests, this executes the `wallHeatFlux` OpenFOAM function object 
 ```
 
 The `AuxVariables` must then be imposed as boundary conditions using `coupledVarNeumannBC` type
+
 ```toml
 [BCs]
     [inner]
