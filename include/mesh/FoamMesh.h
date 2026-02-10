@@ -63,12 +63,19 @@ public:
     return _foam_mesh.foundObject<T>(name);
   }
 
+  // Returns the patch array for field and subdomain
+  template <typename GeoField, typename Type>
+  Foam::fvPatchField<Type> & getBCField(SubdomainID subdomain, Foam::word const & field)
+  {
+    return const_cast<Foam::fvPatchField<Type> &>(
+        _foam_mesh.boundary()[subdomain].lookupPatchField<GeoField, Type>(field));
+  }
+
   // Returns the gradient BC array for field and subdomain
   template <typename GeoField, typename Type>
   Foam::Field<Type> & getGradientBCField(SubdomainID subdomain, Foam::word const & field)
   {
-    auto & var = const_cast<Foam::fvPatchField<Type> &>(
-        _foam_mesh.boundary()[subdomain].lookupPatchField<GeoField, Type>(field));
+    auto & var = getBCField<GeoField, Type>(subdomain, field);
     return Foam::refCast<Foam::fixedGradientFvPatchField<Type>>(var).gradient();
   }
 
