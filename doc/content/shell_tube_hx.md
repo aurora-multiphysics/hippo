@@ -1,6 +1,6 @@
 # Shell and tube heat exchanger tutorial
 
-This tutorial builds on the [step-by-step example](step_by_step.md) conjugate heat transfer (CHT) example,
+This tutorial builds on the [step-by-step conjugate heat transfer (CHT) example](step_by_step.md),
 extending it to more complex geometries and meshes,
 although the precedure is essentially the same.
 The tutorial is based on one for the [preCICE coupling framework](https://precice.org/tutorials-heat-exchanger.html)
@@ -15,7 +15,8 @@ This tutorial contains three regions:
    containing baffles to enhance heat transfer
 3. **Solid region:** metal between the tube and shell regions.
 
-!media images/shell_tube_hx/shell_tube_geom.png style=width:75%;align=center
+!media images/shell_tube_hx/shell_tube_geom.png style=width:75%;align=center;
+       caption=Solid and fluid domains of shell and tube heat exchanger
 
 ### Coupling strategy
 
@@ -296,12 +297,14 @@ pip install pyvista
 
 Use `python post.py` to display the heat exchanger.
 
-!media images/shell_tube_hx/shell_tube_hx.png style=width:50%;align=center
+!media images/shell_tube_hx/shell_tube_hx.png style=width:50%;align=center;
+       caption=Hippo results showing streamlines in the outer region
 
 The results can also be compared with the preCICE tutorial as the same meshes
 have been used. For the fluid domains the relative errors are shown below
 
-!media images/shell_tube_hx/error.png style=width:50%;align=center
+!media images/shell_tube_hx/error.png style=width:50%;align=center;
+       caption=Pointwise comparison with preCICE tutorial.
 
 The differences are small except close to the boundaries and particularly
 in the corners, this is likely due to the different coupling strategies,
