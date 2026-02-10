@@ -1,5 +1,7 @@
 #include "FoamBCBase.h"
 #include "FoamPostprocessorBCBase.h"
+#include "hippoUtils.h"
+
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "PostprocessorInterface.h"
@@ -29,5 +31,9 @@ FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params)
 void
 FoamPostprocessorBCBase::addInfoRow(BCInfoTable & table)
 {
-  table.addRow(name(), type(), foamVariable(), moosePostprocessor(), listFromVector(boundary()));
+  table.addRow(name(),
+               type(),
+               foamVariable(),
+               moosePostprocessor(),
+               Hippo::internal::listFromVector(boundary()));
 }

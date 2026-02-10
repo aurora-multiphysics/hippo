@@ -1,5 +1,8 @@
-#include "FEProblemBase.h"
+
 #include "FoamVariableBCBase.h"
+#include "hippoUtils.h"
+
+#include "FEProblemBase.h"
 
 namespace
 {
@@ -51,7 +54,8 @@ void
 FoamVariableBCBase::addInfoRow(BCInfoTable & table)
 {
   // List info about BC
-  table.addRow(name(), type(), foamVariable(), mooseVariable(), listFromVector(boundary()));
+  table.addRow(
+      name(), type(), foamVariable(), mooseVariable(), Hippo::internal::listFromVector(boundary()));
 }
 
 Real
