@@ -55,10 +55,10 @@ FoamVariableBCBase::addInfoRow(BCInfoTable & table)
 }
 
 Real
-FoamVariableBCBase::variableValueAtElement(const libMesh::Elem * elem)
+FoamVariableBCBase::variableValueAtElement(const libMesh::Elem & elem)
 {
   auto & sys = _moose_var->sys();
-  auto dof = elem->dof_number(sys.number(), _moose_var->number(), 0);
+  auto dof = elem.dof_number(sys.number(), _moose_var->number(), 0);
   return sys.solution()(dof);
 }
 
@@ -72,9 +72,9 @@ FoamVariableBCBase::getMooseVariableArray(int subdomainId)
   for (size_t j = 0; j < patch_count; ++j)
   {
     auto elem = patch_offset + j;
-    auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
+    const auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
     assert(elem_ptr);
-    var_array[j] = variableValueAtElement(elem_ptr);
+    var_array[j] = variableValueAtElement(*elem_ptr);
   }
 
   return var_array;
