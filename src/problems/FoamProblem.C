@@ -1,26 +1,25 @@
-#include "Attributes.h"
-#include "ExternalProblem.h"
+#include "FoamVariableField.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
-#include "VariadicTable.h"
-#include "word.H"
+#include "hippoUtils.h"
 
-#include <AuxiliarySystem.h>
-#include <MooseError.h>
-#include <MooseTypes.h>
-#include <MooseVariableFieldBase.h>
-#include <algorithm>
-#include "FoamVariableField.h"
+#include "Attributes.h"
+#include "ExternalProblem.h"
+#include "VariadicTable.h"
+#include "MooseTypes.h"
 #include "InputParameters.h"
 #include "VariadicTable.h"
+
 #include <finiteVolume/solver/solver.H>
+#include <word.H>
 #include <fvMesh.H>
 #include <libmesh/enum_order.h>
 #include <libmesh/fe_type.h>
-
 #include <IOobjectList.H>
 #include <volFields.H>
+
+#include <algorithm>
 
 registerMooseObject("hippoApp", FoamProblem);
 
@@ -175,7 +174,7 @@ FoamProblem::verifyFoamBCs()
         unused_bcs.push_back(bc);
     }
     if (unused_bcs.size() > 0)
-      vt.addRow("", "UnusedBoundaries", "", "", listFromVector(unused_bcs));
+      vt.addRow("", "UnusedBoundaries", "", "", Hippo::internal::listFromVector(unused_bcs));
   }
   vt.print(_console);
 }
@@ -200,7 +199,7 @@ FoamProblem::verifyFoamPostprocessors()
     if (fpp)
     {
       _foam_postprocessor.push_back(fpp);
-      vt.addRow(fpp->name(), fpp->type(), listFromVector(fpp->blocks()));
+      vt.addRow(fpp->name(), fpp->type(), Hippo::internal::listFromVector(fpp->blocks()));
     }
   }
 
