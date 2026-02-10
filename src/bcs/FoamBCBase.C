@@ -25,7 +25,6 @@ FoamBCBase::validParams()
   params.addRequiredParam<std::string>("foam_variable",
                                        "Name of a Foam field. e.g. T (temperature) U (velocity).");
 
-  params.addPrivateParam("_foam_var_settable", true);
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
 
