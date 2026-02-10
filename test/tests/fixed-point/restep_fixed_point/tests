@@ -11,6 +11,7 @@
             min_parallel = 2
             max_parallel = 2
             prereq = 'restep/setup'
+            allow_test_objects=true
         []
         [prep_verify]
             type = RunCommand
