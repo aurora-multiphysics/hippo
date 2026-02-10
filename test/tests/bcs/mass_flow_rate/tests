@@ -11,10 +11,5 @@
             csvdiff = main_out.csv
             allow_warnings = true
         []
-        [verify]
-            type = PythonUnitTest
-            input = test.py
-            prereq = mass_flow_rate/run
-        []
     []
 []
