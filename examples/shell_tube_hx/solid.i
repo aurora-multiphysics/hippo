@@ -133,15 +133,6 @@
         from_boundaries = 'inner'
     []
 
-    [heat_flux_from_inner]
-        type = MultiAppGeneralFieldNearestLocationTransfer
-        source_variable = fluid_heat_flux
-        from_multi_app = inner
-        variable = inner_heat_flux
-        execute_on = same_as_multiapp
-        to_boundaries = 'inner'
-    []
-
     [wall_temperature_to_outer]
         type = MultiAppGeneralFieldNearestLocationTransfer
         source_variable = wall_temp
@@ -149,6 +140,15 @@
         variable = solid_wall_temp
         execute_on = same_as_multiapp
         from_boundaries = 'outer'
+    []
+
+    [heat_flux_from_inner]
+        type = MultiAppGeneralFieldNearestLocationTransfer
+        source_variable = fluid_heat_flux
+        from_multi_app = inner
+        variable = inner_heat_flux
+        execute_on = same_as_multiapp
+        to_boundaries = 'inner'
     []
 
     [heat_flux_from_outer]

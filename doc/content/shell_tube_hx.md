@@ -1,19 +1,22 @@
 # Shell and tube heat exchanger tutorial
 
-This tutorial builds on the [step-by-step conjugate heat transfer (CHT) example](step_by_step.md),
+This tutorial builds on the
+[step-by-step conjugate heat transfer (CHT) example](step_by_step.md),
 extending it to more complex geometries and meshes,
 although the precedure is essentially the same.
-The tutorial is based on one for the [preCICE coupling framework](https://precice.org/tutorials-heat-exchanger.html)
-and at the end we directly compare with the preCICE results. The complete example can be found in Hippo's `examples` directory.
+The tutorial is based on one for the
+[preCICE coupling framework](https://precice.org/tutorials-heat-exchanger.html)
+and at the end we directly compare with the preCICE results.
+The complete example can be found in Hippo's `examples` directory.
 
 ## Overview
 
 This tutorial contains three regions:
 
-1. **Tube (inner) region:** cold fluid region in the core of the heat exchanger.
+1. **Tube (inner) region:** cold fluid region inside the tubes of the heat exchanger.
 2. **Shell (outer) region:** hot fluid region on the outside of the tubes
    containing baffles to enhance heat transfer
-3. **Solid region:** metal between the tube and shell regions.
+3. **Solid region:** copper tubes between the inner and outer fluid regions.
 
 !media images/shell_tube_hx/shell_tube_geom.png style=width:75%;align=center;
        caption=Solid and fluid domains of shell and tube heat exchanger
@@ -38,22 +41,35 @@ must be used, which can dramatically increase wall clock time.
 
 ## Directory layout
 
-1. `download_meshes.sh`: Downloads OpenFOAM meshes from the preCICE tutorial
-2. `solid.exo`: mesh for the solid region in the Exodus II file format
-3. `fluid-inner-openfoam`: OpenFOAM case directory for the tube region
-4. `fluid-outer-openfoam`: OpenFOAM case directory for the shell region
-5. `solid.i`: MOOSE input file for the solid region subject to heat conduction.
-6. `inner.i`: Hippo input file for the tube region.
-7. `outer.i`: Hippo input file for the shell region.
-8. `clean.i`: cleans case directories.
-9. `post.py`: python script for postprocessing the results
+- `download_meshes.sh`: Downloads OpenFOAM meshes from the preCICE tutorial
+- `solid.exo`: mesh for the solid region in the Exodus II file format
+- `fluid-inner-openfoam`: OpenFOAM case directory for the tube region
+- `fluid-outer-openfoam`: OpenFOAM case directory for the shell region
+- `solid.i`: MOOSE input file for the solid region subject to heat conduction.
+- `inner.i`: Hippo input file for the tube region.
+- `outer.i`: Hippo input file for the shell region.
+- `clean.i`: cleans case directories.
+- `post.py`: python script for postprocessing the results
 
 ## Heat conduction problem
 
 The solid region closes resembles that from the previous example, although in
-this case, the BCs are defined entirely heat transfer from the fluid domain.
+this case, the BCs are defined entirely by heat transfer from the fluid domain.
 Below we highlight some keys features of the solid solve that differ from
 the step-by-step example
+
+### Mesh
+
+The solid mesh in this case has been generated previously and is a copy
+of the mesh used in the preCICE tutorial although converted into the Exodus
+II file format which is the most common format used by MOOSE. This is specified with
+
+```toml
+[Mesh]
+    type = FileMesh
+    file = 'solid.exo'
+[]
+```
 
 ### Variables and kernels
 
@@ -61,7 +77,8 @@ A suble difference is the use of MOOSE's auto-differentiation kernels,
 with the `AD` prefix. This permits the automatic calculation of the
 Jacobian, allowing the Newton-Krylov solver to be used for more
 complex kernels (NEWTON is set in the Executioner block rather than PJFNK).
-For more information about the AD system see [MOOSE's documentation](https://mooseframework.inl.gov/automatic_differentiation/).
+For more information about the AD system see
+[MOOSE's documentation](https://mooseframework.inl.gov/automatic_differentiation/).
 
 ```toml
 [Variables]
@@ -86,7 +103,9 @@ For more information about the AD system see [MOOSE's documentation](https://moo
 
 ### Materials
 
-The material propertes are set to those of copper, noting that the skin friction coefficient is initially reduced by a factor of 1000 to speed up the temperature development in the solid.
+The material propertes are set to those of copper, noting that the specific
+heat capacity, $c_p$ is initially reduced by a factor of 1000 to speed
+up the temperature development in the solid.
 
 ```toml
 [Functions]
@@ -112,7 +131,9 @@ The material propertes are set to those of copper, noting that the skin friction
 
 ## Fluid-Solid Coupling
 
-Coupling is similar to the step-bystep example except there are two fluid domains and the FFTB scheme is being used. The `MultiApps` block looks like
+Coupling is similar to the step-by-step example except there are two fluid
+domains and the FFTB scheme is being used. The `MultiApps` block looks like
+
 ```toml
 [MultiApps]
     [inner]
@@ -137,9 +158,10 @@ Coupling is similar to the step-bystep example except there are two fluid domain
 The primary difference with the step-by-step example is that we now impose the
 temperature rather than heat flux on the fluid.
 
-The data being transferred from MOOSE to OpenFOAM needs to consider the differences
-between finite element and finite volume methods. In the former, the temperature is
-defined continuously across element faces, whereas for the latter they are uniform.
+The data being transferred from MOOSE to OpenFOAM needs to consider the
+differences between finite element and finite volume methods. In the former,
+the temperature is defined continuously across element faces, whereas for
+the latter they are uniform.
 
 This conversion is performed using a `ProjectionAux` on the `inner` and `outer` solid:
 
@@ -164,7 +186,42 @@ This conversion is performed using a `ProjectionAux` on the `inner` and `outer` 
 []
 ```
 
-In the Hippo input files, we use a `FoamBCs` block to impose the bounary conditions. Both `inner.i` and `outer.i` are the same:
+Note that we have restricted the `ProjectionAux` to only apply to boundaries
+as in this case, we only must consider data transfer there.
+
+The `Transfers` block is used to define the how the variables are transferred
+to the Hippo apps. In this case, we have used a nearest location transfer,
+which is often used on complex geometries, other options include using
+geometric interpolation.
+
+```toml
+[Transfers]
+    [wall_temperature_to_outer]
+        type = MultiAppGeneralFieldNearestLocationTransfer
+        source_variable = wall_temp
+        to_multi_app = outer
+        variable = solid_wall_temp
+        execute_on = same_as_multiapp
+        from_boundaries = 'outer'
+    []
+
+    [wall_temperature_to_inner]
+        type = MultiAppGeneralFieldNearestLocationTransfer
+        source_variable = wall_temp
+        to_multi_app = inner
+        variable = solid_wall_temp
+        execute_on = same_as_multiapp
+        from_boundaries = 'inner'
+    []
+    ...
+[]
+```
+
+The `from_boundaries` parameter is used here to restrict the nearest location
+search to the specified boundary.
+
+In the Hippo input files, we use a `FoamBCs` block to impose the bounary
+conditions. Both `inner.i` and `outer.i` are the same:
 
 ```toml
 [FoamBCs]
@@ -175,38 +232,14 @@ In the Hippo input files, we use a `FoamBCs` block to impose the bounary conditi
     []
 []
 ```
-Note that this is a different type to the step-by-step example where a `FoamFixedGradientBC` is used.
 
-The `Transfers` block is used to define the howthe variables are transferred to the Hippo apps:
-
-```toml
-[Transfers]
-    ...
-    [wall_temperature_to_outer]
-        type = MultiAppGeneralFieldNearestLocationTransfer
-        source_variable = wall_temp
-        to_multi_app = outer
-        variable = solid_wall_temp
-        execute_on = same_as_multiapp
-        from_boundaries = 'outer'
-    []
-
-    [heat_flux_from_outer]
-        type = MultiAppGeneralFieldNearestLocationTransfer
-        source_variable = fluid_heat_flux
-        from_multi_app = outer
-        variable = outer_heat_flux
-        execute_on = same_as_multiapp
-        to_boundaries = 'outer'
-        search_value_conflicts=false
-    []
-[]
-```
+Note that this is a different type to the step-by-step example where a
+`FoamFixedGradientBC` is used.
 
 ## Imposing the fluid heat flux on the solid
 
 First, the heat flux must be computed for the OpenFOAM simulations.
-For both `inner.i` and `outer.i`, the `FoamFunctionObject` is
+For both `inner.i` and `outer.i`, a `FoamFunctionObject` is
 used in the `FoamVariables` block:
 
 ```toml
@@ -218,7 +251,10 @@ used in the `FoamVariables` block:
 []
 ```
 
-As the name suggests, this executes the `wallHeatFlux` OpenFOAM function object shadows its output with a MOOSE variable which can be transferred by the solid app. `solid.i` needs `AuxVariables` to contain the variables sent from the inner and outer Hippo simulations
+As the name suggests, this executes the `wallHeatFlux` OpenFOAM function
+object and shadows its output with a MOOSE variable which can be transferred
+by the solid app. `solid.i` needs `AuxVariables` to contain the variables
+sent from the inner and outer Hippo simulations
 
 ```toml
 [AuxVariables]
@@ -236,7 +272,8 @@ As the name suggests, this executes the `wallHeatFlux` OpenFOAM function object 
 []
 ```
 
-`solid.i` must also transfer the heat flux from the inner and outer OpenFOAM simulations into the `AuxVariables`.
+`solid.i` must also transfer the heat flux from the inner and outer OpenFOAM
+simulations into the `AuxVariables`.
 
 ```toml
 [Transfers]
@@ -261,7 +298,8 @@ As the name suggests, this executes the `wallHeatFlux` OpenFOAM function object 
 []
 ```
 
-The `AuxVariables` must then be imposed as boundary conditions using `coupledVarNeumannBC` type
+The `AuxVariables` must then be imposed as boundary conditions using
+`coupledVarNeumannBC` type
 
 ```toml
 [BCs]
@@ -283,13 +321,20 @@ The `AuxVariables` must then be imposed as boundary conditions using `coupledVar
 []
 ```
 
+The -1 scale factor is used as the `FoamFunctionObject` gives the outward
+normal wall heat flux. The `CoupledVarNeumannBC` is also defined using
+the outward normal to the MOOSE boundary so the sign must be reversed to account
+for heat travelling from the fluid to the solid.
+
 ## Running and visualising the case
 
-The case, including downloading the meshes, can be run using `./run.sh`.
+The case, including downloading and partitioning the meshes, can be run using
+`./run.sh`.
 
 ### Visualisation using `pyvista`
 
-`pyvista` is pythonic VTK (Visualisation Toolkit) wrapper that allows high quality 3D data to be plotted. This can be installed using
+`pyvista` is pythonic VTK (Visualisation Toolkit) wrapper that allows high
+quality 3D data to be plotted. This can be installed using
 
 ```sh
 pip install pyvista
