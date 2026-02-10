@@ -19,7 +19,7 @@ public:
 
 protected:
   // Get the value of the MOOSE variable at an element
-  Real variableValueAtElement(const libMesh::Elem * elem);
+  Real variableValueAtElement(const libMesh::Elem & elem);
 
   // Get the data vector of the MOOSE field on a subdomain
   std::vector<Real> getMooseVariableArray(int subdomainId);

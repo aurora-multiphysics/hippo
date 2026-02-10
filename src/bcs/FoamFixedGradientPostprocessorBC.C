@@ -1,7 +1,6 @@
 #include "FoamFixedGradientPostprocessorBC.h"
 #include "PstreamReduceOps.H"
 #include "Registry.h"
-#include "fixedGradientFvPatchFields.H"
 #include <algorithm>
 
 registerMooseObject("hippoApp", FoamFixedGradientPostprocessorBC);
@@ -34,19 +33,13 @@ FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
   auto & foam_mesh = _mesh->fvMesh();
 
   // Get subdomains this FoamBC acts on
-  // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
   auto subdomains = _mesh->getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
     auto & boundary = foam_mesh.boundary()[subdomain];
     // Get underlying field from OpenFOAM boundary patch.
-    // TODO: Change to function on rebase
-    auto & var = const_cast<Foam::fvPatchField<double> &>(
-        boundary.lookupPatchField<Foam::volScalarField, double>(_foam_variable));
-
-    // Get the gradient associated with the field
-    Foam::scalarField & foam_gradient(
-        Foam::refCast<Foam::fixedGradientFvPatchScalarField>(var).gradient());
+    auto & foam_gradient =
+        _mesh->getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
     // If diffusivity_coefficient is specified grad array is a flux, so result
     // must be divided by it
