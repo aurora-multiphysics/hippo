@@ -12,8 +12,8 @@ FoamMassFlowRateInletBC::validParams()
   auto params = FoamPostprocessorBCBase::validParams();
 
   params.addParam<Real>("scale_factor", 1., "Scale factor multiply mass flow rate pp by.");
-  params.remove("foam_variable");
-  params.addPrivateParam<std::string>("foam_variable", "U");
+  params.suppressParameter<std::string>("foam_variable");
+  params.set<std::string>("foam_variable") = "U";
 
   return params;
 }
