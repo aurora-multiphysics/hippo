@@ -2,18 +2,30 @@
   [poly]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/polygon.msh && polyDualMesh -overwrite 75"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/polygon.msh && polyDualMesh -overwrite 75 && decomposePar"'
     []
     [run]
       type = RunApp
       input = run.i
       prereq = poly/setup
     []
-
     [verify]
       type = PythonUnitTest
       input = test.py
       prereq = poly/run
+    []
+    [run_distributed]
+      type = RunApp
+      input = run.i
+      prereq = poly/setup
+      min_parallel=2
+      max_parallel=2
+      cli_args='--distributed-mesh'
+    []
+    [verify_distributed]
+      type = PythonUnitTest
+      input = test.py
+      prereq = poly/run_distributed
     []
   []
 []

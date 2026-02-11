@@ -191,12 +191,9 @@ FoamMesh::buildMesh()
   // Need to be able to identify a moose node with a openFoam node
   _mesh->allow_renumbering(false);
 
-  if (!_mesh->is_replicated())
-  {
-    _mesh->skip_partitioning(true);
-    _mesh->recalculate_n_partitions();
-    libMesh::Partitioner::set_node_processor_ids(*_mesh);
-  }
+  _mesh->skip_partitioning(true);
+  _mesh->recalculate_n_partitions();
+  libMesh::Partitioner::set_node_processor_ids(*_mesh);
 
   _mesh->prepare_for_use();
 
