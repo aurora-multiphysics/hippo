@@ -29,7 +29,7 @@
     type = Transient
     [TimeSteppers]
         [foam]
-            type = FoamControlledTimeStepper
+            type = FoamTimeStepper
         []
     []
 []

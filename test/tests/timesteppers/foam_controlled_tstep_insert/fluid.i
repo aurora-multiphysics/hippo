@@ -40,9 +40,8 @@
   petsc_options_value = 'hypre boomeramg'
 
   end_time=3.
-  dt = 1.
   [TimeStepper]
-    type = FoamControlledTimeStepper
+    type = FoamTimeStepper
   []
 []
 

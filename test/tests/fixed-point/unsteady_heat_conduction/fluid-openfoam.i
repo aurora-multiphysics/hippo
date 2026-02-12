@@ -54,7 +54,7 @@
 
     [TimeSteppers]
         [foam]
-            type = FoamControlledTimeStepper
+            type = FoamTimeStepper
         []
     []
 []
