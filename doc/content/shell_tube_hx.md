@@ -251,10 +251,10 @@ used in the `FoamVariables` block:
 []
 ```
 
-As the name suggests, this executes the `wallHeatFlux` OpenFOAM function
-object and shadows its output with a MOOSE variable which can be transferred
-by the solid app. `solid.i` needs `AuxVariables` to contain the variables
-sent from the inner and outer Hippo simulations
+As the `type` suggests, this executes the `wallHeatFlux` OpenFOAM function
+object and shadows its output with a MOOSE variable called `fluid_heat_flux`
+which can be transferred to the solid app. `solid.i` needs `AuxVariables`
+to contain the variables sent from the inner and outer Hippo simulations.
 
 ```toml
 [AuxVariables]
