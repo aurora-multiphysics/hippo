@@ -3,38 +3,40 @@
 #include "FoamProblem.h"
 #include "FoamSolver.h"
 
+#include <InputParameters.h>
 #include <TimeStepper.h>
 
-/**
- * TimeStepper implementation for OpenFOAM.
- *
- * This is a simple implementation that takes the current time, final time and
- * time step size from MOOSE and sets them on the OpenFOAM solver.
- *
- * This does not rewrite the OpenFOAM case's controlDict, but any time-step
- * related settings in the controlDict file will be ignored.
+/*
+Time stepper that allows OpenFOAM to control the time step enabling features such as CFL
+ daptive time steps. The intention is to allows the current time step in OpenFOAM
+ to be exposed to MOOSE
  */
+
 class FoamTimeStepper : public TimeStepper
 {
 public:
   FoamTimeStepper(InputParameters const & params);
   static InputParameters validParams();
 
-  /// Initial time-step size comes from the MOOSE input file.
-  virtual Real computeInitialDT();
-  /**
-   * Read the time-step MOOSE wants to take and set it on the OpenFOAM problem.
-   *
-   * The main idea behind this is to enable MOOSE's fixed point iterations,
-   * where MOOSE may want to change the current time/time-step and the OpenFOAM
-   * solve needs to be updated to reflect this.
-   */
+  // Get initial time step from OpenFOAM input file
+  virtual Real computeInitialDT() { return computeDT(); };
+
+  /* Read time step from OpenFOAM
+    - Make sure the time step duration is computed in the current step
+  */
   virtual Real computeDT();
-  /// Set the initial time, final time and time step size on the OpenFOAM
-  /// problem.
+
+  // Consider how to communicate starting time for this stepper
+  // e.g. after a restart this would need to be executed after the
+  // OpenFOAM restart.
   virtual void init();
 
 private:
+  // These two variables are needed depending on how the time-stepper is initialised
   Hippo::FoamSolver & solver() { return problem()->solver(); }
   FoamProblem * problem();
+  // Variables to determine whether an adjustable time step is used in OF and
+  // what it is.
+  bool _dt_adjustable = false;
+  Real _foam_dt = 0.;
 };
