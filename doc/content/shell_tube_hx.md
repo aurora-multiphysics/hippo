@@ -33,8 +33,7 @@ Hippo is currently capable of two CHT coupling strategies
 FFTB is used in this example. The choice between TFFB and FFTB is usually
 determined by the material properties of the fluid and solid region,
 with FFTB typically better when the solid has much higher thermal
-conductivity than the fluid. The drawback with FFTB, is that if
-all
+conductivity than the fluid. The drawback with FFTB, is that if all
 flux boundary conditions are used on the solid, a transient solve
 must be used, which can dramatically increase wall clock time.
 
@@ -48,19 +47,19 @@ must be used, which can dramatically increase wall clock time.
 - `solid.i`: MOOSE input file for the solid region subject to heat conduction.
 - `inner.i`: Hippo input file for the tube region.
 - `outer.i`: Hippo input file for the shell region.
-- `clean.i`: cleans case directories.
+- `clean.sh`: cleans case directories.
 - `post.py`: python script for postprocessing the results
 
 ## Heat conduction problem
 
-The solid region closes resembles that from the previous example, although in
+The solid region closely resembles that from the previous example, although in
 this case, the BCs are defined entirely by heat transfer from the fluid domain.
 Below we highlight some keys features of the solid solve that differ from
 the step-by-step example
 
 ### Mesh
 
-The solid mesh in this case has been generated previously and is a copy
+The solid mesh in this case has been generated for you and is a copy
 of the mesh used in the preCICE tutorial although converted into the Exodus
 II file format which is the most common format used by MOOSE. This is specified with
 
@@ -187,9 +186,9 @@ This conversion is performed using a `ProjectionAux` on the `inner` and `outer` 
 ```
 
 Note that we have restricted the `ProjectionAux` to only apply to boundaries
-as in this case, we only must consider data transfer there.
+as in this case, we only need to consider data transfer there.
 
-The `Transfers` block is used to define the how the variables are transferred
+The `Transfers` block is used to define how the variables are transferred
 to the Hippo apps. In this case, we have used a nearest location transfer,
 which is often used on complex geometries, other options include using
 geometric interpolation.
@@ -220,8 +219,9 @@ geometric interpolation.
 The `from_boundaries` parameter is used here to restrict the nearest location
 search to the specified boundary.
 
-In the Hippo input files, we use a `FoamBCs` block to impose the bounary
-conditions. Both `inner.i` and `outer.i` are the same:
+In the Hippo input files, we use a `FoamBCs` block to impose the boundary
+conditions on the OpenFOAM domains.
+Both `inner.i` and `outer.i` are the same:
 
 ```toml
 [FoamBCs]
