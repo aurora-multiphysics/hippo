@@ -34,7 +34,8 @@ We will transfer the wall temperature from OpenFOAM
 and set that as a Dirichlet boundary condition on the MOOSE solve.
 These transfers will occur at every time step.
 
-!media images/step_by_step/setup.svg style=width:75%;align=center
+!media images/step_by_step/setup.svg style=width:75%;align=center;
+       caption=Fluid and solid domains.
 
 ## Setting Up the OpenFOAM Case
 
@@ -421,7 +422,8 @@ or in parallel
 $ mpirun -n 2 hippo-opt -i flow_over_heated_plate.i && reconstructPar -case fluid-openfoam
 ```
 
-!media images/step_by_step/flow_over_heated_plate.png style=width:75% caption=The result of the coupled solve after 10 seconds.
+!media images/step_by_step/flow_over_heated_plate.png style=width:75%;
+       caption=The result of the coupled solve after 10 seconds.
 
 Find the completed input files below:
 
