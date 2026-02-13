@@ -8,9 +8,19 @@ import numpy as np
 import pyvista as pv
 
 # import Hippo test python functions
-from read_hippo_data import get_foam_times, read_moose_exodus_data
+from read_hippo_data import get_foam_times, read_moose_exodus_data, read_openfoam_data
+from analytical import unsteady1d_temp
+
 
 RUN_DIR = Path(__file__).parent
+
+K_SOLID = 1
+RHO_CP_SOLID = 1
+K_FLUID = 4
+RHO_CP_FLUID = 16
+T_HOT = 1.0
+T_COLD = 0.0
+L = 1
 
 
 class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
@@ -43,3 +53,28 @@ class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
             assert np.array_equal(temp, temp_ref), (
                 f"Max diff ({time}): {abs(temp - temp_ref).max()}"
             )
+
+    def test_analytical(self):
+        """Compare against 1D unsteady analytical solution"""
+        times = [0.0025, 0.005, 0.01]  # seconds
+        for time in times:
+            moose_coords, moose_temperature = read_moose_exodus_data(
+                RUN_DIR / "main_out.e", time, "T"
+            )
+            foam_coords, foam_temperature = read_openfoam_data("foam", time, "T")
+            x = np.concatenate([moose_coords["x"], foam_coords["x"]])
+            temp = np.concatenate([moose_temperature, foam_temperature])
+
+            analytic_temp = unsteady1d_temp(
+                x=x,
+                time=time,
+                temp_cold=T_COLD,
+                temp_hot=T_HOT,
+                k1=K_SOLID,
+                k2=K_FLUID,
+                rho_cp1=RHO_CP_SOLID,
+                rho_cp2=RHO_CP_FLUID,
+            )
+
+            rmse = np.sqrt(np.sum(np.square(analytic_temp - temp)) / len(temp))
+            self.assertLess(rmse, 5e-3, msg=f"for time = {time} s")
