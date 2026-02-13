@@ -5,6 +5,7 @@
 
 #include <InputParameters.h>
 #include <TimeStepper.h>
+#include <memory>
 
 /*
 Time stepper that allows OpenFOAM to control the time step enabling features such as CFL
@@ -39,4 +40,6 @@ private:
   // what it is.
   bool _dt_adjustable = false;
   Real _foam_dt = 0.;
+  Real _desired_dt;
+  Foam::functionObjects::mooseDeltaT * _moose_dt;
 };

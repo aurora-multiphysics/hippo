@@ -20,12 +20,17 @@ class mooseDeltaT : public functionObject
 {
 private:
   const scalar & dt_;
+  bool alteredDt_;
+  const scalar deltaTFactor_;
 
 public:
   TypeName("mooseDeltaT")
 
       mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
-    : functionObject(name, runTime), dt_(dt)
+    : functionObject(name, runTime),
+      dt_(dt),
+      alteredDt_(false),
+      deltaTFactor_(Foam::solver::deltaTFactor)
   {
   }
 
@@ -35,7 +40,17 @@ public:
 
   bool execute() { return true; }
   bool write() { return true; }
-  scalar maxDeltaT() const { return dt_; }
+  void setAltered(bool altered) { alteredDt_ = altered; }
+  scalar maxDeltaT() const
+  {
+    // If MOOSE altered the previous time step this prevents the time step cut back affecting future
+    // time steps
+    if (alteredDt_)
+      Foam::solver::deltaTFactor = Foam::rootVGreat;
+    else
+      Foam::solver::deltaTFactor = deltaTFactor_;
+    return dt_;
+  }
 };
 }
 }
@@ -67,7 +82,7 @@ public:
   bool isDeltaTAdjustable() const;
   // creates function object that tells OpenFOAM what MOOSE's
   // time step is.
-  void appendDeltaTFunctionObject(const Foam::scalar & dt);
+  Foam::functionObjects::mooseDeltaT * appendDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
 
