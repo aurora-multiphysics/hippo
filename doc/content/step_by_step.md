@@ -128,6 +128,7 @@ in the `volScalarField` named `T`:
     []
 []
 ```
+
 Internally, Hippo creates `AuxVariable`s which can use MOOSE's transfer system
 and so can be transferred between MOOSE apps.
 
