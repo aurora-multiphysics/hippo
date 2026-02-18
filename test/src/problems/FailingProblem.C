@@ -12,7 +12,7 @@
 
 #include "MooseApp.h"
 
-registerMooseObject("hippoApp", FailingProblem);
+registerMooseObject("hippoTestApp", FailingProblem);
 
 InputParameters
 FailingProblem::validParams()

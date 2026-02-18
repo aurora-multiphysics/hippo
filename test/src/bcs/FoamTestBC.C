@@ -1,3 +1,3 @@
 #include "FoamTestBC.h"
 
-registerMooseObject("hippoApp", FoamTestBC);
+registerMooseObject("hippoTestApp", FoamTestBC);
