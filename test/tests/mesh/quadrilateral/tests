@@ -2,18 +2,30 @@
   [quad]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh && decomposePar"'
     []
     [run]
       type = RunApp
       input = run.i
       prereq = quad/setup
     []
-
     [verify]
       type = PythonUnitTest
       input = test.py
       prereq = quad/run
+    []
+    [run_distributed]
+      type = RunApp
+      input = run.i
+      prereq = quad/setup
+      min_parallel=2
+      max_parallel=2
+      cli_args='--distributed-mesh'
+    []
+    [verify_distributed]
+      type = PythonUnitTest
+      input = test.py
+      prereq = quad/run_distributed
     []
   []
 []
