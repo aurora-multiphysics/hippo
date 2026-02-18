@@ -1,7 +1,6 @@
 #include "FoamMesh.h"
 #include "FoamDataStore.h"
 #include "Foam2MooseMeshGen.h"
-#include "libmesh/id_types.h"
 
 #include <MooseError.h>
 #include <libmesh/elem.h>
