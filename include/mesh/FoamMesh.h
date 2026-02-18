@@ -2,6 +2,7 @@
 
 #include "FoamRuntime.h"
 #include "Foam2MooseMeshGen.h"
+#include "libmesh/id_types.h"
 
 #include <MooseTypes.h>
 #include <MooseMesh.h>
@@ -41,8 +42,9 @@ public:
   libMesh::Elem * getElemPtr(int local) const;
   Foam::fvMesh & fvMesh() { return _foam_mesh; }
   // Create a MOOSE element from a Foam face, removing collinear points on edges.
-  std::unique_ptr<Elem>
-  createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter, const Hippo::FoamFace & face, int id);
+  std::unique_ptr<Elem> createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
+                                      const Hippo::FoamFace & face,
+                                      dof_id_type id);
 
   int64_t getPatchCount(int subdomain_id) const { return _patch_counts.at(subdomain_id); };
   int64_t getPatchOffset(int subdomain_id) const { return _patch_offsets.at(subdomain_id); };

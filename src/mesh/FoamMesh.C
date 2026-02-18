@@ -1,6 +1,7 @@
 #include "FoamMesh.h"
 #include "FoamDataStore.h"
 #include "Foam2MooseMeshGen.h"
+#include "libmesh/id_types.h"
 
 #include <MooseError.h>
 #include <libmesh/elem.h>
@@ -105,7 +106,7 @@ checkPointOnLine(const libMesh::Node * pt,
 std::unique_ptr<Elem>
 FoamMesh::createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
                         const Hippo::FoamFace & face,
-                        int id)
+                        dof_id_type id)
 {
   // get all MOOSE nodes associated with points in Foam face
   std::vector<libMesh::Node *> points;
