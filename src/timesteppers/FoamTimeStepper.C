@@ -17,7 +17,7 @@ FoamTimeStepper::validParams()
 }
 
 FoamTimeStepper::FoamTimeStepper(InputParameters const & params)
-  : TimeStepper(params), _foam_dt{}, _desired_dt{}, _moose_dt(nullptr)
+  : TimeStepper(params), _foam_dt{}, _desired_dt{}, _moose_dt()
 {
   auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
   if (!problem)
@@ -37,22 +37,20 @@ FoamTimeStepper::computeDT()
   // preSolve must be called as this updates the BCs.
   solver().preSolve();
 
-  // Tells mooseDelta function object to prevent the time step being cutback at the next step if the
-  // previous one was cut back by MOOSE. THis again is pretty horrific but needs must.
-  if (solver().getTimeDelta() != _desired_dt)
-    _moose_dt->setAltered(true);
-  else
-    _moose_dt->setAltered(false);
+  // Tells the mooseDelta function object what the previous desired time
+  // step was so it can work out whether there was a MOOSE induced cutback.
+  _moose_dt->get().setOldDesiredDt(_desired_dt);
 
   // Ensure MOOSE gets OpenFOAM's time step unaffected by the mooseDeltaT
   // functionObject.
-  Real dt_tmp = _dt;
-  _dt = Foam::rootVGreat;
+  _moose_dt->get().disable();
 
   // compute OpenFOAM's desired time step
   _desired_dt = solver().computeDeltaT();
-  // reset MOOSE's time step and return
-  _dt = dt_tmp;
+
+  // reenable the function object
+  _moose_dt->get().enable();
+
   return _desired_dt;
 }
 

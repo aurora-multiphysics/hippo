@@ -1,15 +1,11 @@
 #pragma once
 
-#include "fvMesh.H"
 #include "scalar.H"
 #include "solver.H"
 #include "functionObject.H"
 
 #include <Time.H>
 #include <TimeState.H>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 namespace Foam
 {
@@ -20,8 +16,9 @@ class mooseDeltaT : public functionObject
 {
 private:
   const scalar & dt_;
-  bool alteredDt_;
+  scalar oldDesiredDt_;
   const scalar deltaTFactor_;
+  bool enabled_;
 
 public:
   TypeName("mooseDeltaT")
@@ -29,8 +26,9 @@ public:
       mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
     : functionObject(name, runTime),
       dt_(dt),
-      alteredDt_(false),
-      deltaTFactor_(Foam::solver::deltaTFactor)
+      oldDesiredDt_(time_.deltaTValue()),
+      deltaTFactor_(Foam::solver::deltaTFactor),
+      enabled_(true)
   {
   }
 
@@ -40,13 +38,19 @@ public:
 
   bool execute() { return true; }
   bool write() { return true; }
-  void setAltered(bool altered) { alteredDt_ = altered; }
+  void setOldDesiredDt(scalar desired_dt) { oldDesiredDt_ = desired_dt; }
+  void enable() { enabled_ = true; }
+  void disable() { enabled_ = false; }
   scalar maxDeltaT() const
   {
-    // If MOOSE altered the previous time step this prevents the time step cut back affecting future
-    // time steps
-    if (alteredDt_)
-      Foam::solver::deltaTFactor = Foam::rootVGreat;
+    // If we don't want MOOSE's timestep to be considered, we return the maximum value.
+    if (!enabled_)
+      return Foam::VGREAT;
+
+    // If MOOSE altered the previous time step change the deltaTfactor to undo the MOOSE induced
+    // cutback
+    if (time_.deltaTValue() != oldDesiredDt_)
+      Foam::solver::deltaTFactor = deltaTFactor_ * oldDesiredDt_ / time_.deltaTValue();
     else
       Foam::solver::deltaTFactor = deltaTFactor_;
     return dt_;
@@ -82,7 +86,7 @@ public:
   bool isDeltaTAdjustable() const;
   // creates function object that tells OpenFOAM what MOOSE's
   // time step is.
-  Foam::functionObjects::mooseDeltaT * appendDeltaTFunctionObject(const Foam::scalar & dt);
+  Foam::functionObjects::mooseDeltaT & appendDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
 

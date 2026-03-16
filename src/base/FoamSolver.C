@@ -12,7 +12,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iterator>
 
 namespace Foam
 {
@@ -167,11 +166,11 @@ FoamSolver::isDeltaTAdjustable() const
   return _solver->runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
 }
 
-Foam::functionObjects::mooseDeltaT *
+Foam::functionObjects::mooseDeltaT &
 FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
 {
   auto moose_dt = new Foam::functionObjects::mooseDeltaT("Moose time step", runTime(), dt);
   runTime().functionObjects().append(moose_dt);
-  return moose_dt;
+  return *moose_dt;
 }
 } // namespace Hippo
