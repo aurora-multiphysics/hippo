@@ -1,0 +1,38 @@
+[Tests]
+    [setup_no_0]
+        type = RunCommand
+        command = 'bash -c "mkdir -p foam_no_0/system foam_no_0/constant"'
+    []
+    [setup_no_constant]
+        type = RunCommand
+        command = 'bash -c "mkdir -p foam_no_constant/system foam_no_constant/0"'
+    []
+    [setup_no_system]
+        type = RunCommand
+        command = 'bash -c "mkdir -p foam_no_system/0 foam_no_system/constant"'
+    []
+    [foam_invalid]
+        type = RunException
+        input = main.i
+        cli_args = 'Mesh/case=foam1'
+        expect_err = "'foam1' is not a directory."
+    []
+    [no_0]
+        type = RunException
+        input = main.i
+        cli_args = 'Mesh/case=foam_no_0'
+        expect_err = "'foam_no_0' must have directories '0', 'constant', and 'system'."
+    []
+    [no_system]
+        type = RunException
+        input = main.i
+        cli_args = 'Mesh/case=foam_no_system'
+        expect_err = "'foam_no_system' must have directories '0', 'constant', and 'system'."
+    []
+    [no_constant]
+        type = RunException
+        input = main.i
+        cli_args = 'Mesh/case=foam_no_constant'
+        expect_err = "'foam_no_constant' must have directories '0', 'constant', and 'system'."
+    []
+[]
