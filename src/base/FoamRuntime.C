@@ -13,7 +13,7 @@ checkValidCaseDir(const std::string & case_dir)
 {
   namespace fs = std::filesystem;
 
-  std::filesystem::path path{case_dir};
+  fs::path path{case_dir};
   if (!fs::exists(path) || !fs::is_directory(path))
     mooseError("'", case_dir, "' is not a directory.");
 
@@ -22,6 +22,7 @@ checkValidCaseDir(const std::string & case_dir)
 
   return case_dir;
 }
+
 cArgs
 make_foam_init_args(const std::string & case_dir, MPI_Comm const & comm)
 {
