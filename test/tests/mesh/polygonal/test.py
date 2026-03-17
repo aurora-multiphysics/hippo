@@ -45,6 +45,5 @@ class TestUnsteadyHeatConductionInInfiniteSystem(unittest.TestCase):
                 rho_cp1=RHO_CP_SOLID,
                 rho_cp2=RHO_CP_FLUID,
             )
-
-            rmse = np.sqrt(np.sum(np.square(analytic_temp - temp)) / len(temp))
+            rmse = np.linalg.norm(analytic_temp - temp) / len(temp)
             self.assertLess(rmse, 5e-3, msg=f"for time = {time} s")

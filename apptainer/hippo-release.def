@@ -1,0 +1,45 @@
+Bootstrap: oras
+From: quay.io/ukaea/hippo:dev-ca6c17e88e
+
+%files
+    . /opt/hippo/
+
+%arguments
+    MOOSE_JOBS=4
+
+%post
+    export MPI_ROOT=/opt/openmpi
+    export MOOSE_DIR=/opt/moose
+
+    source  /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+    export FOAM_USER_LIBBIN=/root/OpenFOAM-12/lib
+    export FOAM_USER_APPBIN=/root/OpenFOAM-12/bin
+
+    cd /opt/hippo/
+    git clean -f
+    git config --global --add safe.directory /opt/moose
+
+    make clean
+    rm -rf lib test/lib
+
+    make -j {{ MOOSE_JOBS }} all METHOD=opt
+    make -j {{ MOOSE_JOBS }} all METHOD=dbg
+
+%environment
+    export MPI_ROOT=/opt/openmpi
+    export MOOSE_DIR=/opt/moose
+    if [ -f $HOME/.OpenFOAM/prefs.sh ]; then
+        echo "WARNING: Potential clash of OpenFOAM environment variables from $HOME/.OpenFOAM/prefs.sh. Consider removing!"
+    fi
+
+    source /opt/openfoam/OpenFOAM-12/etc/bashrc
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM-12/lib/
+    export PATH=$PATH:/root/OpenFOAM-12/bin/
+    unset FOAM_SIGFPE
+    export PMIX_MCA_gds=hash
+
+
+%runscript
+    #!/bin/bash
+
+    exec hippo-opt $@

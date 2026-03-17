@@ -56,6 +56,7 @@ RUN dnf --enablerepo=devel install -y \
         libtirpc-devel \
         make \
         wget \
+        golang \
         zlib-devel \
     && wget https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-4.65-4.el8.x86_64.rpm \
     && wget https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-devel-4.65-4.el8.x86_64.rpm \
@@ -96,11 +97,22 @@ ENV PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
 ENV CPLUS_INCLUDE_PATH="/opt/miniforge3/include/python3.12:${CPLUS_INCLUDE_PATH}"
 RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 
+# install apptainer from source
+RUN wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5.tar.gz && \
+    tar -xzf apptainer-1.4.5.tar.gz && \
+    cd apptainer-1.4.5 && \
+    ./mconfig --with-suid && \
+    make -C builddir && \
+    make -C builddir install && \
+    cd .. && \
+    rm -r apptainer-* && \
+    apptainer --version
+
 WORKDIR "/opt/hippo"
 
 # Build MOOSE
 RUN git clone --depth=1 --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
-RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS
+RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS METHOD=opt
 
 # Build OpenFOAM
 # Ugly, but the Zoltan build looks for things in 'lib64' that are in 'lib'
@@ -109,6 +121,9 @@ COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS -q
+
+RUN cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
+RUN sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
 
 # Python linting and testing requirements
 COPY ./requirements.test.txt ./requirements.test.txt

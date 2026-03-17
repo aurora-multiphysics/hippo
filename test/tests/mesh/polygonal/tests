@@ -17,15 +17,19 @@
     [run_distributed]
       type = RunApp
       input = run.i
-      prereq = poly/setup
+      prereq = poly/verify
       min_parallel=2
       max_parallel=2
       cli_args='--distributed-mesh'
     []
+    [reconstruct]
+      type = RunCommand
+      command = 'bash -c "reconstructPar -case fluid-openfoam"'
+    []
     [verify_distributed]
       type = PythonUnitTest
       input = test.py
-      prereq = poly/run_distributed
+      prereq = poly/reconstruct
     []
   []
 []
