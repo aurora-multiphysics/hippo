@@ -2,12 +2,27 @@
 #include "fvCFD_moose.h"
 
 #include <MooseError.h>
-
+#include <filesystem>
 namespace Hippo
 {
 
 namespace
 {
+const std::string
+checkValidCaseDir(const std::string & case_dir)
+{
+  namespace fs = std::filesystem;
+
+  fs::path path{case_dir};
+  if (!fs::exists(path) || !fs::is_directory(path))
+    mooseError("'", case_dir, "' is not a directory.");
+
+  if (!fs::exists(path / "0") || !fs::exists(path / "constant") || !fs::exists(path / "system"))
+    mooseError("'", case_dir, "' must have directories '0', 'constant', and 'system'.");
+
+  return case_dir;
+}
+
 cArgs
 make_foam_init_args(const std::string & case_dir, MPI_Comm const & comm)
 {
@@ -43,7 +58,7 @@ make_arg_list(cArgs & argv, MPI_Comm const & comm)
 } // namespace
 
 FoamRuntime::FoamRuntime(const std::string & case_dir, MPI_Comm const & comm)
-  : _argv(make_foam_init_args(case_dir, comm)),
+  : _argv(make_foam_init_args(checkValidCaseDir(case_dir), comm)),
     _runtime(Foam::Time::controlDictName, make_arg_list(_argv, comm))
 {
 }
