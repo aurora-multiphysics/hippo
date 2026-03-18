@@ -87,7 +87,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     chown -R hippo-test-user:hippo-test-user /opt/moose
 
 %environment
-    . /opt/hippo/external/openfoam/OpenFOAM-12/etc/bashrc
+    . /opt/openfoam/OpenFOAM-12/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose
 
