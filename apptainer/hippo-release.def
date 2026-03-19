@@ -1,19 +1,24 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo:dev-148e4238a4
+From: quay.io/ukaea/hippo:dev-7d3ed6fa06
+
+%files
+    . /opt/hippo/
 
 %arguments
-    GIT_SHA=0
     MOOSE_JOBS=4
+
 %post
-    cd /opt/hippo
-    rm -rf *
-    git clone https://github.com/aurora-multiphysics/hippo.git .
-    git checkout {{ GIT_SHA }}
+    source  /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+    cd /opt/hippo/
+
+    git clean -f
     git config --global --add safe.directory /opt/moose
 
-    . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+    make clean
 
-    make -j {{ MOOSE_JOBS }}
+    make -j {{ MOOSE_JOBS }} METHOD=opt
+    make -j {{ MOOSE_JOBS }} METHOD=dbg
+
 %test
     cd /opt/hippo
     ./run_tests
