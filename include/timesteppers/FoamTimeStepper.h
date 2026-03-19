@@ -5,31 +5,33 @@
 
 #include <InputParameters.h>
 #include <TimeStepper.h>
+#include <functional>
+#include <optional>
 
 /*
 Time stepper that allows OpenFOAM to control the time step enabling features such as CFL
- daptive time steps. The intention is to allows the current time step in OpenFOAM
+ adaptive time steps. The intention is to allow the current time step in OpenFOAM
  to be exposed to MOOSE
  */
 
-class FoamControlledTimeStepper : public TimeStepper
+class FoamTimeStepper : public TimeStepper
 {
 public:
-  FoamControlledTimeStepper(InputParameters const & params);
+  FoamTimeStepper(InputParameters const & params);
   static InputParameters validParams();
 
   // Get initial time step from OpenFOAM input file
-  virtual Real computeInitialDT() { return computeDT(); };
+  virtual Real computeInitialDT() override { return computeDT(); };
 
   /* Read time step from OpenFOAM
     - Make sure the time step duration is computed in the current step
   */
-  virtual Real computeDT();
+  virtual Real computeDT() override;
 
   // Consider how to communicate starting time for this stepper
   // e.g. after a restart this would need to be executed after the
   // OpenFOAM restart.
-  virtual void init();
+  virtual void init() override;
 
 private:
   // These two variables are needed depending on how the time-stepper is initialised
@@ -38,5 +40,7 @@ private:
   // Variables to determine whether an adjustable time step is used in OF and
   // what it is.
   bool _dt_adjustable = false;
-  Real _foam_initial_dt = 0.;
+  Real _foam_dt = 0.;
+  Real _desired_dt;
+  std::optional<std::reference_wrapper<Foam::functionObjects::mooseDeltaT>> _moose_dt;
 };

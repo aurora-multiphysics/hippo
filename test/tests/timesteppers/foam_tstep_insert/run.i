@@ -10,27 +10,21 @@
   []
 []
 
-[FoamBCs]
-  [T]
-    type = FoamFixedValueBC
-    foam_variable = T
-    initial_condition = 111
+[Kernels]
+  [null]
+    type=NullKernel
+    variable = Dummy
   []
 []
 
-[FoamVariables]
-  [foam_T]
-    type = FoamVariableField
-    foam_variable = T
+[MultiApps]
+  [hippo]
+    type = TransientMultiApp
+    app_type = hippoApp
+    execute_on = timestep_begin
+    input_files = 'fluid.i'
+    sub_cycling = true
   []
-  [foam_hf]
-    type = FoamFunctionObject
-    foam_variable = wallHeatFlux
-  []
-[]
-
-[Problem]
-  type=FoamProblem
 []
 
 [Executioner]
@@ -40,9 +34,8 @@
   petsc_options_value = 'hypre boomeramg'
 
   end_time=3.
-  [TimeStepper]
-    type = FoamTimeStepper
-  []
+  dt = 1.
+
 []
 
 [Outputs]

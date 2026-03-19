@@ -1,0 +1,20 @@
+[Tests]
+  [foam_controlled_tstep_insert]
+    # This checks the ability of OpenFOAM to set its own time step.
+    # Note that the OpenFOAM controlDict has a dt of 0.5 and an end time of 2.5.
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd buoyantCavity && ./Allclean && blockMesh"'
+    []
+    [run]
+      type = RunApp
+      input = run.i
+      prereq = foam_controlled_tstep_insert/setup
+    []
+    [verify]
+      type = RunCommand
+      command = 'bash verify.sh'
+      prereq = foam_controlled_tstep_insert/run
+    []
+  []
+[]

@@ -1,4 +1,20 @@
 [Tests]
+  [run_reference]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd foam && ./Allclean && blockMesh"'
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      prereq = run_reference/setup
+      allow_warnings = true
+    []
+    [copy]
+      type = RunCommand
+      command = 'bash -c "mkdir -p gold && cp -r foam/* gold/ && cp main_out.e gold/"'
+    []
+  []
   [unsteady_1d_variable_dt]
     [setup]
       type = RunCommand
@@ -11,11 +27,6 @@
       exodiff = main_out.e
       allow_warnings = true
     []
-    [prep_verify]
-      type = RunCommand
-      command = 'bash -c "tar -xzvf gold/unsteady_variable_dt.tar.gz -C gold/"'
-      prereq = unsteady_1d_variable_dt/run
-    []
     [verify]
       type = PythonUnitTest
       input = test.py
@@ -24,8 +35,8 @@
     []
     [prep_clean]
       type = RunCommand
-      command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
-      prereq = unsteady_1d_variable_dt/prep_verify
+      command = 'bash -c "rm -rf gold"'
+      prereq = run_reference/copy
     []
   []
 []
