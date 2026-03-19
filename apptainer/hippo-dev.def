@@ -94,6 +94,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     . /opt/openfoam/OpenFOAM-12/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose
+    export MPI_ROOT=/opt/mpich
 
 %runscript
     #!/bin/bash

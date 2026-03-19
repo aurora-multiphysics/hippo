@@ -16,8 +16,8 @@ From: quay.io/ukaea/hippo:dev-7d3ed6fa06
 
     make clean
 
-    make -j {{ MOOSE_JOBS }} METHOD=opt
-    make -j {{ MOOSE_JOBS }} METHOD=dbg
+    make -j {{ MOOSE_JOBS }} all METHOD=opt
+    make -j {{ MOOSE_JOBS }} all METHOD=dbg
 
 %test
     cd /opt/hippo
