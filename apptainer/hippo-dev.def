@@ -70,6 +70,8 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     git clone --depth=1 --branch release \
                  https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 
+    conda install pyyaml --yes --quiet
+
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=opt
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=dbg
 
