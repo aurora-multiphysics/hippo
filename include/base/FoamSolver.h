@@ -15,20 +15,20 @@ namespace functionObjects
 class mooseDeltaT : public functionObject
 {
 private:
-  const scalar & dt_;
-  scalar oldDesiredDt_;
-  const scalar deltaTFactor_;
-  bool enabled_;
+  const scalar & _dt;
+  scalar _old_desired_dt;
+  const scalar _delta_t_factor;
+  bool _enabled;
 
 public:
   TypeName("mooseDeltaT")
 
       mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
     : functionObject(name, runTime),
-      dt_(dt),
-      oldDesiredDt_(time_.deltaTValue()),
-      deltaTFactor_(Foam::solver::deltaTFactor),
-      enabled_(true)
+      _dt(dt),
+      _old_desired_dt(time_.deltaTValue()),
+      _delta_t_factor(Foam::solver::deltaTFactor),
+      _enabled(true)
   {
   }
 
@@ -38,22 +38,22 @@ public:
 
   bool execute() { return true; }
   bool write() { return true; }
-  void setOldDesiredDt(scalar desired_dt) { oldDesiredDt_ = desired_dt; }
-  void enable() { enabled_ = true; }
-  void disable() { enabled_ = false; }
+  void setOldDesiredDt(scalar desired_dt) { _old_desired_dt = desired_dt; }
+  void enable() { _enabled = true; }
+  void disable() { _enabled = false; }
   scalar maxDeltaT() const
   {
     // If we don't want MOOSE's timestep to be considered, we return the maximum value.
-    if (!enabled_)
+    if (!_enabled)
       return Foam::VGREAT;
 
     // If MOOSE altered the previous time step change the deltaTfactor to undo the MOOSE induced
     // cutback
-    if (time_.deltaTValue() != oldDesiredDt_)
-      Foam::solver::deltaTFactor = deltaTFactor_ * oldDesiredDt_ / time_.deltaTValue();
+    if (time_.deltaTValue() != _old_desired_dt)
+      Foam::solver::deltaTFactor = _delta_t_factor * _old_desired_dt / time_.deltaTValue();
     else
-      Foam::solver::deltaTFactor = deltaTFactor_;
-    return dt_;
+      Foam::solver::deltaTFactor = _delta_t_factor;
+    return _dt;
   }
 };
 }
