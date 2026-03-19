@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.5
       - name: pull apptainer image
         run: apptainer pull hippo-dev.sif oras://quay.io/ukaea/hippo:dev-5f05dea21e
       - name: Quality Checks
