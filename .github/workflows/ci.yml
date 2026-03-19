@@ -18,10 +18,10 @@ jobs:
           # As we're running in our own container, we're not the same user as is
           # used by 'actions/checkout', so git operations fail.
           # https://github.com/actions/checkout/issues/766
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git config --global --add safe.directory /opt/moose
-          pre-commit install
-          SKIP=no-commit-to-branch pre-commit run --all
+          apptainer exec hippo-release.sif git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          apptainer exec hippo-release.sif git config --global --add safe.directory /opt/moose
+          apptainer exec hippo-release.sif pre-commit install
+          apptainer exec hippo-release.sif SKIP=no-commit-to-branch pre-commit run --all
 
       - name: Build and test apptainer production container
         run: apptainer build hippo-release.sif apptainer/hippo-release.def
