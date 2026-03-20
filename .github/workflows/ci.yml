@@ -14,11 +14,13 @@ jobs:
       image: quay.io/ukaea/hippo:f4111251770f96aa77a0
     steps:
       - uses: actions/checkout@v4
-      - uses: eWaterCycle/setup-apptainer@v2
-        with:
-          apptainer-version: 1.4.5
-      - name: pull apptainer image
-        run: apptainer pull hippo-dev.sif oras://quay.io/ukaea/hippo:dev-5f05dea21e
+      - name: Install apptainer
+        run: |
+          sudo apt update
+          sudo apt install -y wget
+          cd /tmp
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
       - name: Quality Checks
         run: |
           # As we're running in our own container, we're not the same user as is
