@@ -1,0 +1,48 @@
+Bootstrap: docker
+From: quay.io/ukaea/hippo:f4111251770f96aa77a0
+
+%files
+    . /opt/hippo/
+
+%arguments
+    MOOSE_JOBS=4
+
+%post
+    export MPI_ROOT=/opt/openmpi
+    export MOOSE_DIR=/opt/moose
+    cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
+    sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
+
+    source  /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+    cd /opt/hippo/
+    git clean -f
+    git config --global --add safe.directory /opt/moose
+
+    make clean
+    rm -rf lib test/lib
+
+    make -j {{ MOOSE_JOBS }} all METHOD=opt
+    #make -j {{ MOOSE_JOBS }} all METHOD=dbg
+    chown -R hippo-user:hippo-user /opt/hippo
+
+%environment
+    export MPI_ROOT=/opt/openmpi
+    export MOOSE_DIR=/opt/moose
+    if [ -f $HOME/.OpenFOAM/prefs.sh ]; then
+        echo "WARNING: Potential clash of OpenFOAM environment variables from $HOME/.OpenFOAM/prefs.sh. Consider removing!"
+    fi
+
+    source /opt/openfoam/OpenFOAM-12/etc/bashrc
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM/hippo-user-12/platforms/linux64GccDPInt32Opt/lib/
+    unset FOAM_SIGFPE
+
+
+%runscript
+    #!/bin/bash
+
+    if [ "$1" = "--tests" ]; then
+        cd /opt/hippo
+        ./run_tests
+    else
+        exec hippo-opt $@
+    fi

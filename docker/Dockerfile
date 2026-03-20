@@ -63,6 +63,9 @@ RUN dnf --enablerepo=devel install -y \
         ./glpk-4.65-4.el8.x86_64.rpm \
         ./glpk-devel-4.65-4.el8.x86_64.rpm \
     && rm glpk-* \
+    && wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5-1.x86_64.rpm \
+    && dnf install -y apptainer-1.4.5-1.x86_64.rpm \
+    && rm apptainer-1.4.5-1.x86_64.rpm \
     && dnf clean all
 
 # MOOSE
@@ -100,7 +103,8 @@ WORKDIR "/opt/hippo"
 
 # Build MOOSE
 RUN git clone --depth=1 --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
-RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS
+RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS METHOD=opt
+RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS METHOD=dbg
 
 # Build OpenFOAM
 # Ugly, but the Zoltan build looks for things in 'lib64' that are in 'lib'
@@ -109,6 +113,9 @@ COPY ./scripts/install-openfoam.sh ./scripts/install-openfoam.sh
 COPY ./scripts/openfoam.patch ./scripts/openfoam.patch
 COPY ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 RUN bash ./scripts/install-openfoam.sh -o /opt/openfoam -s -j$OPENFOAM_JOBS -q
+
+RUN cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
+RUN sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
 
 # Python linting and testing requirements
 COPY ./requirements.test.txt ./requirements.test.txt
