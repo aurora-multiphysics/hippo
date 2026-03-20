@@ -35,7 +35,7 @@ jobs:
       - name: Test production container
         run: |
           sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
-          apptainer run --writable-tmpfs ../apptainer/hippo_release.sif --tests
+          apptainer run --writable-tmpfs hippo_release.sif --tests
       - name: Docs
         shell: bash
         run: |
