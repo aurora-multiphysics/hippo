@@ -10,6 +10,8 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    container:
+      image: quay.io/ukaea/hippo:f4111251770f96aa77a0
     steps:
       - uses: actions/checkout@v4
       - uses: eWaterCycle/setup-apptainer@v2
@@ -22,12 +24,16 @@ jobs:
           # As we're running in our own container, we're not the same user as is
           # used by 'actions/checkout', so git operations fail.
           # https://github.com/actions/checkout/issues/766
-          apptainer exec hippo-dev.sif bash -c "
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory /opt/moose
           pre-commit install
           SKIP=no-commit-to-branch pre-commit run --all
-          "
-      - name: Build and test apptainer production container
+      - name: Build apptainer production container
         run: apptainer build hippo-release.sif apptainer/hippo-release.def
+      - name: Test production container
+        run: |
+          sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
+          apptainer run --writable-tmpfs ../apptainer/hippo_release.sif --tests
       - name: Docs
         shell: bash
         run: |
