@@ -63,9 +63,10 @@ RUN dnf --enablerepo=devel install -y \
         ./glpk-4.65-4.el8.x86_64.rpm \
         ./glpk-devel-4.65-4.el8.x86_64.rpm \
     && rm glpk-* \
+    && wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5-1.x86_64.rpm \
+    && dnf install -y apptainer-1.4.5-1.x86_64.rpm \
+    && rm apptainer-1.4.5-1.x86_64.rpm \
     && dnf clean all
-
-    RUN dnf install -y https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5-1.x86_64.rpm
 
 # MOOSE
 ENV MOOSE_DIR=/opt/moose
