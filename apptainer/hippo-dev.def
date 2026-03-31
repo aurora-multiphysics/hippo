@@ -19,7 +19,6 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
         find ${LIBMESH_DIR}/bin -name "*-$method" -delete -print; \
         find ${LIBMESH_DIR} -name "*-$method.pc" -delete -print; \
     done
-    subscription-manager repos --enable codeready-builder-for-rhel-8-$(arch)-rpms
 
     dnf --enablerepo=devel install -y \
         findutils \
@@ -32,15 +31,10 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
         libtirpc-devel \
         make \
         wget \
-        zlib-devel
+        zlib-devel \
+        https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-4.65-4.el8.x86_64.rpm \
+        https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-devel-4.65-4.el8.x86_64.rpm
 
-    wget https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-4.65-4.el8.x86_64.rpm
-    wget https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-devel-4.65-4.el8.x86_64.rpm
-    dnf install -y \
-        ./glpk-4.65-4.el8.x86_64.rpm \
-        ./glpk-devel-4.65-4.el8.x86_64.rpm
-
-    rm glpk-*
     dnf clean all
 
     # MOOSE
