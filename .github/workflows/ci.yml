@@ -36,6 +36,11 @@ jobs:
         run: |
           apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
           [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
+      - name: Upload container artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apptainer-release-artefact
+          path: hippo-release-${{ github.sha }}.sif
       - name: Artifact docs
         id: deployment
         uses: actions/upload-pages-artifact@v3
