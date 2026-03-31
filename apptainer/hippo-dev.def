@@ -12,12 +12,14 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
     ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 
 %post
+    # Remove unnecessary libraries from libMesh
     for method in oprof devel; do \
         find ${LIBMESH_DIR}/lib -name "*_$method.so*" -delete -print; \
         find ${LIBMESH_DIR}/lib -name "*_$method.la" -delete -print; \
         find ${LIBMESH_DIR}/bin -name "*-$method" -delete -print; \
         find ${LIBMESH_DIR} -name "*-$method.pc" -delete -print; \
     done
+    subscription-manager repos --enable codeready-builder-for-rhel-8-$(arch)-rpms
 
     dnf --enablerepo=devel install -y \
         findutils \

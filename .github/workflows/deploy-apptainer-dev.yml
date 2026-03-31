@@ -1,4 +1,4 @@
-name: deploy-apptainer
+name: deploy-apptainer-dev
 permissions: read-all
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
       github.actor == 'k-collie'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install apptainer
         run: |
           wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb

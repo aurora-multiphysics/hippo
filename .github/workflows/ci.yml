@@ -11,10 +11,11 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
-          pip_install: pre-commit
+          pip-install: pre-commit
+          python-version: 3.14
       - name: Install apptainer
         run: |
           wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
@@ -35,7 +36,11 @@ jobs:
         run: |
           apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
           [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
-
+      - name: Upload container artefact
+        uses: actions/upload-artefact@v4
+        with:
+          name: apptainer-release-artefact
+          path: hippo-release-${{ github.sha }}.sif
       - name: Artifact docs
         id: deployment
         uses: actions/upload-pages-artifact@v3
