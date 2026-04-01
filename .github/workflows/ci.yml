@@ -39,7 +39,7 @@ jobs:
       - name: Upload container artifact
         uses: actions/upload-artifact@v4
         with:
-          name: apptainer-release-artefact
+          name: apptainer-release-artifact
           path: hippo-release-${{ github.sha }}.sif
       - name: Artifact docs
         id: deployment
