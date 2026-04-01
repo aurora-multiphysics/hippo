@@ -30,11 +30,11 @@ jobs:
         run: sudo apptainer build hippo-release-${{ github.sha }}.sif apptainer/hippo-release.def
       - name: Test production container
         run: |
-          apptainer exec --writable-tmpfs hippo-release.sif bash -c "cd /opt/hippo && ./run_tests"
+          apptainer exec --writable-tmpfs hippo-release-${{ github.sha }}.sif bash -c "cd /opt/hippo && ./run_tests"
       - name: Docs
         shell: bash
         run: |
-          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
+          apptainer exec hippo-release-${{ github.sha }}.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
           [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
       - name: Upload container artifact
         uses: actions/upload-artifact@v4
