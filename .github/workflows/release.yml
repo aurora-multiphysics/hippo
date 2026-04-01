@@ -40,11 +40,11 @@ jobs:
           fi
 
           echo "latest=$TAG" >> $GITHUB_OUTPUT
-          - name: Compute base version
-          id: base
-          run: |
-            LATEST="${{ steps.latest.outputs.latest }}"
-            BUMP="${{ github.event.inputs.bump }}"
+      - name: Compute base version
+        id: base
+        run: |
+          LATEST="${{ steps.latest.outputs.latest }}"
+          BUMP="${{ github.event.inputs.bump }}"
 
           VERSION=${LATEST#v}
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
