@@ -122,9 +122,8 @@ jobs:
           apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:$VERSION
       - name: Release
         id: create-release
-        run: |
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: ${{ steps.version.outputs.version }}
-            prerelease: ${{ github.event.inputs.prerelease }}
-            generate_release_notes: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          prerelease: ${{ github.event.inputs.prerelease }}
+          generate_release_notes: true
