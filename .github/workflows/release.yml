@@ -1,4 +1,6 @@
 name: Make Release
+permissions:
+  contents: write
 on:
   workflow_dispatch:
     inputs:
@@ -117,3 +119,4 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           generate_release_notes: true
           previous_tag: ${{ steps.latest.outputs.latest }}
+          make_latest: true
