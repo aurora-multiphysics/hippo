@@ -126,7 +126,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRAFT: ${{ inputs.dry_run && '--draft' || '' }}
         run: |
-          gh release create "${{ steps.version.outputs.version }}" \
-            --generate-notes \
-            --target main \
-            ${DRAFT}
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: ${{ steps.version.outputs.version }}
+            prerelease: ${{ github.event.inputs.prerelease }}
+            generate_release_notes: true
