@@ -97,15 +97,6 @@ jobs:
 
           echo "version=$NEXT" >> $GITHUB_OUTPUT
           echo "Final version: $NEXT"
-      - name: Create tag
-        if: ${{ !github.event.inputs.dry_run }}
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          git tag "$VERSION"
       - name: Download release apptainer artifact
         if: ${{ !github.event.inputs.dry_run }}
         uses: actions/download-artifact@v8
@@ -119,9 +110,10 @@ jobs:
           apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
           apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:$VERSION
       - name: Release
-        if: ${{ !github.event.inputs.dry_run }}
+        # if: ${{ !github.event.inputs.dry_run }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           prerelease: ${{ github.event.inputs.prerelease }}
           generate_release_notes: true
+          previous_tag: ${{ steps.latest.outputs.latest }}
