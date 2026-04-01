@@ -16,6 +16,10 @@ on:
         required: true
         type: boolean
         default: false
+      dry_run:
+        description: "Is this a dry-run?"
+        type: boolean
+        default: false
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -62,11 +66,11 @@ jobs:
           BASE="v$MAJOR.$MINOR.$PATCH"
 
           echo "base=$BASE" >> $GITHUB_OUTPUT
-          - name: Compute final version
-          id: version
-          run: |
-            BASE="${{ steps.base.outputs.base }}"
-            PRERELEASE="${{ github.event.inputs.prerelease }}"
+      - name: Compute final version
+        id: version
+        run: |
+          BASE="${{ steps.base.outputs.base }}"
+          PRERELEASE="${{ github.event.inputs.prerelease }}"
 
           if [ "$PRERELEASE" = "true" ]; then
             echo "Generating RC for $BASE"
@@ -85,34 +89,37 @@ jobs:
               NEXT_RC=$((RC_NUM + 1))
 
               NEXT="${BASE}-rc${NEXT_RC}"
-              fi
-              else
-              NEXT="$BASE"
-              fi
+            fi
+          else
+            NEXT="$BASE"
+          fi
 
           echo "version=$NEXT" >> $GITHUB_OUTPUT
           echo "Final version: $NEXT"
-          - name: Create tag
-          run: |
-            VERSION="${{ steps.version.outputs.version }}"
+      - name: Create tag
+        if: ${{ !github.event.inputs.dry_run }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
 
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           git tag "$VERSION"
-          - name: Download release apptainer artifact
-          uses: actions/download-artifact@v8
-          with:
-            name: apptainer-release-artifact
-            - name: Push container to quay.io
-            run: |
-              wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
-              sudo apt install -y ./apptainer_1.4.5_amd64.deb
-              apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
-              apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:$VERSION
-              - name: Release
-              uses: softprops/action-gh-release@v2
-              with:
-                tag_name: ${{ steps.version.outputs.version }}
-                prerelease: ${{ github.event.inputs.prerelease }}
-                generate_release_notes: true
+      - name: Download release apptainer artifact
+        if: ${{ !github.event.inputs.dry_run }}
+        uses: actions/download-artifact@v8
+        with:
+          name: apptainer-release-artifact
+      - name: Push container to quay.io
+        if: ${{ !github.event.inputs.dry_run }}
+        run: |
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
+          apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
+          apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:$VERSION
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          prerelease: ${{ github.event.inputs.prerelease }}
+          generate_release_notes: true
