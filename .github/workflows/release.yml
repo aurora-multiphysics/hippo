@@ -1,23 +1,22 @@
 name: Make Release
 
 on:
-  on:
-    workflow_dispatch:
-      inputs:
-        bump:
-          description: "Version update type"
-          required: true
-          type: choice
-          options:
-            - patch
-            - minor
-            - major
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version update type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
-        prerelease:
-          description: "Create a release candidate?"
-          required: true
-          type: boolean
-          default: false
+      prerelease:
+        description: "Create a release candidate?"
+        required: true
+        type: boolean
+        default: false
 jobs:
   release:
     runs-on: ubuntu-latest
