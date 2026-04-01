@@ -122,9 +122,6 @@ jobs:
           apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:$VERSION
       - name: Release
         id: create-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRAFT: ${{ inputs.dry_run && '--draft' || '' }}
         run: |
           uses: softprops/action-gh-release@v2
           with:
