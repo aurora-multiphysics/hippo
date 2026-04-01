@@ -1,5 +1,4 @@
 name: Make Release
-
 on:
   workflow_dispatch:
     inputs:
