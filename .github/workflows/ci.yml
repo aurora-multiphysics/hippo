@@ -27,7 +27,7 @@ jobs:
           pre-commit install
           SKIP=no-commit-to-branch pre-commit run --all
       - name: Build apptainer production container
-        run: sudo apptainer build hippo-release.sif apptainer/hippo-release.def
+        run: sudo apptainer build hippo-release-${{ github.sha }}.sif apptainer/hippo-release.def
       - name: Test production container
         run: |
           apptainer exec --writable-tmpfs hippo-release.sif bash -c "cd /opt/hippo && ./run_tests"
@@ -39,6 +39,7 @@ jobs:
       - name: Upload container artifact
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: apptainer-release-artifact
           path: hippo-release-${{ github.sha }}.sif
       - name: Artifact docs
