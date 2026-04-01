@@ -118,5 +118,5 @@ jobs:
           tag_name: ${{ steps.version.outputs.version }}
           prerelease: ${{ github.event.inputs.prerelease }}
           generate_release_notes: true
-          previous_tag: ${{ steps.latest.outputs.latest }}
+          #previous_tag: ${{ steps.latest.outputs.latest }}
           make_latest: true
