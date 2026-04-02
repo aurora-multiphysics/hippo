@@ -105,7 +105,7 @@ jobs:
         with:
           name: apptainer-release-artifact
       - name: Push container to quay.io
-        if: ${{ !fromJSON(github.event.inputs.dry_run }}
+        if: ${{ !fromJSON(github.event.inputs.dry_run) }}
         run: |
           wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
           sudo apt install -y ./apptainer_1.4.5_amd64.deb
