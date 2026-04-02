@@ -100,12 +100,12 @@ jobs:
           echo "version=$NEXT" >> $GITHUB_OUTPUT
           echo "Final version: $NEXT"
       - name: Download release apptainer artifact
-        if: ${{ !github.event.inputs.dry_run }}
+        if: ${{ !fromJSON(github.event.inputs.dry_run) }}
         uses: actions/download-artifact@v8
         with:
           name: apptainer-release-artifact
       - name: Push container to quay.io
-        if: ${{ !github.event.inputs.dry_run }}
+        if: ${{ !fromJSON(github.event.inputs.dry_run_ }}
         run: |
           wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
           sudo apt install -y ./apptainer_1.4.5_amd64.deb
