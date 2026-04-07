@@ -25,6 +25,7 @@ on:
 jobs:
   test:
     uses: ./.github/workflows/ci.yml
+    secrets: inherit
   release:
     runs-on: ubuntu-latest
     steps:
