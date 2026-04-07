@@ -27,6 +27,7 @@ jobs:
     secrets: inherit
     permissions: write-all
   release:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
