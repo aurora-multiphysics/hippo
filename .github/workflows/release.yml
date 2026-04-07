@@ -1,6 +1,5 @@
 name: Make Release
-permissions:
-  contents: write
+permissions: read-all
 on:
   workflow_dispatch:
     inputs:
@@ -26,8 +25,14 @@ jobs:
   test:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
+    permissions:
+      pages: write
+      id-token: write
+      contents: write
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6
       - name: Get latest stable tag
