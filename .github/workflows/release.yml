@@ -25,10 +25,7 @@ jobs:
   test:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
-    permissions:
-      pages: write
-      id-token: write
-      contents: write
+    permissions: write-all
   release:
     runs-on: ubuntu-latest
     permissions:
