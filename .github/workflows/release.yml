@@ -23,6 +23,8 @@ on:
         type: boolean
         default: false
 jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
   release:
     runs-on: ubuntu-latest
     steps:

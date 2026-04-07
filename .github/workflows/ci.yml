@@ -4,6 +4,7 @@ name: hippo-ci
 permissions: read-all
 on:
   pull_request:
+  workflow_call:
   push:
     branches: [main]
 
