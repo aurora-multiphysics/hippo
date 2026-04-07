@@ -116,7 +116,7 @@ jobs:
           wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
           sudo apt install -y ./apptainer_1.4.5_amd64.deb
           apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
-          apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:$VERSION
+          apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:${{ steps.version.outputs.version }}
       - name: Release
         id: create-release
         env:
