@@ -68,6 +68,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
     export PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
     export CPLUS_INCLUDE_PATH="${CONDA_PREFIX}/include/python3.14:${CPLUS_INCLUDE_PATH}"
 
+    # In future change to --rev when git version new enough
     git clone --depth=1 --no-checkout \
                  https://github.com/idaholab/moose.git "${MOOSE_DIR}"
     cd ${MOOSE_DIR}
