@@ -73,8 +73,8 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
     cd ${MOOSE_DIR}
 
     # check out commit associated with parent container
-    git fetch --depth 1 origin b2ef4e8ce0b765a52cf4a589e16a57046380e82f
-    git checkout -d b2ef4e8ce0b765a52cf4a589e16a57046380e82f
+    git fetch --depth 1 origin d41b47a41b7edac3875e308fb77df6069de32269
+    git checkout -d d41b47a41b7edac3875e308fb77df6069de32269
 
     conda install pyyaml jinja2 --yes --quiet
 
