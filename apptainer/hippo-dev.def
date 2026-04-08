@@ -86,14 +86,14 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
 
     cd /opt/hippo
     ./scripts/install-openfoam.sh -o /opt/openfoam -s -j {{ OPENFOAM_JOBS }} -q
+
+    # So that prefs can be found when not run as root
     cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
+
+    # Ensure base OpenFOAM directory is correct when bashrc is sourced in future
     sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
 
     conda install --file /opt/hippo/requirements.test.txt -S --yes --quiet
-
-    groupadd -g 1001 --non-unique hippo-test-user
-    useradd -u 1001 -g 1001 --shell /bin/bash --create-home hippo-test-user
-    chown -R hippo-test-user:hippo-test-user /opt/moose
 
 %environment
     . /opt/openfoam/OpenFOAM-12/etc/bashrc
