@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo:dev-012a3e14cd
+From: quay.io/ukaea/hippo:dev-a0954c4401
 
 %files
     . /opt/hippo/
