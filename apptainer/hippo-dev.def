@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
+From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
 
 %arguments
     MOOSE_JOBS=4
@@ -32,8 +32,8 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
         make \
         wget \
         zlib-devel \
-        https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-4.65-4.el8.x86_64.rpm \
-        https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-devel-4.65-4.el8.x86_64.rpm
+        glpk \
+        glpk-devel
 
     dnf clean all
 
@@ -68,8 +68,13 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
     export PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
     export CPLUS_INCLUDE_PATH="${CONDA_PREFIX}/include/python3.14:${CPLUS_INCLUDE_PATH}"
 
-    git clone --depth=1 --branch release \
+    git clone --depth=1 --no-checkout \
                  https://github.com/idaholab/moose.git "${MOOSE_DIR}"
+    cd ${MOOSE_DIR}
+
+    # check out commit associated with parent container
+    git fetch --depth 1 origin b2ef4e8ce0b765a52cf4a589e16a57046380e82f
+    git checkout -d b2ef4e8ce0b765a52cf4a589e16a57046380e82f
 
     conda install pyyaml jinja2 --yes --quiet
 
