@@ -1,4 +1,21 @@
 [Tests]
+  [run_reference]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd foam && ./Allclean && blockMesh"'
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      prereq = run_reference/setup
+      allow_warnings = true
+      cli_args=Executioner/fixed_point_max_its=1
+    []
+    [copy]
+      type = RunCommand
+      command = 'bash -c "mkdir -p gold && cp -r foam/* gold/ && cp main_out.e gold/"'
+    []
+  []
   [unsteady_1d_fixed_point]
     [setup]
       type = RunCommand
@@ -11,11 +28,6 @@
       prereq = unsteady_1d_fixed_point/setup
       allow_warnings = true
     []
-    [prep_verify]
-      type = RunCommand
-      command = 'bash -c "tar xvf gold/unsteady_reference.tar.gz -C gold/"'
-      prereq = unsteady_1d_fixed_point/run
-    []
     [verify]
       type = PythonUnitTest
       input = test.py
@@ -24,8 +36,8 @@
     []
     [prep_clean]
       type = RunCommand
-      command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
-      prereq = unsteady_1d_fixed_point/prep_verify
+      command = 'bash -c "rm -rf gold"'
+      prereq = run_reference/copy
     []
   []
 []

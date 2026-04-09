@@ -17,7 +17,7 @@
         [prep_verify]
             type = RunCommand
             command = 'bash -c "reconstructPar -case fluid-openfoam && tar xvf gold/heated_plate_regression.tar.gz -C gold/"'
-            prereq = flow_over_heated_plate_regression/run
+            prereq = flow_over_heated_plate_regression/setup
         []
         [verify]
             type = PythonUnitTest
