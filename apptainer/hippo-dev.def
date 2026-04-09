@@ -26,14 +26,14 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
         git \
         glibc-devel \
         glibc-headers \
+        glpk \
+        glpk-devel \
         libgfortran \
         libgomp \
         libtirpc-devel \
         make \
         wget \
-        zlib-devel \
-        glpk \
-        glpk-devel
+        zlib-devel
 
     dnf clean all
 

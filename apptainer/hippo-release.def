@@ -11,7 +11,7 @@ From: quay.io/ukaea/hippo:dev-febd5a9693
     export MPI_ROOT=/opt/openmpi
     export MOOSE_DIR=/opt/moose
 
-    source  /opt/openfoam/OpenFOAM-12/etc/bashrc || true
+    source /opt/openfoam/OpenFOAM-12/etc/bashrc || true
     export FOAM_USER_LIBBIN=/root/OpenFOAM-12/lib
     export FOAM_USER_APPBIN=/root/OpenFOAM-12/bin
 
