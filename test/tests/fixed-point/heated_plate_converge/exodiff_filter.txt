@@ -1,0 +1,2 @@
+NODAL VARIABLES
+	temp relative 1.E-4

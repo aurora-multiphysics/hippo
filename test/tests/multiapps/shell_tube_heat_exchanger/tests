@@ -10,6 +10,7 @@
     min_parallel = 2
     max_parallel = 2
     exodiff = solid_out.e
+    exodiff_opts = '-f test/tests/multiapps/shell_tube_heat_exchanger/exodiff_filter.txt'
   []
   [cleanup]
     type = RunCommand

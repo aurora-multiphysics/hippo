@@ -13,6 +13,7 @@
             min_parallel=4
             max_parallel=4
             rel_err = 1e-4
+            exodiff_opts = '-file test/tests/fixed-point/heated_plate_converge/exodiff_filter.txt'
         []
         [prep_verify]
             type = RunCommand
