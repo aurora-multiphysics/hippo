@@ -53,4 +53,4 @@ From: quay.io/ukaea/hippo:dev-febd5a9693
 %runscript
     #!/bin/bash
 
-    exec hippo-opt $@
+    exec /opt/hippo/hippo-opt $@
