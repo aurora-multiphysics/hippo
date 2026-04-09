@@ -77,7 +77,6 @@ temp_print_trace.*
 *.plugin
 *.outp
 *.patch
-*.txt
 *.bib.bak
 *.out
 *.vtk
@@ -163,9 +162,6 @@ test/OpenFOAM/**/lnInclude
 test/OpenFOAM/**/linux*
 
 framework/contrib/exodiff/exodiff
-
-# exodiff filter txt files
-!**/exodiff_filter.txt
 
 # Mac garbage
 .DS_Store
