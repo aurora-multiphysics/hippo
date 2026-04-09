@@ -2,7 +2,18 @@ Bootstrap: oras
 From: quay.io/ukaea/hippo:dev-febd5a9693
 
 %files
-    . /opt/hippo/
+    .git /opt/hippo/.git
+    doc /opt/hippo/doc
+    examples /opt/hippo/examples
+    include /opt/hippo/include
+    scripts /opt/hippo/scripts
+    src /opt/hippo/src
+    test /opt/hippo/test
+    unit /opt/hippo/unit
+    Makefile /opt/hippo/Makefile
+    hippo.mk /opt/hippo/hippo.mk
+    run_tests /opt/hippo/run_tests
+    testroot /opt/hippo/testroot
 
 %arguments
     MOOSE_JOBS=4
@@ -16,14 +27,14 @@ From: quay.io/ukaea/hippo:dev-febd5a9693
     export FOAM_USER_APPBIN=/root/OpenFOAM-12/bin
 
     cd /opt/hippo/
-    git clean -f
+    # Restore git repository to pristine state - useful for building locally
+    git clean -d -f -x
     git config --global --add safe.directory /opt/moose
-
-    make clean
-    rm -rf lib test/lib
 
     make -j {{ MOOSE_JOBS }} all METHOD=opt
     make -j {{ MOOSE_JOBS }} all METHOD=dbg
+
+    rm -rf .git
 
 %environment
     export MPI_ROOT=/opt/openmpi
