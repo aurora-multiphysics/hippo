@@ -1,0 +1,129 @@
+name: Make Release
+permissions: read-all
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version update type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+      prerelease:
+        description: "Create a release candidate?"
+        required: true
+        type: boolean
+        default: true
+      dry_run:
+        description: "Is this a dry-run?"
+        type: boolean
+        default: false
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+    permissions: write-all
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Get latest stable tag
+        id: latest
+        run: |
+          git fetch --tags
+
+          TAG=$(git tag -l 'v*' \
+            | grep -v '\-rc' \
+            | sort -V \
+            | tail -n 1)
+
+          if [ -z "$TAG" ]; then
+            TAG="v0.0.0"
+          fi
+
+          echo "latest=$TAG" >> $GITHUB_OUTPUT
+      - name: Compute base version
+        id: base
+        run: |
+          LATEST="${{ steps.latest.outputs.latest }}"
+          BUMP="${{ github.event.inputs.bump }}"
+
+          VERSION=${LATEST#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          case "$BUMP" in
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+          esac
+
+          BASE="v$MAJOR.$MINOR.$PATCH"
+
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+      - name: Compute final version
+        id: version
+        run: |
+          BASE="${{ steps.base.outputs.base }}"
+          PRERELEASE="${{ github.event.inputs.prerelease }}"
+
+          if [ "$PRERELEASE" = "true" ]; then
+            echo "Generating RC for $BASE"
+
+            git fetch --tags
+
+            # Find existing RCs for this base
+            RC_TAGS=$(git tag -l "${BASE}-rc*")
+
+            if [ -z "$RC_TAGS" ]; then
+              NEXT="${BASE}-rc1"
+            else
+              LAST_RC=$(echo "$RC_TAGS" | sort -V | tail -n 1)
+
+              RC_NUM=${LAST_RC##*-rc}
+              NEXT_RC=$((RC_NUM + 1))
+
+              NEXT="${BASE}-rc${NEXT_RC}"
+            fi
+          else
+            NEXT="$BASE"
+          fi
+
+          echo "version=$NEXT" >> $GITHUB_OUTPUT
+          echo "Final version: $NEXT"
+      - name: Download release apptainer artifact
+        if: ${{ !fromJSON(github.event.inputs.dry_run) }}
+        uses: actions/download-artifact@v8
+        with:
+          name: apptainer-release-artifact
+      - name: Push container to quay.io
+        if: ${{ !fromJSON(github.event.inputs.dry_run) }}
+        run: |
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
+          apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
+          apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:${{ steps.version.outputs.version }}
+      - name: Release
+        id: create-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRAFT: ${{ inputs.dry_run && '--draft' || '' }}
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            --generate-notes \
+            --target main \
+            ${DRAFT}
