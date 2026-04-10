@@ -1,0 +1,25 @@
+name: deploy-apptainer-dev
+permissions: read-all
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    if: >
+      github.actor == 'hsaunders1904' ||
+      github.actor == 'dynamicist' ||
+      github.actor == 'mattfalcone1997' ||
+      github.actor == 'k-collie'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install apptainer
+        run: |
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
+      - name: Login to remote
+        run: apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
+      - name: build container
+        run: apptainer build hippo-dev.sif apptainer/hippo-dev.def
+      - name: push container
+        run: apptainer push hippo-dev.sif oras://quay.io/ukaea/hippo:dev-${GITHUB_SHA::10}

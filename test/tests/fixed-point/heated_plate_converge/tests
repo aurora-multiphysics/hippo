@@ -13,11 +13,12 @@
             min_parallel=4
             max_parallel=4
             rel_err = 1e-4
+            exodiff_opts = '-file test/tests/fixed-point/heated_plate_converge/exodiff_filter.txt'
         []
         [prep_verify]
             type = RunCommand
             command = 'bash -c "reconstructPar -case fluid-openfoam && tar xvf gold/heated_plate_regression.tar.gz -C gold/"'
-            prereq = flow_over_heated_plate_regression/run
+            prereq = flow_over_heated_plate_regression/setup
         []
         [verify]
             type = PythonUnitTest

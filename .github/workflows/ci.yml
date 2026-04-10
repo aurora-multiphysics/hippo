@@ -5,60 +5,42 @@ permissions: read-all
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    container:
-      image: quay.io/ukaea/hippo:f4111251770f96aa77a0
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Quality Checks
-      run: |
-        # As we're running in our own container, we're not the same user as is
-        # used by 'actions/checkout', so git operations fail.
-        # https://github.com/actions/checkout/issues/766
-        git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        git config --global --add safe.directory /opt/moose
-        pre-commit install
-        SKIP=no-commit-to-branch pre-commit run --all
-
-    - name: Build
-      shell: bash
-      run: |
-        # Copy the OpenFOAM configuration into the home directory. GitHub
-        # overrides the home directory set in the docker image.
-        mkdir -p ~/.OpenFOAM
-        cp ./scripts/openfoam-prefs.sh ~/.OpenFOAM/prefs.sh
-
-        # Initialise OpenFOAM
-        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
-
-        # Build hippo
-        make -j
-
-    - name: Test
-      shell: bash
-      run: |
-        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
-        unset FOAM_SIGFPE && unset FOAM_SETNAN
-        ./run_tests --no-trimmed-output-on-error
-
-    - name: Docs
-      shell: bash
-      run: |
-        . /opt/openfoam/OpenFOAM-12/etc/bashrc || true
-        cd doc
-        ./moosedocs.py build --destination=htmldoc
-        [ -f htmldoc/index.html ]
-
-    - name: Artifact docs
-      id: deployment
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: doc/htmldoc
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          pip-install: pre-commit
+          python-version: 3.14
+      - name: Install apptainer
+        run: |
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
+          sudo sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
+      - name: Quality Checks
+        run: |
+          pip install pre-commit
+          pre-commit install
+          SKIP=no-commit-to-branch pre-commit run --all
+      - name: Build apptainer production container
+        run: sudo apptainer build hippo-release.sif apptainer/hippo-release.def
+      - name: Test production container
+        run: |
+          apptainer exec --writable-tmpfs hippo-release.sif bash -c "cd /opt/hippo && ./run_tests"
+      - name: Docs
+        shell: bash
+        run: |
+          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
+          [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
+      - name: Artifact docs
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ github.workspace }}/doc/htmldoc
 
   deploy-docs:
     runs-on: ubuntu-latest

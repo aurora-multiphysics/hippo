@@ -39,4 +39,4 @@ repos:
     hooks:
       - id: remove-crlf
       - id: forbid-tabs
-        exclude: '.*\.mk$'
+        exclude: '.*\.mk$|.*/exodiff_filter.txt'

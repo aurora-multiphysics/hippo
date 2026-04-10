@@ -10,6 +10,7 @@
                 input = heated_plate-no-fixed.i
                 prereq = 'flow_over_heated_plate_parallel/no_fixed_point/setup'
                 allow_warnings = true
+                cli_args="Executioner/fixed_point_max_its=1"
                 min_parallel=4
                 max_parallel=4
             []

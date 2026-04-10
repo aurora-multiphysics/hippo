@@ -9,6 +9,7 @@
       input = main.i
       prereq = run_reference/setup
       allow_warnings = true
+      cli_args=Executioner/fixed_point_max_its=1
     []
     [copy]
       type = RunCommand

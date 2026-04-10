@@ -22,10 +22,14 @@
       max_parallel=2
       cli_args='--distributed-mesh'
     []
+    [reconstruct]
+      type = RunCommand
+      command = 'bash -c "reconstructPar -case fluid-openfoam"'
+    []
     [verify_distributed]
       type = PythonUnitTest
       input = test.py
-      prereq = tri/run_distributed
+      prereq = tri/reconstruct
     []
   []
 []
