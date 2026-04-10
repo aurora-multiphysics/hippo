@@ -34,12 +34,9 @@ From: quay.io/ukaea/hippo:dev-febd5a9693
     make -j {{ MOOSE_JOBS }} all METHOD=opt
     make -j {{ MOOSE_JOBS }} all METHOD=dbg
 
-    rm -rf .git
-
 %environment
     export MPI_ROOT=/opt/openmpi
     export MOOSE_DIR=/opt/moose
-    export ROOT_DIR=/opt/hippo
     if [ -f $HOME/.OpenFOAM/prefs.sh ]; then
         echo "WARNING: Potential clash of OpenFOAM environment variables from $HOME/.OpenFOAM/prefs.sh. Consider removing!"
     fi
