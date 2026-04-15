@@ -8,39 +8,19 @@
 FoamFile
 {
     format      ascii;
-    class       volScalarField;
-    location    "0";
-    object      k;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 2 -2 0 0 0 0];
+numberOfSubdomains 4;
 
-internalField   uniform 3.75e-04;
+method          simple;
 
-boundaryField
+simpleCoeffs
 {
-    frontAndBack
-    {
-        type            kqRWallFunction;
-        value           uniform 3.75e-04;
-    }
-    topAndBottom
-    {
-        type            kqRWallFunction;
-        value           uniform 3.75e-04;
-    }
-    hot
-    {
-        type            kqRWallFunction;
-        value           uniform 3.75e-04;
-    }
-    cold
-    {
-        type            kqRWallFunction;
-        value           uniform 3.75e-04;
-    }
+    n               (4 1 1);
 }
-
 
 // ************************************************************************* //
