@@ -98,10 +98,12 @@
 
 [AuxKernels]
     [heat_flux_aux]
-        type = HeatFluxAux
+        type = DiffusionFluxAux
         variable = wall_heat_flux
-        T = temp
+        diffusion_variable = temp
         boundary = 'solid_top'
+        diffusivity = thermal_conductivity
+        component = normal
         execute_on = 'MULTIAPP_FIXED_POINT_BEGIN TIMESTEP_END'
     []
 []
