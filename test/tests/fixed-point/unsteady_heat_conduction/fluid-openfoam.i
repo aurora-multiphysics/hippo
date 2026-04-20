@@ -24,7 +24,7 @@
     [solid_heat_flux]
         type = FoamFixedGradientBC
         foam_variable = 'T'
-        diffusivity_coefficient = kappa
+        diffusivity = kappa
         initial_condition = 0
     []
 []

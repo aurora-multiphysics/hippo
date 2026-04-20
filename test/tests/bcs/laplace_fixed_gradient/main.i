@@ -23,7 +23,7 @@
         type=FoamFixedGradientBC
         foam_variable = T
         boundary = 'right'
-        diffusivity_coefficient = kappa
+        diffusivity = kappa
     []
 []
 

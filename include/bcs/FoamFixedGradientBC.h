@@ -17,5 +17,5 @@ public:
 
 protected:
   // name of diffusivity coefficient used to divide flux
-  std::string _diffusivity_coefficient;
+  std::string _diffusivity;
 };
