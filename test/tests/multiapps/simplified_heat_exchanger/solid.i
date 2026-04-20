@@ -123,17 +123,21 @@
 
 [AuxKernels]
     [top_heat_flux_aux]
-        type = HeatFluxAux
+        type = DiffusionFluxAux
         variable = top_wall_heat_flux
-        T = temp
+        diffusion_variable = temp
         boundary = top
+        diffusivity = thermal_conductivity
+        component = normal
     []
 
     [bottom_heat_flux_aux]
-        type = HeatFluxAux
+        type = DiffusionFluxAux
         variable = bottom_wall_heat_flux
-        T = temp
+        diffusion_variable = temp
         boundary = bottom
+        diffusivity = thermal_conductivity
+        component = normal
     []
 []
 
