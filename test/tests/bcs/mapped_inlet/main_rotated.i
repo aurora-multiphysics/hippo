@@ -39,7 +39,7 @@
     end_time = 5
     [TimeSteppers]
         [foam]
-            type = FoamControlledTimeStepper
+            type = FoamTimeStepper
         []
     []
 []
