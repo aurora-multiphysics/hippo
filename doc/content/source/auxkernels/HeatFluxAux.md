@@ -6,7 +6,7 @@ documenting the class, which includes the typical automatic documentation associ
 MooseObject; however, what is contained is ultimately determined by what is necessary to make the
 documentation clear for users.
 
-!syntax description /AuxVariables/AuxKernel/HeatFluxAux
+!syntax description /AuxKernels/HeatFluxAux
 
 ## Overview
 
@@ -16,8 +16,8 @@ documentation clear for users.
 
 !! Describe and include an example of how to use the HeatFluxAux object.
 
-!syntax parameters /AuxVariables/AuxKernel/HeatFluxAux
+!syntax parameters /AuxKernels/HeatFluxAux
 
-!syntax inputs /AuxVariables/AuxKernel/HeatFluxAux
+!syntax inputs /AuxKernels/HeatFluxAux
 
-!syntax children /AuxVariables/AuxKernel/HeatFluxAux
+!syntax children /AuxKernels/HeatFluxAux
