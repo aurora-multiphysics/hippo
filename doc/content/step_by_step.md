@@ -138,7 +138,7 @@ Hippo also implements the `FoamBC` system that allows you to impose boundary con
 on OpenFOAM from the Hippo input file. In this case, we wish to impose a heat flux BC
 on the temperature field. This requires the `FoamFixedGradientBC`, which mirrors OpenFOAM's
 `fixedGradient` BC type. As in this case, we provide a heat flux, we must also provide the
-thermal conductivity, which is specified as the `diffusivity_coefficient`.
+thermal conductivity, which is specified as the `diffusivity`.
 `kappa` is the name of the thermal conductivity variable in OpenFOAM.
 
 ```toml
@@ -148,7 +148,7 @@ thermal conductivity, which is specified as the `diffusivity_coefficient`.
     [solid_heat_flux]
         type = FoamFixedGradientBC
         foam_variable = T
-        diffusivity_coefficient = kappa
+        diffusivity = kappa
     []
 []
 ```

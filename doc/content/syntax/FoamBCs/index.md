@@ -1,18 +1,29 @@
 # FoamBCs System
 
-!alert construction title=Undocumented System
-The FoamBCs system has not been documented. The content listed below should be used as a starting
-point for documenting the system, which includes the typical automatic documentation associated with
-a system; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 ## Overview
 
-!! Replace this line with information regarding the FoamBCs system.
+The `FoamBC` system control how boundary conditions are imposed on OpenFOAM simulations using MOOSE input file syntax.
+Currently, the `FoamBC` system focuses on imposing MOOSE variable fields onto OpenFOAM boundary conditions.
+The different BCs are imposed in OpenFOAM as either `fixedValue` or `fixedGradient` types reflecting Dirichlet and Neumann BCs respectively.
+Currently, the correct BC type needs to be specified in OpenFOAM's `0` directory, although the details will be overriden by Hippo.
 
 ## Example Input File Syntax
 
-!! Describe and include an example of how to use the FoamBCs system.
+```
+[FoamBCs]
+    [wall_temp]
+        type = FoamFixedValueBC
+        foam_variable = T
+        boundary = wall1
+    []
+    [wall_heat_flux]
+        type = FoamFixedGradientBC
+        foam_variable = T
+        boundary = wall2
+        diffusivity = kappa # thermal conductivity
+    []
+[]
+```
 
 !syntax list /FoamBCs objects=True actions=False subsystems=False
 

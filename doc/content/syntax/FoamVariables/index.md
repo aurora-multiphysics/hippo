@@ -1,18 +1,35 @@
 # FoamVariables System
 
-!alert construction title=Undocumented System
-The FoamVariables system has not been documented. The content listed below should be used as a starting
-point for documenting the system, which includes the typical automatic documentation associated with
-a system; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 ## Overview
 
-!! Replace this line with information regarding the FoamVariables system.
+The `FoamVariable`s system controls how OpenFOAM scalar variables are shadowed by
+counterpart MOOSE variables,
+allowing the OpenFOAM quantities to be used as boundary conditions in libMesh-based Moose apps.
 
-## Example Input File Syntax
+There are two types of `FoamVariable`s
+- `FoamVariableField`: for shadowing OpenFOAM `volScalarField`s
+- `FoamFunctionObject`: for shadowing the scalar outputs of OpenFOAM `functionObjects`
 
-!! Describe and include an example of how to use the FoamVariables system.
+Under the hood, the FoamVariables create a constant monomial MooseVariable,
+with data transferred from the OpenFOAM variable to a MOOSE variable within the Hippo sub-app
+after the OpenFOAM step is complete. This can then be transferred to other MOOSE apps like any other
+MOOSE variable.
+A more thorough explanation of Hippo's 'mirror mesh' and data transfer can be found here.
+
+## Example
+
+```
+[FoamVariables]
+    [temperature]
+        type = FoamVariableField
+        foam_variable = T
+    []
+    [heat_flux]
+        type = FoamFunctionObject
+        foam_variable = wallHeatFlux
+    []
+[]
+```
 
 !syntax list /FoamVariables objects=True actions=False subsystems=False
 
