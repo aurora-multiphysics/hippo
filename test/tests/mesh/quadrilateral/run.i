@@ -86,10 +86,12 @@
 
 [AuxKernels]
     [heat_flux_aux]
-        type = HeatFluxAux
+        type = DiffusionFluxAux
         variable = wall_heat_flux
-        T = temp
+        diffusion_variable = temp
         boundary = right
+        diffusivity = thermal_conductivity
+        component = normal
     []
 []
 
