@@ -4,21 +4,29 @@
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
         []
-        [check_csv]
-            type = CSVDiff
+        [run]
+            type = RunApp
             input = main.i
             prereq = postprocessor_test/setup
-            csvdiff = main_out.csv
             allow_warnings = true
         []
-        [check_csv_parallel]
-            type = CSVDiff
+        [verify_serial]
+            type = PythonUnitTest
+            input = test.py
+            prereq = postprocessor_test/run
+        []
+        [run_parallel]
+            type = RunApp
             input = main.i
             prereq = postprocessor_test/setup
-            csvdiff = main_out.csv
             allow_warnings = true
-            min_parallel = 2
-            max_parallel = 2
+            min_parallel=2
+            max_parallel=2
+        []
+        [verify_parallel]
+            type = PythonUnitTest
+            input = test.py
+            prereq = postprocessor_test/run_parallel
         []
     []
 []
