@@ -17,8 +17,15 @@ Extensions:
     name: hippo
     repo: https://github.com/aurora-multiphysics/hippo/
     menu:
+      Getting started:
+        Installation: installation.md
+        Apptainer: apptainer.md
       Documentation:
         Input syntax: /source/index.md
+        Examples: /examples/index.md
+        Development guide: developer_guide.md
+      Case studies:
+        Case studies: case_studies.md
   MooseDocs.extensions.appsyntax:
     executable: ${ROOT_DIR}
     remove: !include ${MOOSE_DIR}/framework/doc/remove.yml
