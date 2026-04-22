@@ -28,6 +28,7 @@ Extensions:
         Case studies: case_studies.md
   MooseDocs.extensions.appsyntax:
     executable: ${ROOT_DIR}
-    remove: !include ${MOOSE_DIR}/framework/doc/remove.yml
+    remove:
+      framework: !include ${MOOSE_DIR}/framework/doc/remove.yml
     includes:
       - include
