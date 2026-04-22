@@ -1,20 +1,26 @@
 # FoamSideAdvectiveFluxIntegral
 
-!alert construction title=Undocumented Class
-The FoamSideAdvectiveFluxIntegral has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with a
-MooseObject; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 !syntax description /UserObjects/FoamSideAdvectiveFluxIntegral
 
-## Overview
+An OpenFOAM equivalent of the [`SideAdvectiveFluxIntegral`](https://mooseframework.inl.gov/source/postprocessors/SideAdvectiveFluxIntegral.html),
+which calculates the advected flux of a `foam_Variable` by the vector `advective_velocity`, which as a default of velocity vector `U`.
 
-!! Replace these lines with information regarding the FoamSideAdvectiveFluxIntegral object.
 
 ## Example Input File Syntax
 
-!! Describe and include an example of how to use the FoamSideAdvectiveFluxIntegral object.
+To calculate the mass flow rate through a boundary patch, we want the side advective flux integral of the density
+
+```
+[Postprocessors]
+    ...
+    [m_dot]
+        type = FoamSideAdvectiveFluxIntegral
+        foam_scalar=rho
+        boundary = inlet
+    []
+[]
+```
+
 
 !syntax parameters /UserObjects/FoamSideAdvectiveFluxIntegral
 

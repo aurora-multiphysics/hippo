@@ -1,20 +1,26 @@
 # FoamSideAverageFunctionObject
 
-!alert construction title=Undocumented Class
-The FoamSideAverageFunctionObject has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with a
-MooseObject; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 !syntax description /UserObjects/FoamSideAverageFunctionObject
 
-## Overview
 
-!! Replace these lines with information regarding the FoamSideAverageFunctionObject object.
+This is the same as `FoamSideAverageValue` but for function objects rather than variables.
+Calculates the average of a `volScalarField` or `volVectorField` function object over an OpenFOAM boundary patch.
+If a vector is specified, a component must also be given.
 
 ## Example Input File Syntax
 
-!! Describe and include an example of how to use the FoamSideAverageFunctionObject object.
+
+To calculate the average heat flux through a surface, we can average the `wallHeatFlux` function object over a boundary patch.
+
+```
+[Postprocessors]
+    [q_avg]
+        type = FoamSideAverageFunctionObject
+        function_object = wallHeatFlux
+        boundary=wall
+    []
+[]
+```
 
 !syntax parameters /UserObjects/FoamSideAverageFunctionObject
 

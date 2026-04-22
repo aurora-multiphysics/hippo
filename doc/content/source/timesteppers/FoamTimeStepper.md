@@ -11,7 +11,7 @@ and forcing OpenFOAM to take additional steps when MOOSE desires synchronisation
 1. +Passive mode:+ OpenFOAM uses the values in the case's `controlDict` to set the time step.
    e.g. using CFL-adaptive time-stepping if specified. We recommend using this approach.
 1. +Active mode:+ `dt`, `end_time`, `start_time` specified,
-   which overrides the `controlDict` with new constant values for `dt`.
+   which overrides the `controlDict` with new constant values.
 
 ## Example Input File Syntax
 

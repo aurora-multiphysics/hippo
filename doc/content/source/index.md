@@ -6,8 +6,8 @@
 
 Systems/blocks that have been introduced in Hippo to facilitate the coupling of MOOSE and OpenFOAM are shown below.
 
-- [FoamBC system](syntax/FoamBCs/index.md)
-- [FoamVariable system](syntax/FoamVariables/index.md)
+- [+FoamBC system+](syntax/FoamBCs/index.md)
+- [+FoamVariable system+](syntax/FoamVariables/index.md)
 
 ## Source Documentation
 

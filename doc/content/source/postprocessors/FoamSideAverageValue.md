@@ -1,20 +1,24 @@
 # FoamSideAverageValue
 
-!alert construction title=Undocumented Class
-The FoamSideAverageValue has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with a
-MooseObject; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 !syntax description /UserObjects/FoamSideAverageValue
 
-## Overview
-
-!! Replace these lines with information regarding the FoamSideAverageValue object.
+An OpenFOAM analogue to MOOSE's `SideAverageValue` postprocessor.
+It calculates the average of a `volScalarField` or `volVectorField` over an OpenFOAM boundary patch.
+If a vector is specified, `component` must also be specified and must take a value of `x`, `y`, `z`, `normal` or magnitude.
 
 ## Example Input File Syntax
 
-!! Describe and include an example of how to use the FoamSideAverageValue object.
+To calculate the average wall temperature over a boundary patch
+
+```
+[Postprocessors]
+    [T_avg]
+        type = FoamSideAverageValue
+        foam_variable = T
+        boundary = wall
+    []
+[]
+```
 
 !syntax parameters /UserObjects/FoamSideAverageValue
 

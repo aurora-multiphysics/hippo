@@ -1,20 +1,26 @@
 # FoamSideIntegratedValue
 
-!alert construction title=Undocumented Class
-The FoamSideIntegratedValue has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with a
-MooseObject; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 !syntax description /UserObjects/FoamSideIntegratedValue
 
-## Overview
-
-!! Replace these lines with information regarding the FoamSideIntegratedValue object.
+An OpenFOAM analogue to MOOSE's `SideIntegratedValue` postprocessor.
+It calculates the integral of a `volScalarField` or `volVectorField` over an OpenFOAM boundary patch.
+If a vector is specified, `component` must also be specified and must take a value of `x`, `y`, `z`, `normal` or magnitude.
 
 ## Example Input File Syntax
 
-!! Describe and include an example of how to use the FoamSideIntegratedValue object.
+To calculate the volume flow rate over the inlet patch
+
+```
+[Postprocessors]
+    [Q]
+        type = FoamSideIntegratedValue
+        foam_variable = U
+        boundary = inlet
+        component=normal
+    []
+[]
+```
+
 
 !syntax parameters /UserObjects/FoamSideIntegratedValue
 
