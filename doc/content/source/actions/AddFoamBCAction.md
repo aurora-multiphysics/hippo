@@ -1,20 +1,8 @@
 # AddFoamBCAction
 
-!alert construction title=Undocumented Action Class
-The AddFoamBCAction has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with an Action;
-however, what is contained is ultimately determined by what is necessary to make the documentation
-clear for users.
-
 !syntax description /FoamBCs/AddFoamBCAction
 
-## Overview
-
-!! Replace these lines with information regarding the AddFoamBCAction action.
-
-## Example Input File Syntax
-
-!! Describe and include an example of how to use the AddFoamBCAction action.
+Provides the `[FoamBCs]` block. More information can be found in the [FoamBCs system documentation](syntax/FoamBCs/index.md).
 
 !syntax description /FoamBCs/AddFoamBCAction
 
