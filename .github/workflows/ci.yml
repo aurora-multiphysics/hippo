@@ -34,6 +34,10 @@ jobs:
       - name: Docs
         shell: bash
         run: |
+          # Ensure no stubs are generated these should be already completed by the developer
+          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && [ \$(./moosedocs.py generate hippoApp | wc -l) -eq 1 ]"
+
+          # Build the docs
           apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
           [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
       - name: Artifact docs

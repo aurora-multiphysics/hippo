@@ -9,7 +9,7 @@
         type = FoamFixedGradientBC
         foam_variable = T
         initial_condition = 3
-        diffusivity_coefficient = kappa
+        diffusivity = kappa
     []
 []
 

@@ -1,23 +1,34 @@
 Content:
-    hippo:
-        root_dir: ${ROOT_DIR}/doc/content
-    moose:
-        root_dir: ${MOOSE_DIR}/framework/doc/content
-        content:
-            - js/*
-            - css/*
-            - contrib/**
-            - media/**
+  hippo:
+    root_dir: ${ROOT_DIR}/doc/content
+  moose:
+    root_dir: ${MOOSE_DIR}/framework/doc/content
+    content:
+      - js/*
+      - css/*
+      - contrib/**
+      - media/**
 
 Renderer:
-    type: MooseDocs.base.MaterializeRenderer
+  type: MooseDocs.base.MaterializeRenderer
 
 Extensions:
-    MooseDocs.extensions.navigation:
-        name: hippo
-        repo: https://github.com/aurora-multiphysics/hippo/
-    MooseDocs.extensions.appsyntax:
-        executable: ${ROOT_DIR}
-        remove: !include ${MOOSE_DIR}/framework/doc/remove.yml
-        includes:
-            - include
+  MooseDocs.extensions.navigation:
+    name: hippo
+    repo: https://github.com/aurora-multiphysics/hippo/
+    menu:
+      Getting started:
+        Installation: installation.md
+        Apptainer: apptainer.md
+      Documentation:
+        Input syntax: /source/index.md
+        Examples: /examples/index.md
+        Development guide: developer_guide.md
+      Case studies:
+        Case studies: case_studies.md
+  MooseDocs.extensions.appsyntax:
+    executable: ${ROOT_DIR}
+    remove:
+      framework: !include ${MOOSE_DIR}/framework/doc/remove.yml
+    includes:
+      - include

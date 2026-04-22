@@ -1,35 +1,30 @@
 !config navigation breadcrumbs=False scrollspy=False
 
-# Hippo
+# Hippo class=center style=font-weight:200;font-size:400%
 
-A MOOSE multiapp wrapping OpenFOAM for conjugate heat transfer problems.
 
-## Installation
+!style halign=center fontsize=120% A MOOSE application wrapping OpenFOAM for multiphysics problems.
 
-Build instructions can be found in the repository's
-[README](https://github.com/aurora-multiphysics/hippo/blob/main/README.md).
+!col! small=12 medium=4 large=4 icon=flash_on
 
-Alternatively, you can use Hippo in a Docker container.
-An image with all of Hippo's dependencies pre-installed
-can be found on [quay.io](https://quay.io/repository/ukaea/hippo).
-You will need to mount and install Hippo within the container.
+### Flexible Multiphysics class=center style=font-weight:200
 
-```shell
-$ git clone https://github.com/aurora-multiphysics/hippo.git
-$ docker run -it -v $(pwd)/hippo:/opt/hippo quay.io/ukaea/hippo:latest bash
-$ make -j
-$ hippo-opt --help
-```
+!style halign=center
+Leverage two of the most popular multiphysics frameworks in OpenFOAM and MOOSE
+!col-end!
 
-## Examples
+!col! small=12 medium=4 large=4 icon=settings
 
-### Conjugate heat transfer
+### Getting started class=center style=font-weight:200
 
-We currently have two examples for the conjugate heat transfer
+!style halign=center
+[Installation](installation.md) and [examples](examples/index.md) can be found here.
+!col-end!
 
-1. [Flow over heated plate:](step_by_step.md) a simple CHT case highlighting the basic syntax.
-2. [Shell and tube heat exchanger:](shell_tube_hx.md) a more  complex CHT with two fluid domains.
+!col! small=12 medium=4 large=4 icon=assessment
 
-## Developer Guide
+### Case studies class=center style=font-weight:200
 
-See [here](developer_guide.md) for developer documentation.
+!style halign=center
+Find relevant an overview of Hippo case studies [here](case_studies.md)
+!col-end!

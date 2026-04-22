@@ -8,8 +8,8 @@
             type = RunException
             input = main.i
             prereq = foam_bc_fixed_gradient/setup
-            expect_err = "Diffusivity coefficient 'kappa1' not a Foam volScalarField"
-            cli_args = 'FoamBCs/T_flux/diffusivity_coefficient=kappa1'
+            expect_err = "Diffusivity 'kappa1' not a Foam volScalarField"
+            cli_args = 'FoamBCs/T_flux/diffusivity=kappa1'
             allow_warnings = true
         []
         [run]
