@@ -1,20 +1,18 @@
 # FoamProblem
 
-!alert construction title=Undocumented Class
-The FoamProblem has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with a
-MooseObject; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 !syntax description /Problem/FoamProblem
 
-## Overview
+A MOOSE `ExternalProblem` that coordinates the OpenFOAM simulation from MOOSE
+including the transfer of variables between the mirror mesh and OpenFOAM,
+as well as the calculation of any OpenFOAM-based postprocessors.
+This can be thought of as the root class for the execution of OpenFOAM simulations
+within MOOSE.
 
-!! Replace these lines with information regarding the FoamProblem object.
-
-## Example Input File Syntax
-
-!! Describe and include an example of how to use the FoamProblem object.
+```
+[Problem]
+    type = FoamProblem
+[]
+```
 
 !syntax parameters /Problem/FoamProblem
 

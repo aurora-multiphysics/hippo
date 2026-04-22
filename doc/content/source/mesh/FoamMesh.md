@@ -1,20 +1,26 @@
 # FoamMesh
 
-!alert construction title=Undocumented Class
-The FoamMesh has not been documented. The content listed below should be used as a starting point for
-documenting the class, which includes the typical automatic documentation associated with a
-MooseObject; however, what is contained is ultimately determined by what is necessary to make the
-documentation clear for users.
-
 !syntax description /Mesh/FoamMesh
 
-## Overview
+`FoamMesh` controls the interaction of the OpenFOAM mesh with MOOSE.
+From a user perspective, this involves specifying the directory of the OpenFOAM cases
+and the patches that are to be mirrored.
+Internally, this class also creates a libMesh representation of the OpenFOAM boundary patches.
 
-!! Replace these lines with information regarding the FoamMesh object.
 
 ## Example Input File Syntax
 
-!! Describe and include an example of how to use the FoamMesh object.
+Below is a simple example of `FoamMesh` for an OpenFOAM case in directory `fluid-openfoam` with a boundary patch to be coupled with MOOSE called `wall`.
+
+```
+[Mesh]
+    [foam_mesh]
+        type = FoamMesh
+        foam_patch = wall
+        case = fluid-openfoam
+    []
+[]
+```
 
 !syntax parameters /Mesh/FoamMesh
 
