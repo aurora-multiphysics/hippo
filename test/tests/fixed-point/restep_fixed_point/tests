@@ -1,4 +1,23 @@
 [Tests]
+    [run_reference]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "cd foam && ./Allclean && blockMesh && decomposePar"'
+        []
+        [run]
+            type = RunApp
+            input = main_restep.i
+            min_parallel=2
+            max_parallel=2
+            prereq = run_reference/setup
+            allow_warnings = true
+            cli_args="Problem/type=FEProblem Executioner/TimeStepper/type=ConstantDT Executioner/TimeStepper/dt=0.0003125 -w"
+        []
+        [copy]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case foam && mkdir -p gold && cp -r foam/* gold/ && cp main_out.e gold/"'
+        []
+    []
     [restep]
         [setup]
             type = RunCommand
@@ -15,18 +34,18 @@
         []
         [prep_verify]
             type = RunCommand
-            command = 'bash -c "reconstructPar -case foam && tar xvf gold/unsteady_fixed_point_reference.tar.gz -C gold/"'
+            command = 'bash -c "reconstructPar -case foam"'
             prereq = restep/run
         []
         [verify]
             type = PythonUnitTest
             input = test.py
-            prereq = restep/prep_verify
+            prereq = restep/setup
         []
         [clean]
             type = RunCommand
-            command = 'bash -c "cd gold && ./Allclean && rm -r 0 Allclean constant system"'
-            prereq = restep/prep_verify
+            command = 'bash -c "rm -rf gold"'
+            prereq = run_reference/copy
         []
     []
 []
