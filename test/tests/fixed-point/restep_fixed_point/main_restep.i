@@ -90,10 +90,12 @@
 
 [AuxKernels]
     [heat_flux_aux]
-        type = HeatFluxAux
+        type = DiffusionFluxAux
         variable = wall_heat_flux
-        T = T
+        diffusion_variable = T
         boundary = right
+        diffusivity = thermal_conductivity
+        component = normal
         execute_on = 'INITIAL TIMESTEP_END'
     []
     [fluid_temp]

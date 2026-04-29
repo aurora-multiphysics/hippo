@@ -310,7 +310,7 @@ the temperature simply sits at 310 K.
 
 For us to transfer the boundary heat flux from the solid to fluid domain,
 we must first calculate it.
-Hippo provides the `HeatFluxAux` auxiliary kernel for this purpose.
+MOOSE provides the [`DiffusionFluxAux` auxiliary kernel](https://mooseframework.inl.gov/source/auxkernels/DiffusionFluxAux.html) for this purpose.
 
 ```toml
 # flow_over_heated_plate.i
@@ -325,10 +325,11 @@ Hippo provides the `HeatFluxAux` auxiliary kernel for this purpose.
 
 [AuxKernels]
     [heat_flux_aux]
-        type = HeatFluxAux
+        type = DiffusionFluxAux
         variable = wall_heat_flux
-        thermal_conductivity = 100  # W/(m.K)
-        T = temp
+        diffusion_variable = temp
+        diffusivity = thermal_conductivity
+        component=normal
         boundary = 'solid_top'
     []
 []
