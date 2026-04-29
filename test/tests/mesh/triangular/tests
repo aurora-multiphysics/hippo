@@ -31,5 +31,29 @@
       input = test.py
       prereq = tri/reconstruct
     []
+    [split_mesh]
+        type = RunApp
+        input = run.i
+        cli_args = '--split-mesh 2 --split-file mesh_split'
+        prereq = tri/verify_distributed
+    []
+    [run_use_split]
+      type = RunApp
+      input = run.i
+      prereq = tri/split_mesh
+      min_parallel=2
+      max_parallel=2
+      cli_args='--use-split --split-file mesh_split'
+    []
+    [reconstruct_split]
+      type = RunCommand
+      command = 'bash -c "reconstructPar -case fluid-openfoam"'
+      prereq = tri/run_use_split
+    []
+    [verify_split]
+      type = PythonUnitTest
+      input = test.py
+      prereq = tri/reconstruct_split
+    []
   []
 []
