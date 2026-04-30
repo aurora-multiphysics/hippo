@@ -122,18 +122,47 @@ jobs:
           sudo apt install -y ./apptainer_1.4.5_amd64.deb
           apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
           apptainer push hippo-release-${{ github.sha }}.sif oras://quay.io/ukaea/hippo:${{ steps.version.outputs.version }}
+
+      - name: Release notes info
+        id: release-notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          cat > notes.md <<EOF
+          ## 🚀 Release $VERSION
+
+          $(if [[ "${{ inputs.dry_run }}" == "true" ]]; then echo "**This is a draft release!**"; fi)
+
+          ### 📦 Container (Apptainer)
+
+          Pull from Quay:
+
+          \`\`\`bash
+          apptainer pull hippo.sif oras://quay.io/ukaea/hippo:$VERSION
+          \`\`\`
+
+          ### 🔐 Checksum
+
+          \`\`\`
+          $(sha256sum hippo-release-${{ github.sha }}.sif)
+          \`\`\`
+          EOF
+
       - name: Release
         id: create-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRAFT: ${{ inputs.dry_run && '--draft' || '' }}
+          PRERELEASE: ${{ inputs.prerelease && '--prerelease' || '' }}
         run: |
           gh release create "${{ steps.version.outputs.version }}" \
             --generate-notes \
+            --notes-file notes.md \
             --target main \
-            ${DRAFT}
-          if [[ -z ${DRAFT} ]]; then
+            ${DRAFT} \
+            ${PRERELEASE}
+
+          if [[ -z "${DRAFT}" ]]; then
             gh release upload "${{ steps.version.outputs.version }}" \
-              hippo-release-${{ github.sha }}.sif  \
               hippo-docs-${{ github.sha }}.tar.gz
           fi
