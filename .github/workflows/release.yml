@@ -141,10 +141,10 @@ jobs:
           apptainer pull hippo.sif oras://quay.io/ukaea/hippo:$VERSION
           \`\`\`
 
-          ### 🔐 Checksum
+          ### 🔐 Checksum (SHA-256)
 
           \`\`\`
-          $(sha256sum hippo-release-${{ github.sha }}.sif)
+          $(sha256sum hippo-release-${{ github.sha }}.sif | awk '{ print $1 }')
           \`\`\`
           EOF
 
