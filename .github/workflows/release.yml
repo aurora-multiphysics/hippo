@@ -110,6 +110,11 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: apptainer-release-artifact
+      - name: Download docs artifact
+        if: ${{ !fromJSON(github.event.inputs.dry_run) }}
+        uses: actions/download-artifact@v8
+        with:
+          name: hippo-docs-artifact
       - name: Push container to quay.io
         if: ${{ !fromJSON(github.event.inputs.dry_run) }}
         run: |
@@ -127,3 +132,8 @@ jobs:
             --generate-notes \
             --target main \
             ${DRAFT}
+          if [[ -n ${DRAFT} ]]; then
+            gh release upload "${{ steps.version.outputs.version }}" \
+              hippo-release-${{ github.sha }}.sif  \
+              hippo-docs-${{ github.sha }}.tar.gz
+          fi

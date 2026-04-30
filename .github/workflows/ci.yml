@@ -43,12 +43,22 @@ jobs:
           if-no-files-found: error
           name: apptainer-release-artifact
           path: hippo-release-${{ github.sha }}.sif
-      - name: Artifact docs
+      - name: Artifact docs for pages
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ github.workspace }}/doc/htmldoc
-
+      - name: Compress docs for release artifact
+        shell: bash
+        run: |
+          tar -czvf hippo-docs-${{ github.sha }}.tar.gz ${{ github.workspace }}/doc/htmldoc
+      - name: Artifact docs for release
+        id: docs-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: hippo-docs-artifact
+          path: hippo-docs-${{ github.sha }}.tar.gz
   deploy-docs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.repository.fork == false }}
