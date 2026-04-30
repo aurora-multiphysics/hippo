@@ -132,7 +132,7 @@ jobs:
             --generate-notes \
             --target main \
             ${DRAFT}
-          if [[ -n ${DRAFT} ]]; then
+          if [[ -z ${DRAFT} ]]; then
             gh release upload "${{ steps.version.outputs.version }}" \
               hippo-release-${{ github.sha }}.sif  \
               hippo-docs-${{ github.sha }}.tar.gz
