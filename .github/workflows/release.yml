@@ -129,11 +129,11 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
 
           cat > notes.md <<EOF
-          ## 🚀 Release $VERSION
+          ## Release $VERSION
 
           $(if [[ "${{ inputs.dry_run }}" == "true" ]]; then echo "**This is a draft release!**"; fi)
 
-          ### 📦 Container (Apptainer)
+          ### Container (Apptainer)
 
           Pull from Quay:
 
@@ -141,7 +141,7 @@ jobs:
           apptainer pull hippo.sif oras://quay.io/ukaea/hippo:$VERSION
           \`\`\`
 
-          ### 🔐 Checksum (SHA-256)
+          ### Checksum (SHA-256)
 
           \`\`\`
           $(sha256sum hippo-release-${{ github.sha }}.sif | awk '{ print $1 }')
