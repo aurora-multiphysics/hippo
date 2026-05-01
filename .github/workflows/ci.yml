@@ -58,6 +58,7 @@ jobs:
         with:
           if-no-files-found: error
           name: hippo-docs-artifact
+          archive: false
           path: hippo-docs-${{ github.sha }}.tar.gz
   deploy-docs:
     runs-on: ubuntu-latest

@@ -55,7 +55,7 @@ jobs:
           BUMP="${{ github.event.inputs.bump }}"
 
           VERSION=${LATEST#v}
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          echo "$VERSION" | IFS='.' read MAJOR MINOR PATCH
 
           case "$BUMP" in
             patch)
@@ -129,22 +129,14 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
 
           cat > notes.md <<EOF
-          ## Release $VERSION
-
           $(if [[ "${{ inputs.dry_run }}" == "true" ]]; then echo "**This is a draft release!**"; fi)
 
-          ### Container (Apptainer)
+          ### Apptainer container
 
           Pull from Quay:
 
           \`\`\`bash
           apptainer pull hippo.sif oras://quay.io/ukaea/hippo:$VERSION
-          \`\`\`
-
-          ### Checksum (SHA-256)
-
-          \`\`\`
-          $(sha256sum hippo-release-${{ github.sha }}.sif | awk '{ print $1 }')
           \`\`\`
           EOF
 
@@ -162,7 +154,5 @@ jobs:
             ${DRAFT} \
             ${PRERELEASE}
 
-          if [[ -z "${DRAFT}" ]]; then
-            gh release upload "${{ steps.version.outputs.version }}" \
-              hippo-docs-${{ github.sha }}.tar.gz
-          fi
+          gh release upload "${{ steps.version.outputs.version }}" \
+            hippo-docs-${{ github.sha }}.tar.gz
