@@ -55,7 +55,7 @@ jobs:
           BUMP="${{ github.event.inputs.bump }}"
 
           VERSION=${LATEST#v}
-          echo "$VERSION" | IFS='.' read MAJOR MINOR PATCH
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
           case "$BUMP" in
             patch)
