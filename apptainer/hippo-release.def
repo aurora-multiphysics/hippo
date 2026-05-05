@@ -17,6 +17,7 @@ From: quay.io/ukaea/hippo:dev-febd5a9693
 
 %arguments
     MOOSE_JOBS=4
+    MINIMAL=1
 
 %post
     export MPI_ROOT=/opt/openmpi
@@ -33,6 +34,13 @@ From: quay.io/ukaea/hippo:dev-febd5a9693
 
     make -j {{ MOOSE_JOBS }} all METHOD=opt
     make -j {{ MOOSE_JOBS }} all METHOD=dbg
+
+    if [[ {{ MINIMAL }} -eq 1 ]]; then
+        rm -rf /opt/moose/framework/build/
+        rm -rf /opt/moose/modules/heat_transfer/build
+        rm -rf /opt/hippo/build
+        rm -rf /opt/mfem /opt/neml2
+    fi
 
 %environment
     export MPI_ROOT=/opt/openmpi

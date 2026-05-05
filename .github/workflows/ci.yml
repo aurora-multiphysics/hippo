@@ -4,6 +4,7 @@ name: hippo-ci
 permissions: read-all
 on:
   pull_request:
+  workflow_call:
   push:
     branches: [main]
 
@@ -27,24 +28,41 @@ jobs:
           pre-commit install
           SKIP=no-commit-to-branch pre-commit run --all
       - name: Build apptainer production container
-        run: sudo apptainer build hippo-release.sif apptainer/hippo-release.def
+        run: sudo apptainer build hippo-release-${{ github.sha }}.sif apptainer/hippo-release.def
       - name: Test production container
         run: |
-          apptainer exec --writable-tmpfs hippo-release.sif bash -c "cd /opt/hippo && ./run_tests"
+          apptainer exec --writable-tmpfs hippo-release-${{ github.sha }}.sif bash -c "cd /opt/hippo && ./run_tests"
       - name: Docs
         shell: bash
         run: |
-          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
+          apptainer exec hippo-release-${{ github.sha }}.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
           [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
-      - name: Artifact docs
+      - name: Upload container artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: apptainer-release-artifact
+          path: hippo-release-${{ github.sha }}.sif
+      - name: Artifact docs for pages
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ github.workspace }}/doc/htmldoc
-
+      - name: Compress docs for release artifact
+        shell: bash
+        run: |
+          tar -czvf hippo-docs-${{ github.sha }}.tar.gz ${{ github.workspace }}/doc/htmldoc
+      - name: Artifact docs for release
+        id: docs-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: hippo-docs-artifact
+          archive: false
+          path: hippo-docs-${{ github.sha }}.tar.gz
   deploy-docs:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.repository.fork == false }}
     needs: build-test
 
     # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
