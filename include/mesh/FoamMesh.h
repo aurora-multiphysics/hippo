@@ -44,7 +44,8 @@ public:
   // Create a MOOSE element from a Foam face, removing collinear points on edges.
   std::unique_ptr<Elem> createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
                                       const Hippo::FoamFace & face,
-                                      dof_id_type id);
+                                      dof_id_type id,
+                                      unique_id_type max_unique_id);
 
   int64_t getPatchCount(int subdomain_id) const { return _patch_counts.at(subdomain_id); };
   int64_t getPatchOffset(int subdomain_id) const { return _patch_offsets.at(subdomain_id); };

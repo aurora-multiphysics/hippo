@@ -3,10 +3,11 @@
 #include "Foam2MooseMeshGen.h"
 
 #include <MooseError.h>
+#include "libmesh/id_types.h"
 #include <libmesh/elem.h>
 #include <libmesh/enum_elem_type.h>
-#include <libmesh/face_quad4.h>
 #include <libmesh/face_c0polygon.h>
+#include <libmesh/face_quad4.h>
 #include <libmesh/face_tri3.h>
 #include <libmesh/point.h>
 
@@ -105,7 +106,8 @@ checkPointOnLine(const libMesh::Node * pt,
 std::unique_ptr<Elem>
 FoamMesh::createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
                         const Hippo::FoamFace & face,
-                        dof_id_type id)
+                        dof_id_type id,
+                        unique_id_type max_unique_id)
 {
   // get all MOOSE nodes associated with points in Foam face
   std::vector<libMesh::Node *> points;
@@ -143,6 +145,7 @@ FoamMesh::createElement(Hippo::Foam2MooseMeshAdapter * mesh_adapter,
     elem = std::make_unique<libMesh::C0Polygon>(points.size());
 
   elem->set_id(id);
+  elem->set_unique_id(max_unique_id + id);
 
   // set points, ranks and subdomain ids
   int count = 0;
@@ -171,10 +174,11 @@ FoamMesh::buildMesh()
     _mesh->add_point(foam_point.getPoint(), pt);
   }
 
+  unique_id_type max_unique_id = _mesh->parallel_max_unique_id();
   for (int32_t fc = 0; fc < mesh_adapter->nface(); ++fc)
   {
     auto face = mesh_adapter->face(fc);
-    _mesh->add_elem(createElement(mesh_adapter.get(), face, fc));
+    _mesh->add_elem(createElement(mesh_adapter.get(), face, fc, max_unique_id));
   }
 
   // patch id has the openfoam id that corresponds to the patch name
