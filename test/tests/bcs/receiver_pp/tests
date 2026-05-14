@@ -1,0 +1,39 @@
+[Tests]
+    [receiver_pp]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [diffusivity_coeff_err]
+            type = RunException
+            input = main.i
+            prereq = receiver_pp/setup
+            expect_err = "Diffusivity coefficient 'kappa1' not a Foam volScalarField"
+            cli_args = 'FoamBCs/T_flux/diffusivity_coefficient=kappa1'
+            allow_warnings = true
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = receiver_pp/setup
+            allow_warnings = true
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = receiver_pp/run
+        []
+        [run_no_kappa]
+            type = RunApp
+            input = main.i
+            cli_args = "FoamBCs/T_flux/diffusivity_coefficient='' FoamBCs/T_flux/default=1"
+            prereq = receiver_pp/verify
+            allow_warnings = true
+        []
+        [verify_no_kappa]
+            type = PythonUnitTest
+            input = test.py
+            prereq = receiver_pp/run_no_kappa
+        []
+    []
+[]
