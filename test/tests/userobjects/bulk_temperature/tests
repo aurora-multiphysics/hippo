@@ -1,0 +1,7 @@
+[Tests]
+  [fixed_bulk_tests]
+    type = CSVDiff
+    input = main.i
+    csvdiff = main_out.csv
+  []
+[]
