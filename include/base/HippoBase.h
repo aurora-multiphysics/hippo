@@ -5,11 +5,14 @@
 
 class FoamProblem;
 
-class HippoBase : public MooseObject
+class HippoBase
 {
 public:
-  static InputParameters validParams();
-  HippoBase(const InputParameters & params);
+  HippoBase(const MooseObject * moose_object);
 
   FoamProblem & getFoamProblem() const;
+
+private:
+  FoamProblem * extractFoamProblemPtr(const MooseObject *);
+  FoamProblem * const _foam_problem;
 };
