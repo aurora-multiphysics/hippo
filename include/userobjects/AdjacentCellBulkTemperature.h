@@ -3,6 +3,7 @@
 #include "GeneralUserObject.h"
 #include "HippoBase.h"
 #include "InputParameters.h"
+#include <fvPatch.H>
 #include <scalarField.H>
 
 class AdjacentCellBulkTemperature : public GeneralUserObject, public HippoBase
@@ -18,6 +19,6 @@ public:
   Real spatialValue(const Point & point) const override;
 
 private:
-  const Foam::scalarField & getTBoundaryField();
-  const Foam::scalarField & _T_bulk;
+  const Foam::fvPatch & getFoamPatch(const std::string & boundary);
+  const Foam::fvPatch & _foam_patch;
 };
