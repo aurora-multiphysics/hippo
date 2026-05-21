@@ -2,7 +2,7 @@
 
 #include "HippoBase.h"
 
-class FoamFieldBase : public HippoBase
+class FoamFieldBase : public MooseObject, public HippoBase
 {
 public:
   static InputParameters validParams();

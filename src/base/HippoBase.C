@@ -4,20 +4,24 @@
 #include "MooseObject.h"
 #include "OutputInterface.h"
 
-InputParameters
-HippoBase::validParams()
+HippoBase::HippoBase(const MooseObject * moose_object)
+  : _foam_problem(extractFoamProblemPtr(moose_object))
 {
-  return MooseObject::validParams();
 }
 
-HippoBase::HippoBase(const InputParameters & params) : MooseObject(params) {}
+FoamProblem *
+HippoBase::extractFoamProblemPtr(const MooseObject * moose_object)
+{
+  const InputParameters & params = moose_object->parameters();
+  auto * problem = params.getCheckedPointerParam<FEProblemBase *>("_fe_problem_base");
+  auto * foam_problem = dynamic_cast<FoamProblem *>(problem);
+  if (!foam_problem)
+    mooseError("This object can only be used with FoamProblem");
+  return foam_problem;
+}
 
 FoamProblem &
 HippoBase::getFoamProblem() const
 {
-  auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
-  if (!problem)
-    mooseError("This object can only be used with FoamProblem");
-
-  return *problem;
+  return *_foam_problem;
 }
