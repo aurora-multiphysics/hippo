@@ -1,7 +1,23 @@
 [Tests]
   [fixed_bulk_tests]
     type = CSVDiff
-    input = main.i
-    csvdiff = main_out.csv
+    input = fixed_bulk_temperature.i
+    csvdiff = fixed_bulk_temperature_out.csv
+  []
+  [adjacent_bulk_tests]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "foamCleanCase -case adjacent_cell && blockMesh -case adjacent_cell"'
+    []
+    [run_serial]
+        type = RunApp
+        input = adjacent_bulk_temperature.i
+        prereq = adjacent_bulk_tests/setup
+    []
+    [verify]
+        type = PythonUnitTest
+        input = test.py
+        prereq = adjacent_bulk_tests/run_serial
+    []
   []
 []
