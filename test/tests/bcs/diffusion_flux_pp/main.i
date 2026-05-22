@@ -20,7 +20,7 @@
         boundary = 'left'
     []
     [T_flux]
-        type=FoamFixedGradientPostprocessorBC
+        type=FoamDiffusionFluxPostprocessorBC
         foam_variable = T
         boundary = 'right'
         pp_name = T_flux
@@ -30,7 +30,7 @@
 [Postprocessors]
     [T_flux]
         type = ParsedPostprocessor
-        expression = 't'
+        expression = '2*t'
         use_t = true
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []

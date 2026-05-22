@@ -20,10 +20,9 @@
         boundary = 'left'
     []
     [T_flux]
-        type=FoamFixedGradientPostprocessorBC
+        type=FoamDiffusionFluxPostprocessorBC
         foam_variable = T
         boundary = 'right'
-        diffusivity_coefficient = kappa
         default=2
     []
 []
