@@ -234,7 +234,7 @@ Both `inner.i` and `outer.i` are the same:
 ```
 
 Note that this is a different type to the step-by-step example where a
-`FoamFixedGradientBC` is used.
+`FoamDiffusionFluxBC` is used.
 
 ## Imposing the fluid heat flux on the solid
 
