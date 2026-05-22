@@ -24,7 +24,7 @@
         foam_variable = T
         boundary = 'right'
         diffusivity_coefficient = kappa
-        pp = T_flux
+        pp_name = T_flux
     []
 []
 

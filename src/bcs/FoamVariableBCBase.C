@@ -1,4 +1,5 @@
 
+#include "FoamBCBase.h"
 #include "FoamVariableBCBase.h"
 #include "hippoUtils.h"
 
@@ -21,8 +22,8 @@ FoamVariableBCBase::validParams()
 
   params.addParam<VariableName>(
       "v",
-      "Optional variable to use in BC. This allows existing AuxVariables to be"
-      " used rather than creating a new one under the hood.");
+      "Optional variable allowing existing AuxVariables to be used in the BC."
+      "If v is not provided, an AuxVariable with the name of this object is created.");
   // Get desired parameters from Variable objects
   params.transferParam<std::vector<Real>>(MooseVariable::validParams(), "initial_condition");
 
@@ -30,7 +31,7 @@ FoamVariableBCBase::validParams()
 }
 
 FoamVariableBCBase::FoamVariableBCBase(const InputParameters & params)
-  : FoamBCBase(params), _moose_var(nullptr)
+  : FoamBCBase(params), _moose_var()
 {
 }
 
@@ -43,31 +44,31 @@ FoamVariableBCBase::initialSetup()
     mooseError("Variable '", var_name, "' doesn't exist");
 
   THREAD_ID tid = parameters().get<THREAD_ID>("_tid");
-  _moose_var = &_c_fe_problem.getVariable(tid, var_name);
+  _moose_var = _c_fe_problem.getVariable(tid, var_name);
 
   // Check variable is constant monomial in case it is provided.
-  if (!is_constant_monomial(*_moose_var))
+  if (!is_constant_monomial(_moose_var->get()))
     mooseError("Variable '", var_name, "' must be a constant monomial.");
 }
 
-void
-FoamVariableBCBase::addInfoRow(BCInfoTable & table)
+BCInfoTableRow
+FoamVariableBCBase::addInfoRow() const
 {
   // List info about BC
-  table.addRow(
+  return std::make_tuple(
       name(), type(), foamVariable(), mooseVariable(), Hippo::internal::listFromVector(boundary()));
 }
 
 Real
-FoamVariableBCBase::variableValueAtElement(const libMesh::Elem & elem)
+FoamVariableBCBase::variableValueAtElement(const libMesh::Elem & elem) const
 {
-  auto & sys = _moose_var->sys();
-  auto dof = elem.dof_number(sys.number(), _moose_var->number(), 0);
+  auto & sys = _moose_var->get().sys();
+  auto dof = elem.dof_number(sys.number(), _moose_var->get().number(), 0);
   return sys.solution()(dof);
 }
 
 std::vector<Real>
-FoamVariableBCBase::getMooseVariableArray(int subdomainId)
+FoamVariableBCBase::getMooseVariableArray(int subdomainId) const
 {
   size_t patch_count = _mesh->getPatchCount(subdomainId);
   size_t patch_offset = _mesh->getPatchOffset(subdomainId);

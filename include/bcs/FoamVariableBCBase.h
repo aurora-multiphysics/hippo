@@ -2,6 +2,7 @@
 
 #include "FoamBCBase.h"
 #include "InputParameters.h"
+#include <functional>
 
 class FoamVariableBCBase : public FoamBCBase
 {
@@ -11,19 +12,19 @@ public:
   explicit FoamVariableBCBase(const InputParameters & params);
 
   // returns the moose AuxVariable imposed on OpenFOAM
-  VariableName mooseVariable() const { return _moose_var->name(); }
+  VariableName mooseVariable() const { return _moose_var->get().name(); }
 
-  virtual void initialSetup();
+  virtual void initialSetup() override;
 
-  virtual void addInfoRow(BCInfoTable & table);
+  virtual BCInfoTableRow addInfoRow() const override;
 
 protected:
   // Get the value of the MOOSE variable at an element
-  Real variableValueAtElement(const libMesh::Elem & elem);
+  Real variableValueAtElement(const libMesh::Elem & elem) const;
 
   // Get the data vector of the MOOSE field on a subdomain
-  std::vector<Real> getMooseVariableArray(int subdomainId);
+  std::vector<Real> getMooseVariableArray(int subdomainId) const;
 
   // Pointer to Moose variable used to impose BC
-  MooseVariableFieldBase * _moose_var;
+  std::optional<std::reference_wrapper<MooseVariableFieldBase>> _moose_var;
 };

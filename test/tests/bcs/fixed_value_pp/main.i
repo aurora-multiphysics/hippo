@@ -17,13 +17,13 @@
         type=FoamFixedValuePostprocessorBC
         foam_variable = T
         boundary = 'left right top' # test boundary restrictions
-        pp = T_bc1
+        pp_name = T_bc1
     []
     [temp2]
         type=FoamFixedValuePostprocessorBC
         foam_variable = T
         boundary = 'bottom front back' # test boundary restrictions
-        pp = T_bc2
+        pp_name = T_bc2
     []
 []
 

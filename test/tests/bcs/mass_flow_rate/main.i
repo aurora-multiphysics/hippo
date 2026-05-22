@@ -8,7 +8,7 @@
     [temp1]
         type=FoamMassFlowRateInletBC
         boundary = 'left' # test boundary restrictions
-        pp = pp
+        pp_name = pp
     []
 []
 

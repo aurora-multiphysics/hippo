@@ -12,16 +12,16 @@ public:
 
   explicit FoamPostprocessorBCBase(const InputParameters & params);
 
-  // returns the moose AuxVariable imposed on OpenFOAM
+  // returns the moose Postprocessor imposed on OpenFOAM
   VariableName moosePostprocessor() const { return _pp_name; }
 
-  virtual void initialSetup() {};
+  virtual void initialSetup() override {};
 
-  virtual void addInfoRow(BCInfoTable & table);
+  virtual BCInfoTableRow addInfoRow() const override;
 
 protected:
   const PostprocessorName _pp_name;
 
-  // Pointer to Moose variable used to impose BC
+  // Reference to Moose PostprocessorValue used to impose BC
   const PostprocessorValue & _pp_value;
 };

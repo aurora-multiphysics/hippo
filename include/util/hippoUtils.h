@@ -23,10 +23,9 @@ listFromVector(std::vector<StrType> vec, StrType sep = ", ")
   else if (vec.size() == 1)
     return vec.at(0);
 
-  std::string str;
+  std::string str{vec[0]};
   auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
-  std::accumulate(vec.begin(), vec.end(), str, binary_op);
-  return str;
+  return std::accumulate(vec.begin() + 1, vec.end(), str, binary_op);
 }
 }
 }

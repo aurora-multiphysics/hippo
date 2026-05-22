@@ -6,13 +6,14 @@
 #include "MooseTypes.h"
 #include "PostprocessorInterface.h"
 #include "Receiver.h"
+#include <tuple>
 
 InputParameters
 FoamPostprocessorBCBase::validParams()
 {
   auto params = FoamBCBase::validParams();
 
-  params.addParam<PostprocessorName>("pp", "optional postprocessor to be used in BC");
+  params.addParam<PostprocessorName>("pp_name", "optional postprocessor to be used in BC");
   params.transferParam<Real>(Receiver::validParams(), "default");
 
   return params;
@@ -21,19 +22,20 @@ FoamPostprocessorBCBase::validParams()
 FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params)
   : FoamBCBase(params),
     PostprocessorInterface(this),
-    _pp_name((params.isParamSetByUser("pp")) ? params.get<PostprocessorName>("pp") : _name),
+    _pp_name((params.isParamSetByUser("pp_name")) ? params.get<PostprocessorName>("pp_name")
+                                                  : _name),
     _pp_value(getPostprocessorValueByName(_pp_name))
 {
-  if (params.isParamSetByUser("pp") && params.isParamSetByUser("default"))
-    mooseWarning("'pp' and 'default' should not both be set. 'default' ignored.");
+  if (params.isParamSetByUser("pp_name") && params.isParamSetByUser("default"))
+    mooseWarning("'pp_name' and 'default' should not both be set. 'default' ignored.");
 }
 
-void
-FoamPostprocessorBCBase::addInfoRow(BCInfoTable & table)
+BCInfoTableRow
+FoamPostprocessorBCBase::addInfoRow() const
 {
-  table.addRow(name(),
-               type(),
-               foamVariable(),
-               moosePostprocessor(),
-               Hippo::internal::listFromVector(boundary()));
+  return std::make_tuple(name(),
+                         type(),
+                         foamVariable(),
+                         moosePostprocessor(),
+                         Hippo::internal::listFromVector(boundary()));
 }

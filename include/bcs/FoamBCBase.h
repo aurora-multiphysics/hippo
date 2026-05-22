@@ -9,7 +9,7 @@
 #include <MooseVariableFieldBase.h>
 #include "VariadicTable.h"
 
-typedef VariadicTable<std::string, std::string, std::string, std::string, std::string> BCInfoTable;
+typedef std::tuple<std::string, std::string, std::string, std::string, std::string> BCInfoTableRow;
 
 class FoamBCBase : public MooseObject, public Coupleable
 {
@@ -32,7 +32,7 @@ public:
   virtual void initialSetup() = 0;
 
   // Add information about BC to table
-  virtual void addInfoRow(BCInfoTable & table) = 0;
+  virtual BCInfoTableRow addInfoRow() const = 0;
 
 protected:
   // OpenFOAM variable which this BC is to be imposed on

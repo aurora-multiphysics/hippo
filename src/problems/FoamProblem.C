@@ -152,7 +152,8 @@ FoamProblem::verifyFoamBCs()
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
         // List info about BC
-        bc->addInfoRow(vt);
+        auto [name, type, foam_var, moose_var, boundaries] = bc->addInfoRow();
+        vt.addRow(name, type, foam_var, moose_var, boundaries);
       }
     }
 

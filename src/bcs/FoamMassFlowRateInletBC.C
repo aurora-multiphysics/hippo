@@ -11,7 +11,7 @@ FoamMassFlowRateInletBC::validParams()
 {
   auto params = FoamPostprocessorBCBase::validParams();
 
-  params.addParam<Real>("scale_factor", 1., "Scale factor multiply mass flow rate pp by.");
+  params.addParam<Real>("scale_factor", 1., "Scale factor multiply mass flow rate pp_name by.");
   params.suppressParameter<std::string>("foam_variable");
   params.set<std::string>("foam_variable") = "U";
 
@@ -33,12 +33,12 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
   auto subdomains = _mesh->getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    auto & boundary_patch = foam_mesh.boundary()[subdomain];
+    const auto & boundary_patch = foam_mesh.boundary()[subdomain];
 
     auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
         boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
-    auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
-    Real area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
+    const auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
+    const Real area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
     U_var == -_scale_factor * _pp_value * boundary_patch.nf() / (rho * area);
   }
 }
