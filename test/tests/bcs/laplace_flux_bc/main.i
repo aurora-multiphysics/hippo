@@ -20,7 +20,7 @@
         boundary = 'left'
     []
     [T_flux]
-        type=FoamFixedGradientBC
+        type=FoamDiffusionFluxBC
         foam_variable = T
         boundary = 'right'
     []
@@ -30,7 +30,7 @@
     [T_flux]
         type = ParsedAux
         variable = T_flux
-        expression = 't'
+        expression = '2*t'
         use_xyzt = true
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []

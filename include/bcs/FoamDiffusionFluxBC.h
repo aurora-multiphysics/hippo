@@ -1,17 +1,17 @@
 #pragma once
 
 #include "FoamVariableBCBase.h"
-#include "InputParameters.h"
 
-class FoamFixedGradientBC : public FoamVariableBCBase
+class FoamDiffusionFluxBC : public FoamVariableBCBase
 {
 public:
-  // Validate input file parameters
   static InputParameters validParams();
-
-  // Constructor
-  explicit FoamFixedGradientBC(const InputParameters & parameters);
+  explicit FoamDiffusionFluxBC(const InputParameters & params);
 
   // Impose boundary conditions (to be called from FoamProblem class)
   virtual void imposeBoundaryCondition() override;
+
+protected:
+  // diffusivity name for flux condition
+  const std::string _diffusivity;
 };
