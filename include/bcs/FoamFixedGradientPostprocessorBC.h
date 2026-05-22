@@ -12,8 +12,4 @@ public:
 
   // impose boundary condition
   virtual void imposeBoundaryCondition() override;
-
-protected:
-  // name of diffusivity coefficient used to divide flux
-  std::string _diffusivity_coefficient;
 };
