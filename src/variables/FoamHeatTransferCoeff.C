@@ -41,7 +41,6 @@ FoamHeatTransferCoeff::transferVariable()
   auto & moose_var = getFoamProblem().getVariable(tid, _name);
 
   calculateHTC();
-
   Hippo::internal::copyFieldFoamToMoose(_mesh, _field, moose_var, _subdomain);
   moose_var.sys().solution().close();
 }
@@ -56,8 +55,6 @@ FoamHeatTransferCoeff::calculateHTC()
   const auto & Tbf =
       foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
   const Foam::scalar eps = Foam::ROOTVSMALL;
-
-  // get reference T field
 
   const Foam::vectorField & cellCenters{foam_mesh.boundary()[subdomain].Cf()};
 
@@ -84,9 +81,7 @@ FoamHeatTransferCoeff::calculate_qw()
   const Foam::thermophysicalTransportModel & ttm =
       foam_mesh.lookupType<Foam::thermophysicalTransportModel>();
 
-  // compute molecular component
   int patchI = foam_mesh.boundary().findIndex(subdomain);
-
   const auto & kappaEffbf = ttm.kappaEff(patchI);
 
   q_w = kappaEffbf * Tbf.snGrad();
