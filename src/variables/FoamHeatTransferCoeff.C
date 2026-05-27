@@ -7,6 +7,8 @@
 #include "UserObject.h"
 #include "hippoUtils.h"
 #include <scalar.H>
+#include <scalarAndError.H>
+#include <scalarField.H>
 #include <string>
 #include <volFieldsFwd.H>
 
@@ -29,7 +31,6 @@ FoamHeatTransferCoeff::FoamHeatTransferCoeff(const InputParameters & params)
   : FoamFieldBase(params),
     _mesh(getFoamProblem().mesh()),
     _subdomain(_mesh.getSubdomainID(getParam<SubdomainName>("boundary"))),
-    _field(_mesh.fvMesh().boundary()[getParam<SubdomainName>("boundary")].size()),
     _t_bulk_uo_name(getParam<UserObjectName>("bulk_temperature_uo"))
 {
 }
@@ -40,12 +41,12 @@ FoamHeatTransferCoeff::transferVariable()
   THREAD_ID tid = getParam<THREAD_ID>("_tid");
   auto & moose_var = getFoamProblem().getVariable(tid, _name);
 
-  calculateHTC();
-  Hippo::internal::copyFieldFoamToMoose(_mesh, _field, moose_var, _subdomain);
+  Foam::scalarField htc = calculateHTC();
+  Hippo::internal::copyFieldFoamToMoose(_mesh, htc, moose_var, _subdomain);
   moose_var.sys().solution().close();
 }
 
-void
+Foam::scalarField
 FoamHeatTransferCoeff::calculateHTC()
 {
   const std::string & subdomain{getParam<SubdomainName>("boundary")};
@@ -54,35 +55,33 @@ FoamHeatTransferCoeff::calculateHTC()
 
   const auto & Tbf =
       foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
-  const Foam::scalar eps = Foam::ROOTVSMALL;
-
-  const Foam::vectorField & cellCenters{foam_mesh.boundary()[subdomain].Cf()};
-
-  Foam::Field<Foam::scalar> q = calculate_qw();
+  Foam::scalarField q = calculate_qw(Tbf);
   const UserObject & t_bulk_uo = getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name);
-  for (int i = 0; i < _field.size(); ++i)
+
+  Foam::scalarField htc{Tbf.size(), 0};
+  const Foam::vectorField & cellCenters{foam_mesh.boundary()[subdomain].Cf()};
+  const Foam::scalar eps = Foam::ROOTVSMALL;
+  for (int i = 0; i < htc.size(); ++i)
   {
     const Point p{cellCenters[i].x(), cellCenters[i].y(), cellCenters[i].z()};
     Foam::scalar T_ref = t_bulk_uo.spatialValue(p);
-    _field[i] = q[i] / (Tbf[i] - T_ref + eps);
+    htc[i] = q[i] / (Tbf[i] - T_ref + eps);
   }
+
+  return htc;
 }
 
 const Foam::Field<Foam::scalar>
-FoamHeatTransferCoeff::calculate_qw()
+FoamHeatTransferCoeff::calculate_qw(const Foam::fvPatchScalarField & Tbf)
 {
   auto & foam_mesh{_mesh.fvMesh()};
-  const std::string & Tname{getParam<std::string>("T_name")};
-  const std::string subdomain{getParam<SubdomainName>("boundary")};
-  const auto & Tbf =
-      foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
-
   Foam::Field<Foam::scalar> q_w(Tbf.size(), 0.);
   const Foam::thermophysicalTransportModel & ttm =
       foam_mesh.lookupType<Foam::thermophysicalTransportModel>();
 
-  int patchI = foam_mesh.boundary().findIndex(subdomain);
-  const auto & kappaEffbf = ttm.kappaEff(patchI);
+  // use kappaEff as this would also account for turbulence modelling while being the same as
+  // molecular in other cases
+  const auto & kappaEffbf = ttm.kappaEff(Tbf.patch().index());
 
   q_w = kappaEffbf * Tbf.snGrad();
 
