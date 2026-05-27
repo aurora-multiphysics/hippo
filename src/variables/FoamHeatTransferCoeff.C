@@ -41,7 +41,7 @@ FoamHeatTransferCoeff::transferVariable()
   THREAD_ID tid = getParam<THREAD_ID>("_tid");
   auto & moose_var = getFoamProblem().getVariable(tid, _name);
 
-  Foam::scalarField htc = calculateHTC();
+  const Foam::scalarField htc = calculateHTC();
   Hippo::internal::copyFieldFoamToMoose(_mesh, htc, moose_var, _subdomain);
   moose_var.sys().solution().close();
 }
@@ -51,11 +51,11 @@ FoamHeatTransferCoeff::calculateHTC()
 {
   const std::string & subdomain{getParam<SubdomainName>("boundary")};
   const std::string & Tname{getParam<std::string>("T_name")};
-  Foam::fvMesh & foam_mesh{_mesh.fvMesh()};
+  const Foam::fvMesh & foam_mesh{_mesh.fvMesh()};
 
   const auto & Tbf =
       foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
-  Foam::scalarField q = calculate_qw(Tbf);
+  const Foam::scalarField q = calculate_qw(Tbf);
   const UserObject & t_bulk_uo = getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name);
 
   Foam::scalarField htc{Tbf.size(), 0};
@@ -64,7 +64,7 @@ FoamHeatTransferCoeff::calculateHTC()
   for (int i = 0; i < htc.size(); ++i)
   {
     const Point p{cellCenters[i].x(), cellCenters[i].y(), cellCenters[i].z()};
-    Foam::scalar T_ref = t_bulk_uo.spatialValue(p);
+    const Foam::scalar T_ref = t_bulk_uo.spatialValue(p);
     htc[i] = q[i] / (Tbf[i] - T_ref + eps);
   }
 
@@ -74,7 +74,7 @@ FoamHeatTransferCoeff::calculateHTC()
 const Foam::Field<Foam::scalar>
 FoamHeatTransferCoeff::calculate_qw(const Foam::fvPatchScalarField & Tbf)
 {
-  auto & foam_mesh{_mesh.fvMesh()};
+  const auto & foam_mesh{_mesh.fvMesh()};
   Foam::Field<Foam::scalar> q_w(Tbf.size(), 0.);
   const Foam::thermophysicalTransportModel & ttm =
       foam_mesh.lookupType<Foam::thermophysicalTransportModel>();
