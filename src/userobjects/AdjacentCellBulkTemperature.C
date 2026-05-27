@@ -21,6 +21,7 @@ AdjacentCellBulkTemperature::validParams()
 {
   InputParameters params = GeneralUserObject::validParams();
   params.addRequiredParam<SubdomainName>("boundary", "Boundary this object applies to.");
+  params.addParam<std::string>("T_name", "T", "Temperature name in the OpenFOAM simulation.");
   return params;
 }
 
@@ -61,5 +62,5 @@ AdjacentCellBulkTemperature::spatialValue(const Point & point) const
     }
   }
 
-  return foam_mesh.lookupObject<Foam::volScalarField>("T")[idx];
+  return foam_mesh.lookupObject<Foam::volScalarField>(getParam<std::string>("T_name"))[idx];
 }
