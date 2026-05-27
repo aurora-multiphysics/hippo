@@ -8,6 +8,8 @@
 
 #include "MooseTypes.h"
 #include "fvCFD_moose.h"
+#include <fvPatchFieldsFwd.H>
+#include <scalarField.H>
 
 class FoamHeatTransferCoeff : public FoamFieldBase
 {
@@ -21,11 +23,10 @@ public:
   std::string foamVariable() const { return ""; };
 
 protected:
-  void calculateHTC();
-  const Foam::Field<Foam::scalar> calculate_qw();
+  Foam::scalarField calculateHTC();
+  const Foam::scalarField calculate_qw(const Foam::fvPatchScalarField & Tbf);
   // Pointer to the FoamMesh object
   FoamMesh & _mesh;
   const SubdomainID _subdomain;
-  Foam::Field<Foam::scalar> _field;
   const UserObjectName & _t_bulk_uo_name;
 };
