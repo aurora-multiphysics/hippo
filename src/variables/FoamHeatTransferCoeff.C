@@ -56,8 +56,9 @@ FoamHeatTransferCoeff::calculateHTC()
   const auto & Tbf =
       foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
   const Foam::scalarField q = calculate_qw(Tbf);
-  const UserObject & t_bulk_uo = getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name);
 
+  UserObject & t_bulk_uo = getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name);
+  t_bulk_uo.execute();
   Foam::scalarField htc{Tbf.size(), 0};
   const Foam::vectorField & cellCenters{foam_mesh.boundary()[subdomain].Cf()};
   const Foam::scalar eps = Foam::ROOTVSMALL;
