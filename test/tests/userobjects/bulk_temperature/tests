@@ -7,17 +7,29 @@
   [adjacent_bulk_tests]
     [setup]
       type = RunCommand
-      command = 'bash -c "foamCleanCase -case adjacent_cell && blockMesh -case adjacent_cell"'
+      command = 'bash -c "foamCleanCase -case adjacent_cell && blockMesh -case adjacent_cell && decomposePar -case adjacent_cell"'
     []
     [run_serial]
         type = RunApp
-        input = adjacent_bulk_temperature.i
+        input = main.i
         prereq = adjacent_bulk_tests/setup
     []
     [verify]
         type = PythonUnitTest
         input = test.py
         prereq = adjacent_bulk_tests/run_serial
+    []
+    [run_parallel]
+        type = RunApp
+        input = main.i
+        prereq = adjacent_bulk_tests/setup
+        min_parallel = 2
+        max_parallel = 2
+    []
+    [verify_parallel]
+        type = PythonUnitTest
+        input = test.py
+        prereq = adjacent_bulk_tests/run_parallel
     []
   []
 []
