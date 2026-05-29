@@ -3,6 +3,7 @@
 #include "GeneralUserObject.h"
 #include "HippoBase.h"
 #include "InputParameters.h"
+#include "KDTree.h"
 #include <fvPatch.H>
 #include <memory>
 #include <scalarField.H>
@@ -21,7 +22,12 @@ public:
 
 private:
   const Foam::fvPatch & getFoamPatch(const std::string & boundary);
+  void buildKDTree();
+
+  std::vector<int> _mpi_sizes;
+  std::vector<int> _mpi_displs;
   const Foam::fvPatch & _foam_patch;
-  Foam::vectorField _gl_face_centres;
+  std::vector<Point> _kd_centres;
   Foam::scalarField _gl_t_adjacent;
+  std::unique_ptr<KDTree> _kd_tree;
 };
