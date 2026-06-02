@@ -11,7 +11,7 @@ class TestFoamTimeStepper(TestCase):
         """Checks synchronisation with parent app"""
         dirs = os.listdir("fluid-openfoam")
         for dir in [0.1, 0.2, 0.3, 0.4, 0.5]:
-            assert str(dir) in dirs
+            assert str(dir) in dirs, f"{dir} resutls folder not found"
 
     def test_force_no_cfl(self):
         """Checks that CFL is not used if dt is overriden"""

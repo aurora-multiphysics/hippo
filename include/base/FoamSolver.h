@@ -43,16 +43,17 @@ public:
   void disable() { _enabled = false; }
   scalar maxDeltaT() const
   {
-    // If we don't want MOOSE's timestep to be considered, we return the maximum value.
-    if (!_enabled)
-      return Foam::VGREAT;
-
     // If MOOSE altered the previous time step change the deltaTfactor to undo the MOOSE induced
     // cutback
     if (time_.deltaTValue() != _old_desired_dt)
       Foam::solver::deltaTFactor = _delta_t_factor * _old_desired_dt / time_.deltaTValue();
     else
       Foam::solver::deltaTFactor = _delta_t_factor;
+
+    // If we don't want MOOSE's timestep to be considered, we return the maximum value.
+    if (!_enabled)
+      return Foam::VGREAT;
+
     return _dt;
   }
 };

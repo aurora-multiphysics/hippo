@@ -31,10 +31,10 @@ FoamTimeStepper::computeDT()
 {
 
   if (!_dt_adjustable)
-  {
     return _foam_dt;
-  }
 
+  if (_t_step == 0)
+    return solver().getTimeDelta();
   // Not ideal, but for MOOSE to get an accurate deltaT
   // preSolve must be called as this updates the BCs.
   solver().preSolve();
