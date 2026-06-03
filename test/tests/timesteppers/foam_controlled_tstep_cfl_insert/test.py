@@ -1,6 +1,8 @@
 """Test module for FoamTimeStepper where OpenFOAM uses CFL adaptive time stepping"""
 
 import os
+import re
+
 from unittest import TestCase
 
 
@@ -22,23 +24,9 @@ class TestFoamTimeStepper(TestCase):
                 assert folder in dirs, f"{folder} results folder not found"
 
     def test_foam_only(self):
-        required = [
-            "0",
-            "0.1690917508793",
-            "0.356509290831281",
-            "0.0248832",
-            "0.207397060458416",
-            "0.393087970854348",
-            "0.05474304",
-            "0.245209305564808",
-            "0.429481403211603",
-            "0.090574848",
-            "0.282623577241572",
-            "0.465724948638813",
-            "0.130213735998884",
-            "0.319703708185321",
-            "0.501849350445028",
-        ]
-        dirs = os.listdir("fluid-openfoam")
+        with open("ref_times.txt", "r") as f:
+            required = [t for t in f.read().split("\n") if t]
+
+        dirs = [dir for dir in os.listdir("fluid-openfoam") if re.search("0.*", dir)]
         for dir in required:
-            assert dir in dirs, f"Folder {dir} not found"
+            assert dir in dirs, f"Folder {dir} not found. dirs: {dirs}"
