@@ -105,4 +105,3 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
     . /opt/openfoam/OpenFOAM-12/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose
-    export MPI_ROOT=/opt/openmpi
