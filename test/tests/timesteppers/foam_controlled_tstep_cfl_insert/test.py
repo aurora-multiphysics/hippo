@@ -2,6 +2,7 @@
 
 import os
 import re
+import subprocess
 
 from unittest import TestCase
 
@@ -24,9 +25,27 @@ class TestFoamTimeStepper(TestCase):
                 assert folder in dirs, f"{folder} results folder not found"
 
     def test_foam_only(self):
-        with open("ref_times.txt", "r") as f:
-            required = [t for t in f.read().split("\n") if t]
-
         dirs = [dir for dir in os.listdir("fluid-openfoam") if re.search("0.*", dir)]
+
+        subprocess.run(
+            ["foamCleanCase", "-case", "fluid-openfoam"],
+            stdout=subprocess.DEVNULL,
+            check=True,
+        )
+        subprocess.run(
+            ["blockMesh", "-case", "fluid-openfoam"],
+            stdout=subprocess.DEVNULL,
+            check=True,
+        )
+        subprocess.run(
+            ["foamRun", "-case", "fluid-openfoam"],
+            stdout=subprocess.DEVNULL,
+            check=True,
+        )
+
+        required = [
+            dir for dir in os.listdir("fluid-openfoam") if re.search("0.*", dir)
+        ]
+
         for dir in required:
             assert dir in dirs, f"Folder {dir} not found. dirs: {dirs}"

@@ -35,7 +35,7 @@
     []
     [setup_foam_only]
       type = RunCommand
-      command = 'bash -c "./foam_ref_times.sh && cd fluid-openfoam &&./Allclean && blockMesh"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
     []
     [run_foam_only]
       type = RunApp
