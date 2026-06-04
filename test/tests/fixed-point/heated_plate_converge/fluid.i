@@ -24,7 +24,6 @@
     [solid_heat_flux]
         type = FoamDiffusionFluxBC
         foam_variable = 'T'
-
         initial_condition = 0
     []
 []
