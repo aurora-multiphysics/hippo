@@ -33,19 +33,20 @@ FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
   auto subdomains = _mesh->getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    auto & boundary = foam_mesh.boundary()[subdomain];
+    const auto & boundary = foam_mesh.boundary()[subdomain];
     // Get underlying field from OpenFOAM boundary patch.
     auto & foam_gradient =
         _mesh->getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
     // Get the underlying diffusivity field
-    auto & coeff = foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
-        _diffusivity);
+    const auto & coeff =
+        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
+            _diffusivity);
 
     // Calculate the bulk value of the diffusivity coefficient
-    auto area = boundary.magSf();
-    auto total_area = Foam::returnReduce(Foam::sum(area), Foam::sumOp<Foam::scalar>());
-    auto coeff_bulk =
+    const auto area = boundary.magSf();
+    const auto total_area = Foam::returnReduce(Foam::sum(area), Foam::sumOp<Foam::scalar>());
+    const auto coeff_bulk =
         Foam::returnReduce(Foam::sum(coeff * area), Foam::sumOp<Foam::scalar>()) / total_area;
 
     // set gradient

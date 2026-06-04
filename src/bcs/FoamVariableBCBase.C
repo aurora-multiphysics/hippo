@@ -52,7 +52,7 @@ FoamVariableBCBase::initialSetup()
 }
 
 BCInfoTableRow
-FoamVariableBCBase::addInfoRow() const
+FoamVariableBCBase::getInfoRow() const
 {
   // List info about BC
   return std::make_tuple(

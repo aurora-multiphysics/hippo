@@ -32,7 +32,7 @@ public:
   virtual void initialSetup() = 0;
 
   // Add information about BC to table
-  virtual BCInfoTableRow addInfoRow() const = 0;
+  virtual BCInfoTableRow getInfoRow() const = 0;
 
 protected:
   // OpenFOAM variable which this BC is to be imposed on

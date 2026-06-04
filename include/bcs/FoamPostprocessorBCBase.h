@@ -17,7 +17,7 @@ public:
 
   virtual void initialSetup() override {};
 
-  virtual BCInfoTableRow addInfoRow() const override;
+  virtual BCInfoTableRow getInfoRow() const override;
 
 protected:
   const PostprocessorName _pp_name;

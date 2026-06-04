@@ -16,7 +16,7 @@ public:
 
   virtual void initialSetup() override;
 
-  virtual BCInfoTableRow addInfoRow() const override;
+  virtual BCInfoTableRow getInfoRow() const override;
 
 protected:
   // Get the value of the MOOSE variable at an element

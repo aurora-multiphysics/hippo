@@ -31,7 +31,7 @@ FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params)
 }
 
 BCInfoTableRow
-FoamPostprocessorBCBase::addInfoRow() const
+FoamPostprocessorBCBase::getInfoRow() const
 {
   return std::make_tuple(name(),
                          type(),
