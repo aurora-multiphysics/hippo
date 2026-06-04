@@ -9,7 +9,6 @@
             input = main.i
             prereq = mass_flow_rate/setup
             csvdiff = main_out.csv
-            allow_warnings = true
         []
     []
 []

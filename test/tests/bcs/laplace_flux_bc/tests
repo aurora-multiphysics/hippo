@@ -8,7 +8,6 @@
             type = RunException
             input = main.i
             prereq = foam_bc_diffusion_flux/setup
-            allow_warnings = true
             cli_args ='FoamBCs/T_flux/diffusivity=kappa1'
             expect_err = "Diffusivity 'kappa1' not a Foam volScalarField"
         []
@@ -16,7 +15,6 @@
             type = RunApp
             input = main.i
             prereq = foam_bc_diffusion_flux/setup
-            allow_warnings = true
         []
         [verify]
             type = PythonUnitTest
@@ -28,7 +26,6 @@
             input = main.i
             prereq = foam_bc_diffusion_flux/setup
             cli_args ='FoamBCs/T_flux/diffusivity=Cv AuxKernels/T_flux/expression=t'
-            allow_warnings = true
         []
         [verify_diffusivity]
             type = PythonUnitTest

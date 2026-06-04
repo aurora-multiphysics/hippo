@@ -10,13 +10,11 @@
             prereq = receiver_pp/setup
             expect_err = "Diffusivity 'kappa1' not a Foam volScalarField"
             cli_args = 'FoamBCs/T_flux/diffusivity=kappa1'
-            allow_warnings = true
         []
         [run]
             type = RunApp
             input = main.i
             prereq = receiver_pp/setup
-            allow_warnings = true
         []
         [verify]
             type = PythonUnitTest
@@ -28,7 +26,6 @@
             input = main.i
             cli_args = "FoamBCs/T_flux/diffusivity='Cv' FoamBCs/T_flux/default=1"
             prereq = receiver_pp/verify
-            allow_warnings = true
         []
         [verify_diffusivity_cv]
             type = PythonUnitTest

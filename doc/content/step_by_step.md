@@ -136,7 +136,7 @@ and so can be transferred between MOOSE apps.
 
 Hippo also implements the `FoamBC` system that allows you to impose boundary conditions
 on OpenFOAM from the Hippo input file. In this case, we wish to impose a heat flux BC
-on the temperature field, which can be donw using `FoamDiffusionFluxBC`. A diffusivity can be specified,
+on the temperature field, which can be done using `FoamDiffusionFluxBC`. A diffusivity can be specified,
 although the default is the thermal conductivity `kappa`, which is what we require here.
 
 ```toml
