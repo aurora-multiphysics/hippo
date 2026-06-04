@@ -1,17 +1,22 @@
 """Tests for imposing BCs in OpenFOAM using MOOSE input file syntax"""
 
 import unittest
+
 import fluidfoam as ff
 import numpy as np
-
 from read_hippo_data import get_foam_times  # pylint: disable=E0401
 
 
-class TestFoamBCFixedGradient(unittest.TestCase):
+class TestFoamBCFixedGradientPP(unittest.TestCase):
     """Test class for imposing fixed value BCs in Hippo."""
 
-    def test_fixed_gradient_x(self):
-        """Test case for imposing fixed value."""
+    def test_diffusion_flux_x(self):
+        """
+        Test case for imposing diffusion flux BC with postprocessor.
+
+        Solves laplace equation at each time step with right BC being \partial_x T = t.
+        The analytical solution is t*x.
+        """
         case_dir = "foam/"
         times = get_foam_times(case_dir, string=True)[1:]
 
@@ -23,7 +28,13 @@ class TestFoamBCFixedGradient(unittest.TestCase):
             temp_ref = coords["x"] * np.float64(time)
 
             temp_diff_max = np.argmax(abs(temp - temp_ref))
-            assert np.allclose(temp_ref, temp, rtol=1e-7, atol=1e-12), (
-                f"Max diff ({time}): {abs(temp - temp_ref).max()} "
-                f"{temp[temp_diff_max]} {temp_ref[temp_diff_max]}"
+            np.testing.assert_allclose(
+                temp_ref,
+                temp,
+                rtol=1e-7,
+                atol=1e-12,
+                err_msg=(
+                    f"Max diff ({time}): {abs(temp - temp_ref).max()} "
+                    f"{temp[temp_diff_max]} {temp_ref[temp_diff_max]}"
+                ),
             )

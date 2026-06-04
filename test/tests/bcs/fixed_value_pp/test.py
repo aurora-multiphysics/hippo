@@ -1,9 +1,9 @@
 """Tests for imposing BCs in OpenFOAM using MOOSE input file syntax"""
 
 import unittest
+
 import fluidfoam as ff
 import numpy as np
-
 from read_hippo_data import get_foam_times  # pylint: disable=E0401
 
 
@@ -24,7 +24,13 @@ class TestFoamBCFixedValuePostprocessor(unittest.TestCase):
                 temp_ref = 0.05 + scale * np.float64(time)
 
                 temp_diff_max = np.argmax(abs(temp - temp_ref))
-                assert np.allclose(temp_ref, temp, rtol=1e-7, atol=1e-12), (
-                    f"Max diff {boundary} ({time}): {abs(temp - temp_ref).max()} "
-                    f"{temp[temp_diff_max]} {temp_ref[temp_diff_max]}"
+                np.testing.assert_allclose(
+                    temp_ref,
+                    temp,
+                    rtol=1e-7,
+                    atol=1e-12,
+                    err_msg=(
+                        f"Max diff ({time}): {abs(temp - temp_ref).max()} "
+                        f"{temp[temp_diff_max]} {temp_ref}"
+                    ),
                 )

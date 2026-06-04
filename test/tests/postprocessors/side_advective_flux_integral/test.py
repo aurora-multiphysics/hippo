@@ -4,7 +4,6 @@ import unittest
 
 import numpy as np
 
-
 U = [2, -1, 0]
 RHO = 0.5
 AREAS = [1.0, 10.0, 10.0]
@@ -21,13 +20,17 @@ class TestSideAdvectiveFluxIntegral(unittest.TestCase):
         for i in range(3):
             # n indicates the outward normal relative to the coordinate direction
             n = -1.0
-            assert np.allclose(
-                data[i * 3], n * RHO * U[i] * AREAS[i], atol=1e-14, rtol=1e-12
-            ), f"{data[i * 3]} vs {n * RHO * U[i] * AREAS[i]}"
+            np.testing.assert_allclose(
+                data[i * 3],
+                n * RHO * U[i] * AREAS[i],
+                atol=1e-14,
+                rtol=1e-12,
+                err_msg=f"{data[i * 3]} vs {n * RHO * U[i] * AREAS[i]}",
+            )
 
-            assert np.allclose(data[i * 3 + 1], 0.0, atol=1e-14, rtol=1e-12)
+            np.testing.assert_allclose(data[i * 3 + 1], 0.0, atol=1e-14, rtol=1e-12)
 
             n = 1.0
-            assert np.allclose(
+            np.testing.assert_allclose(
                 data[i * 3 + 2], n * RHO * U[i] * AREAS[i], atol=1e-14, rtol=1e-12
             )

@@ -1,5 +1,6 @@
 [Tests]
     [receiver_pp]
+        requirement = "Tests the under-the-hood reciever in the Postprocessor BCs when using the default parameter"
         [setup]
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
