@@ -1,0 +1,37 @@
+[Tests]
+    [receiver_pp]
+        requirement = "Tests the under-the-hood reciever in the Postprocessor BCs when using the default parameter"
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [diffusivity_coeff_err]
+            type = RunException
+            input = main.i
+            prereq = receiver_pp/setup
+            expect_err = "Diffusivity 'kappa1' not a Foam volScalarField"
+            cli_args = 'FoamBCs/T_flux/diffusivity=kappa1'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = receiver_pp/setup
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = receiver_pp/run
+        []
+        [run_diffusivity_cv]
+            type = RunApp
+            input = main.i
+            cli_args = "FoamBCs/T_flux/diffusivity='Cv' FoamBCs/T_flux/default=1"
+            prereq = receiver_pp/verify
+        []
+        [verify_diffusivity_cv]
+            type = PythonUnitTest
+            input = test.py
+            prereq = receiver_pp/run_diffusivity_cv
+        []
+    []
+[]

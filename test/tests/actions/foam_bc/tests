@@ -9,7 +9,6 @@
             input = main.i
             prereq = foam_bc_action/setup
             allow_test_objects = true
-            allow_warnings = true
         []
         [foam_var_error]
             type = RunException
@@ -18,7 +17,6 @@
             expect_err = "There is no OpenFOAM field named 'T1'"
             cli_args = 'FoamBCs/temp/foam_variable=T1'
             allow_test_objects = true
-            allow_warnings = true
         []
         [foam_boundary_error]
             type = RunException
@@ -27,7 +25,6 @@
             expect_err = "Boundary 'left1' not found in FoamMesh"
             cli_args = 'FoamBCs/temp/boundary=left1'
             allow_test_objects = true
-            allow_warnings = true
         []
         [foam_duplicated_boundary_error]
             type = RunException
@@ -35,7 +32,6 @@
             prereq = foam_bc_action/setup
             expect_err = "Imposed FoamBC has duplicated boundary 'left' for foam variable 'T'"
             cli_args = 'FoamBCs/temp_r/boundary=left'
-            allow_warnings = true
             allow_test_objects = true
         []
     []

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "FoamBCBase.h"
+#include "FoamVariableBCBase.h"
 #include "InputParameters.h"
 
-class FoamFixedGradientBC : public FoamBCBase
+class FoamFixedGradientBC : public FoamVariableBCBase
 {
 public:
   // Validate input file parameters
@@ -14,8 +14,4 @@ public:
 
   // Impose boundary conditions (to be called from FoamProblem class)
   virtual void imposeBoundaryCondition() override;
-
-protected:
-  // name of diffusivity coefficient used to divide flux
-  std::string _diffusivity_coefficient;
 };

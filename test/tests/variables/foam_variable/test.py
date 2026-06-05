@@ -3,8 +3,10 @@
 import unittest
 
 import numpy as np
-
-from read_hippo_data import read_moose_exodus_data, get_exodus_times  # pylint: disable=E0401
+from read_hippo_data import (  # pylint: disable=E0401
+    get_exodus_times,
+    read_moose_exodus_data,
+)
 
 
 class TestFoamVariableTransfer(unittest.TestCase):
@@ -29,9 +31,15 @@ class TestFoamVariableTransfer(unittest.TestCase):
                 * time
             )
             temp_diff_max = np.argmax(abs(temp - temp_ref))
-            assert np.allclose(temp_ref, temp, rtol=1e-7, atol=1e-12), (
-                f"Max diff ({time}): {abs(temp - temp_ref).max()} "
-                f"{temp[temp_diff_max]} {temp_ref[temp_diff_max]}"
+            np.testing.assert_allclose(
+                temp_ref,
+                temp,
+                rtol=1e-7,
+                atol=1e-12,
+                err_msg=(
+                    f"Max diff ({time}): {abs(temp - temp_ref).max()} "
+                    f"{temp[temp_diff_max]} {temp_ref[temp_diff_max]}"
+                ),
             )
 
     def test_wall_heat_flux_transfer(self):
@@ -61,6 +69,12 @@ class TestFoamVariableTransfer(unittest.TestCase):
             assert sum_ == whf.size, f"{sum_} {whf.size}"
 
             whf_diff_max = np.argmax(abs(whf - whf_ref))
-            assert np.allclose(whf_ref, whf, rtol=1e-7, atol=1e-12), (
-                f"Max diff ({time}): {abs(whf - whf_ref)[whf_diff_max]} {whf[whf_diff_max]}"
+            np.testing.assert_allclose(
+                whf_ref,
+                whf,
+                rtol=1e-7,
+                atol=1e-12,
+                err_msg=(
+                    f"Max diff ({time}): {abs(whf - whf_ref)[whf_diff_max]} {whf[whf_diff_max]}"
+                ),
             )

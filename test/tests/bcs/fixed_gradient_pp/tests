@@ -1,0 +1,18 @@
+[Tests]
+    [foam_bc_fixed_gradient_pp]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = foam_bc_fixed_gradient_pp/setup
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = foam_bc_fixed_gradient_pp/run
+        []
+    []
+[]

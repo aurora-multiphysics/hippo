@@ -23,7 +23,6 @@
         type=FoamFixedGradientBC
         foam_variable = T
         boundary = 'right'
-        diffusivity_coefficient = kappa
     []
 []
 
@@ -31,7 +30,7 @@
     [T_flux]
         type = ParsedAux
         variable = T_flux
-        expression = '2*t'
+        expression = 't'
         use_xyzt = true
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []

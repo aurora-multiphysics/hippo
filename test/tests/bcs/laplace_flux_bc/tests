@@ -1,0 +1,36 @@
+[Tests]
+    [foam_bc_diffusion_flux]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+        []
+        [check_invalid_diffusivity]
+            type = RunException
+            input = main.i
+            prereq = foam_bc_diffusion_flux/setup
+            cli_args ='FoamBCs/T_flux/diffusivity=kappa1'
+            expect_err = "Diffusivity 'kappa1' not a Foam volScalarField"
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = foam_bc_diffusion_flux/setup
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = foam_bc_diffusion_flux/run
+        []
+        [run_diffusivity]
+            type = RunApp
+            input = main.i
+            prereq = foam_bc_diffusion_flux/setup
+            cli_args ='FoamBCs/T_flux/diffusivity=Cv AuxKernels/T_flux/expression=t'
+        []
+        [verify_diffusivity]
+            type = PythonUnitTest
+            input = test.py
+            prereq = foam_bc_diffusion_flux/run
+        []
+    []
+[]

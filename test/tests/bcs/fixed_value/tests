@@ -8,7 +8,6 @@
             type = RunApp
             input = main.i
             prereq = foam_bc_action_test/setup
-            allow_warnings = true
         []
         [verify]
             type = PythonUnitTest
@@ -21,7 +20,6 @@
             min_parallel=4
             max_parallel=4
             prereq = foam_bc_action_test/setup
-            allow_warnings = true
         []
         [prep_verify]
             type = RunCommand

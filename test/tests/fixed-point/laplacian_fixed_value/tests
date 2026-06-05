@@ -9,7 +9,6 @@
             input = main.i
             prereq = 'create_reference/setup'
             cli_args = 'Executioner/fixed_point_min_its=1 Executioner/fixed_point_max_its=1'
-            allow_warnings = true
         []
         [copy]
             type = RunCommand
@@ -27,7 +26,6 @@
             type = RunApp
             input = main.i
             prereq = laplacian_fixed_value/setup
-            allow_warnings = true
         []
         [verify]
             type = PythonUnitTest

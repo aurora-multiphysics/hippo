@@ -8,7 +8,6 @@
             type = RunApp
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
         []
         [verify_serial]
             type = PythonUnitTest
@@ -19,7 +18,6 @@
             type = RunApp
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
             min_parallel=2
             max_parallel=2
         []
@@ -32,7 +30,6 @@
             type = RunException
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
             cli_args='Postprocessors/t_avg/boundary=top1'
             expect_err = "Boundary 'top1' not found in FoamMesh."
         []
@@ -40,7 +37,6 @@
             type = RunException
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
             cli_args='Postprocessors/t_avg/foam_variable=T1'
             expect_err = "No Foam scalar or vector called 'T1'."
         []

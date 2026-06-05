@@ -8,7 +8,6 @@
             type = RunApp
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
         []
         [verify_serial]
             type = PythonUnitTest
@@ -19,7 +18,6 @@
             type = RunApp
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
             min_parallel=2
             max_parallel=2
         []
@@ -32,7 +30,6 @@
             type = RunException
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
             cli_args='Postprocessors/m_dot_x1/advective_velocity=U1'
             expect_err = "advective_velocity 'U1' not found."
         []
@@ -40,7 +37,6 @@
             type = RunException
             input = main.i
             prereq = postprocessor_test/setup
-            allow_warnings = true
             cli_args='Postprocessors/m_dot_x1/foam_scalar=rho1'
             expect_err = "foam_scalar 'rho1' not found."
         []

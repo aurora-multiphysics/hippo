@@ -10,7 +10,6 @@
             min_parallel=2
             max_parallel=2
             prereq = run_reference/setup
-            allow_warnings = true
             cli_args="Problem/type=FEProblem Executioner/TimeStepper/type=ConstantDT Executioner/TimeStepper/dt=0.0003125 -w"
         []
         [copy]

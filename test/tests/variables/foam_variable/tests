@@ -8,7 +8,6 @@
             type = RunApp
             input = main.i
             prereq = transfer_test/setup
-            allow_warnings = true
         []
         [verify]
             type = PythonUnitTest
@@ -19,7 +18,6 @@
             type = RunApp
             input = main.i
             prereq = transfer_test/setup
-            allow_warnings = true
             min_parallel=4
             max_parallel=4
         []
