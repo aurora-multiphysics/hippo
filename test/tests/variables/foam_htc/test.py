@@ -9,7 +9,13 @@ class TestFoamHeatTransferCoeff(unittest.TestCase):
     """Test class for FoamHeatTransferCoeff."""
 
     def test_htc(self):
-        """Compares output exodus output against expected solution."""
+        """
+        Compares output exodus output against expected solution.
+        Temperature field is set to x * t.
+        q_w = kappa*t, with kappa = 0.5
+        h = q_w * (T_w - T_b), with T_b = 1
+        h = 0.5*t
+        """
 
         times = get_exodus_times("main_out.e")
         for t in times:
