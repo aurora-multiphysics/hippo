@@ -1,0 +1,32 @@
+[Tests]
+    [postprocessor_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+        []
+        [verify_serial]
+            type = PythonUnitTest
+            input = test.py
+            prereq = postprocessor_test/run
+        []
+        [run_parallel]
+            type = RunApp
+            input = main.i
+            prereq = postprocessor_test/setup
+            allow_warnings = true
+            min_parallel=2
+            max_parallel=2
+        []
+        [verify_parallel]
+            type = PythonUnitTest
+            input = test.py
+            prereq = postprocessor_test/run_parallel
+        []
+    []
+[]
