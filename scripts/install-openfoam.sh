@@ -112,7 +112,8 @@ wmRefresh || true
     && ${ALLWMAKE} dep \
     && ${ALLWMAKE} src/ \
     && ${ALLWMAKE} applications/modules/ \
-    && ${ALLWMAKE} applications/utilities/
+    && ${ALLWMAKE} applications/utilities/ \
+    && ${ALLWMAKE} applications/solvers/
 )
 
 if [ ${STRIP_SOURCES} -eq 1 ]; then
