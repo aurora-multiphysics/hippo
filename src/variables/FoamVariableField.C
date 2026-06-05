@@ -1,33 +1,28 @@
+#include "FoamFieldBase.h"
 #include "FoamVariableField.h"
 #include "FoamProblem.h"
 #include "InputParameters.h"
 #include "MooseObject.h"
 #include "MooseTypes.h"
-#include "MooseVariableFieldBase.h"
-#include "MooseVariableFieldBase.h"
 
 registerMooseObject("hippoApp", FoamVariableField);
 
 InputParameters
 FoamVariableField::validParams()
 {
-  auto params = MooseObject::validParams();
+  auto params = FoamFieldBase::validParams();
 
-  params.addRequiredParam<std::string>("foam_variable",
-                                       "OpenFOAM variable or functionObject to be shadowed");
   params.addRequiredParam<std::string>("foam_variable",
                                        "OpenFOAM variable or functionObject to be shadowed");
 
   // Get desired parameters from Variable objects
   params.transferParam<std::vector<Real>>(MooseVariable::validParams(), "initial_condition");
 
-  params.registerBase("FoamVariable");
-  params.registerSystemAttributeName("FoamVariable");
   return params;
 }
 
 FoamVariableField::FoamVariableField(const InputParameters & params)
-  : MooseObject(params), _foam_variable(params.get<std::string>("foam_variable"))
+  : FoamFieldBase(params), _foam_variable(params.get<std::string>("foam_variable"))
 {
   auto * problem = dynamic_cast<FoamProblem *>(&getMooseApp().feProblem());
   if (!problem)
