@@ -1,5 +1,6 @@
 #include "FoamSolver.h"
 
+#include <IOdictionary.H>
 #include <fixedGradientFvPatchFields.H>
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <fvPatchField.H>
@@ -164,6 +165,13 @@ bool
 FoamSolver::isDeltaTAdjustable() const
 {
   return _solver->runTime.controlDict().lookupOrDefault("adjustTimeStep", false);
+}
+
+void
+FoamSolver::setDeltaTAdjustable(const bool adjustable)
+{
+  const_cast<Foam::IOdictionary &>(_solver->runTime.controlDict())
+      .set("adjustTimeStep", adjustable);
 }
 
 Foam::functionObjects::mooseDeltaT &

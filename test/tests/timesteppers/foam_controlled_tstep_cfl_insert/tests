@@ -12,9 +12,41 @@
       prereq = foam_controlled_tstep_cfl_insert/setup
     []
     [verify]
-      type = RunCommand
-      command = 'bash verify.sh'
+      type = PythonUnitTest
+      input = test.py
       prereq = foam_controlled_tstep_cfl_insert/run
+      test_case = 'TestFoamTimeStepper.test_synchronisation_and_cutback'
+    []
+    [setup_no_adaptive]
+      type = RunCommand
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
+    []
+    [run_no_adaptive]
+      type = RunApp
+      input = run.i
+      cli_args = "MultiApps/hippo/cli_args=Executioner/dt=0.03"
+      prereq = foam_controlled_tstep_cfl_insert/setup_no_adaptive
+    []
+    [verify_no_adaptive]
+      type = PythonUnitTest
+      input = test.py
+      prereq = foam_controlled_tstep_cfl_insert/run_no_adaptive
+      test_case = 'TestFoamTimeStepper.test_synchronisation_and_cutback test.TestFoamTimeStepper.test_force_no_cfl'
+    []
+    [setup_foam_only]
+      type = RunCommand
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
+    []
+    [run_foam_only]
+      type = RunApp
+      input = fluid.i
+      prereq = foam_controlled_tstep_cfl_insert/setup_foam_only
+    []
+    [verify_foam_only]
+      type = PythonUnitTest
+      input = test.py
+      prereq = foam_controlled_tstep_cfl_insert/run_foam_only
+      test_case = 'TestFoamTimeStepper.test_foam_only'
     []
   []
 []

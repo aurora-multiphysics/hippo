@@ -8,6 +8,8 @@ FoamFile
 
 application     buoyantFoam;
 
+solver          fluid;
+
 startFrom       startTime;
 
 startTime       0;

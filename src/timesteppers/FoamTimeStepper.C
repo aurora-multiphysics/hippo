@@ -33,6 +33,8 @@ FoamTimeStepper::computeDT()
   if (!_dt_adjustable)
     return _foam_dt;
 
+  if (_t_step == 0)
+    return solver().getTimeDelta();
   // Not ideal, but for MOOSE to get an accurate deltaT
   // preSolve must be called as this updates the BCs.
   solver().preSolve();
@@ -83,6 +85,7 @@ FoamTimeStepper::init()
     _foam_dt = _executioner.getParam<Real>("dt");
     _dt_adjustable = false;
     solver().setTimeDelta(_foam_dt);
+    solver().setDeltaTAdjustable(false);
     return;
   }
   // determine if OpenFOAM's time-step is adjustable in controlDict
