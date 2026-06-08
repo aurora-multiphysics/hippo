@@ -73,7 +73,7 @@
             allow_warnings = true
             min_parallel = 5
             max_parallel = 5
-            cli_args = 'FoamBCs/mass_flowx/pp=pp FoamBCs/tempx/pp=pp FoamBCs/mass_flowy/pp=pp FoamBCs/tempy/pp=pp FoamBCs/mass_flowz/pp=pp FoamBCs/tempz/pp=pp Postprocessors/pp/expression=1'
+            cli_args = 'FoamBCs/mass_flowx/pp_name=pp FoamBCs/tempx/pp_name=pp FoamBCs/mass_flowy/pp_name=pp FoamBCs/tempy/pp_name=pp FoamBCs/mass_flowz/pp_name=pp FoamBCs/tempz/pp_name=pp Postprocessors/pp/expression=1'
         []
         [reconstruct]
             type = RunCommand
