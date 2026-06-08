@@ -25,6 +25,7 @@ class TestFoamTimeStepper(TestCase):
                 assert folder in dirs, f"{folder} results folder not found"
 
     def test_foam_only(self):
+        """Compare output times to foamRun, they should be the same."""
         dirs = [dir for dir in os.listdir("fluid-openfoam") if re.search("0.*", dir)]
 
         subprocess.run(

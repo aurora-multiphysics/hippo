@@ -32,23 +32,27 @@ public:
   {
   }
 
-  wordList fields() const { return wordList::null(); }
+  virtual wordList fields() const override { return wordList::null(); }
 
-  bool executeAtStart() const { return false; }
+  virtual bool executeAtStart() const override { return false; }
 
-  bool execute() { return true; }
-  bool write() { return true; }
+  virtual bool execute() override { return true; }
+  virtual bool write() override { return true; }
   void setOldDesiredDt(scalar desired_dt) { _old_desired_dt = desired_dt; }
   void enable() { _enabled = true; }
   void disable() { _enabled = false; }
-  scalar maxDeltaT() const
+  Foam::scalar calculateDeltaTFactor(const Foam::scalar time) const
+  {
+    if (time != _old_desired_dt)
+      return _delta_t_factor * _old_desired_dt / time;
+    else
+      return _delta_t_factor;
+  }
+  virtual scalar maxDeltaT() const override
   {
     // If MOOSE altered the previous time step change the deltaTfactor to undo the MOOSE induced
     // cutback
-    if (time_.deltaTValue() != _old_desired_dt)
-      Foam::solver::deltaTFactor = _delta_t_factor * _old_desired_dt / time_.deltaTValue();
-    else
-      Foam::solver::deltaTFactor = _delta_t_factor;
+    Foam::solver::deltaTFactor = calculateDeltaTFactor(time_.deltaTValue());
 
     // If we don't want MOOSE's timestep to be considered, we return the maximum value.
     if (!_enabled)
