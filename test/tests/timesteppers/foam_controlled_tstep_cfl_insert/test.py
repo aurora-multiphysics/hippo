@@ -10,11 +10,22 @@ from unittest import TestCase
 class TestFoamTimeStepper(TestCase):
     """Test class for checking correct times are run"""
 
-    def test_synchronisation(self):
-        """Checks synchronisation with parent app"""
-        dirs = os.listdir("fluid-openfoam")
+    def test_synchronisation_and_cutback(self):
+        """Checks synchronisation with parent app and ensure timestep recovery after cutback"""
+        dirs = [dir for dir in os.listdir("fluid-openfoam") if re.search("0.*", dir)]
         for dir in [0.1, 0.2, 0.3, 0.4, 0.5]:
-            assert str(dir) in dirs, f"{dir} resutls folder not found"
+            assert str(dir) in dirs, f"{dir} resutlts folder not found"
+
+        dirs = sorted(float(dir) for dir in dirs)
+        for dir in [0.1, 0.2, 0.3, 0.4]:
+            idx = dirs.index(dir)
+            dt0 = dirs[idx - 1] - dirs[idx - 2]
+            dt1 = dirs[idx] - dirs[idx - 1]
+            dt2 = dirs[idx + 1] - dirs[idx]
+
+            assert dt2 > 1.25 * dt1 and dt0 > 1.25 * dt1, (
+                "Check recovery from cutback works properly"
+            )
 
     def test_force_no_cfl(self):
         """Checks that CFL is not used if dt is overriden"""
