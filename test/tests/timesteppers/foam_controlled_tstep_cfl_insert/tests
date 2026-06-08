@@ -15,7 +15,7 @@
       type = PythonUnitTest
       input = test.py
       prereq = foam_controlled_tstep_cfl_insert/run
-      test_case = 'TestFoamTimeStepper.test_synchronisation'
+      test_case = 'TestFoamTimeStepper.test_synchronisation_and_cutback'
     []
     [setup_no_adaptive]
       type = RunCommand
@@ -31,7 +31,7 @@
       type = PythonUnitTest
       input = test.py
       prereq = foam_controlled_tstep_cfl_insert/run_no_adaptive
-      test_case = 'TestFoamTimeStepper.test_synchronisation test.TestFoamTimeStepper.test_force_no_cfl'
+      test_case = 'TestFoamTimeStepper.test_synchronisation_and_cutback test.TestFoamTimeStepper.test_force_no_cfl'
     []
     [setup_foam_only]
       type = RunCommand
