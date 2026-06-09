@@ -20,7 +20,9 @@ ADDITIONAL_INCLUDES := \
     -isystem $(FOAM_INCLUDE_ROOT)/OpenFOAM/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/MomentumTransportModels/momentumTransportModels/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluidThermo/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluid/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/thermophysicalTransportModel/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/MomentumTransportModels/compressible/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/physicalProperties/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/thermophysicalModels/basic/lnInclude \

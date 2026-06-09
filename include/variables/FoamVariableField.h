@@ -1,9 +1,9 @@
 #pragma once
 
-#include "MooseObject.h"
+#include "FoamFieldBase.h"
 #include "FoamMesh.h"
 
-class FoamVariableField : public MooseObject
+class FoamVariableField : public FoamFieldBase
 {
 public:
   static InputParameters validParams();
@@ -11,10 +11,10 @@ public:
   explicit FoamVariableField(const InputParameters & params);
 
   // transfer variable from OpenFOAM field to MOOSE variable
-  virtual void transferVariable();
+  virtual void transferVariable() override;
 
   // returns the name of the foam variable this object shadows
-  std::string foamVariable() const { return _foam_variable; };
+  virtual std::string foamVariable() const { return _foam_variable; };
 
 protected:
   // variable name or functionObject to be shadowed
