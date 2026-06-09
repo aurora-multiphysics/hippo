@@ -81,6 +81,8 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
 
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=opt
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=dbg
+    make -C "${MOOSE_DIR}/modules/thermal_hydraulics" -j {{ MOOSE_JOBS }} METHOD=opt
+    make -C "${MOOSE_DIR}/modules/thermal_hydraulics" -j {{ MOOSE_JOBS }} METHOD=dbg
 
 
     ln -s "${MPI_ROOT}/lib" "${MPI_ROOT}/lib64"
