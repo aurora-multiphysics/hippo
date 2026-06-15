@@ -61,8 +61,8 @@ AdjacentCellBulkTemperature::buildKDTree()
     _kd_centres.resize(gl_size);
   }
 
-  std::vector<int> face_sizes{nProcs};
-  std::vector<int> face_displs{nProcs};
+  std::vector<int> face_sizes(nProcs);
+  std::vector<int> face_displs(nProcs);
   _mpi_sizes.resize(nProcs);
   _mpi_displs.resize(nProcs);
 
