@@ -46,37 +46,27 @@ AdjacentCellBulkTemperature::AdjacentCellBulkTemperature(const InputParameters &
 }
 
 void
-AdjacentCellBulkTemperature::initialize()
-{
-  const int size = _foam_patch.size();
-  int gl_size;
-
-  const int nProcs{Foam::UPstream::nProcs()};
-  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
-
-  MPI_Allreduce(&size, &gl_size, 1, MPI_INT, MPI_SUM, comm);
-  _gl_t_adjacent.resize(gl_size);
-  _kd_centres.resize(gl_size);
-
-  buildKDTree();
-}
-
-void
 AdjacentCellBulkTemperature::buildKDTree()
 {
   Foam::vectorField face_centres = _foam_patch.Cf();
-
+  const int l_num_faces = face_centres.size();
   const int nProcs{Foam::UPstream::nProcs()};
+  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
+
+  if (_gl_t_adjacent.size() == 0)
+  {
+    int gl_size;
+    MPI_Allreduce(&l_num_faces, &gl_size, 1, MPI_INT, MPI_SUM, comm);
+    _gl_t_adjacent.resize(gl_size);
+    _kd_centres.resize(gl_size);
+  }
 
   std::vector<int> face_sizes{nProcs};
   std::vector<int> face_displs{nProcs};
   _mpi_sizes.resize(nProcs);
   _mpi_displs.resize(nProcs);
 
-  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
-
   // Create parameters for MPI gather operations to be reused in execute
-  const int l_num_faces = face_centres.size();
   MPI_Allgather(&l_num_faces, 1, MPI_INT, _mpi_sizes.data(), 1, MPI_INT, comm);
   _mpi_displs[0] = 0;
   for (int i = 0; i < nProcs - 1; ++i)
@@ -113,7 +103,7 @@ AdjacentCellBulkTemperature::buildKDTree()
 void
 AdjacentCellBulkTemperature::execute()
 {
-  if (getParam<bool>("reconstruct_tree"))
+  if (getParam<bool>("reconstruct_tree") || _gl_t_adjacent.size() == 0)
     buildKDTree();
 
   // Gather Temperature on each execute
