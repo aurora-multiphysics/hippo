@@ -15,7 +15,7 @@ public:
   AdjacentCellBulkTemperature(const InputParameters & params);
 
   void execute() override;
-  void initialize() override;
+  void initialize() override {};
   void finalize() override {};
 
   Real spatialValue(const Point & point) const override;
