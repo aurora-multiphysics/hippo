@@ -91,15 +91,6 @@ FoamTimeStepper::init()
   }
   // determine if OpenFOAM's time-step is adjustable in controlDict
   _dt_adjustable = solver().isDeltaTAdjustable();
-
-  // The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
-  // loops over the function objects and chooses the minimum, so by having
-  // a function Object that returns what MOOSE wants, OpenFOAM will use the
-  // MOOSE time step if it is smaller than what OpenFOAM wants. As a result,
-  // if MOOSE wants to add a synchronisation step OpenFOAM will also use it too.
-
-  // create function object and append it to the solver's function object list
-  // solver().appendDeltaTFunctionObject(_dt);
   _desired_dt = solver().getTimeDelta();
   if (!_dt_adjustable)
     _foam_dt = solver().getTimeDelta();
