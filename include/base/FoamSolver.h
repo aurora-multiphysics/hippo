@@ -32,6 +32,7 @@ public:
   {
   }
 
+  virtual ~mooseDeltaT() {};
   virtual wordList fields() const override { return wordList::null(); }
 
   virtual bool executeAtStart() const override { return false; }
@@ -94,6 +95,8 @@ public:
   // creates function object that tells OpenFOAM what MOOSE's
   // time step is.
   Foam::functionObjects::mooseDeltaT & appendDeltaTFunctionObject(const Foam::scalar & dt);
+  // get MooseDeltaT function object
+  Foam::functionObjects::mooseDeltaT & getDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
 

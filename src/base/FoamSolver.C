@@ -1,6 +1,8 @@
 #include "FoamSolver.h"
+#include "MooseError.h"
 
 #include <IOdictionary.H>
+#include <Time.H>
 #include <fixedGradientFvPatchFields.H>
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <fvPatchField.H>
@@ -157,7 +159,14 @@ FoamSolver::computeDeltaT()
       std::min(_solver->maxDeltaT(), _solver->runTime.functionObjects().maxDeltaT());
 
   if (deltaT < Foam::rootVGreat)
-    return std::min(Foam::solver::deltaTFactor * _solver->runTime.deltaTValue(), deltaT);
+  {
+    Foam::scalar deltaT0 = _solver->runTime.deltaTValue();
+    runTime().setDeltaT(
+        std::min(Foam::solver::deltaTFactor * _solver->runTime.deltaTValue(), deltaT));
+    deltaT = _solver->runTime.deltaTValue();
+    runTime().setDeltaTNoAdjust(deltaT0);
+    return deltaT;
+  }
   return _solver->runTime.deltaTValue();
 }
 
@@ -177,8 +186,32 @@ FoamSolver::setDeltaTAdjustable(const bool adjustable)
 Foam::functionObjects::mooseDeltaT &
 FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
 {
-  auto moose_dt = new Foam::functionObjects::mooseDeltaT("Moose time step", runTime(), dt);
+  auto moose_dt = new Foam::functionObjects::mooseDeltaT("mooseTimeStep", runTime(), dt);
   runTime().functionObjects().append(moose_dt);
   return *moose_dt;
+}
+
+Foam::functionObjects::mooseDeltaT &
+FoamSolver::getDeltaTFunctionObject(const Foam::scalar & dt)
+{
+  for (int i = 0; i < runTime().functionObjects().size(); ++i)
+  {
+    Foam::functionObject & fo = runTime().functionObjects()[i];
+
+    std::cout << "functionObject[" << i << "]"
+              << " name = " << fo.name() << " type = " << fo.type() << " ptr = " << &fo
+              << std::endl;
+
+    auto * ptr = dynamic_cast<Foam::functionObjects::mooseDeltaT *>(&fo);
+
+    std::cout << "  dynamic_cast result = " << ptr << std::endl;
+
+    if (ptr)
+      return *ptr;
+  }
+
+  return appendDeltaTFunctionObject(dt);
+
+  mooseError("mooseDeltaT function object not found. Contact developers, this is a bug.");
 }
 } // namespace Hippo

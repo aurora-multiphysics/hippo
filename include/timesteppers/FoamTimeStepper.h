@@ -42,5 +42,4 @@ private:
   bool _dt_adjustable = false;
   Real _foam_dt = 0.;
   Real _desired_dt;
-  std::optional<std::reference_wrapper<Foam::functionObjects::mooseDeltaT>> _moose_dt;
 };
