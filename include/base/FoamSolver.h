@@ -92,13 +92,15 @@ public:
   bool isDeltaTAdjustable() const;
   // Set whether OpenFOAM can adjust the timestep
   void setDeltaTAdjustable(const bool adjustable);
-  // creates function object that tells OpenFOAM what MOOSE's
-  // time step is.
-  Foam::functionObjects::mooseDeltaT & appendDeltaTFunctionObject(const Foam::scalar & dt);
-  // get MooseDeltaT function object
+  // get MooseDeltaT function object and create it if needed
   Foam::functionObjects::mooseDeltaT & getDeltaTFunctionObject(const Foam::scalar & dt);
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
+
+protected:
+  // creates function object that tells OpenFOAM what MOOSE's
+  // time step is.
+  Foam::functionObjects::mooseDeltaT & appendDeltaTFunctionObject(const Foam::scalar & dt);
 
 private:
   Foam::solver * _solver = nullptr;

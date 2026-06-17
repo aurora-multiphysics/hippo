@@ -194,24 +194,22 @@ FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
 Foam::functionObjects::mooseDeltaT &
 FoamSolver::getDeltaTFunctionObject(const Foam::scalar & dt)
 {
+  // The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
+  // loops over the function objects and chooses the minimum, so by having
+  // a function Object that returns what MOOSE wants, OpenFOAM will use the
+  // MOOSE time step if it is smaller than what OpenFOAM wants. As a result,
+  // if MOOSE wants to add a synchronisation step OpenFOAM will also use it too.
+  // Here we search for it and create it if it is not there.
+
   for (int i = 0; i < runTime().functionObjects().size(); ++i)
   {
     Foam::functionObject & fo = runTime().functionObjects()[i];
-
-    std::cout << "functionObject[" << i << "]"
-              << " name = " << fo.name() << " type = " << fo.type() << " ptr = " << &fo
-              << std::endl;
-
     auto * ptr = dynamic_cast<Foam::functionObjects::mooseDeltaT *>(&fo);
-
-    std::cout << "  dynamic_cast result = " << ptr << std::endl;
 
     if (ptr)
       return *ptr;
   }
 
   return appendDeltaTFunctionObject(dt);
-
-  mooseError("mooseDeltaT function object not found. Contact developers, this is a bug.");
 }
 } // namespace Hippo
