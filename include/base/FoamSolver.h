@@ -1,11 +1,14 @@
 #pragma once
 
+#include "MooseError.h"
 #include "scalar.H"
 #include "solver.H"
 #include "functionObject.H"
 
 #include <Time.H>
 #include <TimeState.H>
+
+#include <optional>
 
 namespace Foam
 {
@@ -16,7 +19,7 @@ class mooseDeltaT : public functionObject
 {
 private:
   const scalar & _dt;
-  scalar _old_desired_dt;
+  std::optional<Foam::scalar> _old_desired_dt;
   const scalar _delta_t_factor;
   bool _enabled;
 
@@ -26,7 +29,7 @@ public:
       mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
     : functionObject(name, runTime),
       _dt(dt),
-      _old_desired_dt(time_.deltaTValue()),
+      _old_desired_dt(),
       _delta_t_factor(Foam::solver::deltaTFactor),
       _enabled(true)
   {
@@ -44,8 +47,11 @@ public:
   void disable() { _enabled = false; }
   Foam::scalar calculateDeltaTFactor(const Foam::scalar time) const
   {
-    if (time != _old_desired_dt)
-      return _delta_t_factor * _old_desired_dt / time;
+    if (!_old_desired_dt)
+      mooseError("OldDesiredTimeStep must be set before the deltaTFactor is calculated");
+
+    if (time != _old_desired_dt.value())
+      return _delta_t_factor * _old_desired_dt.value() / time;
     else
       return _delta_t_factor;
   }
