@@ -183,16 +183,23 @@ FoamSolver::setDeltaTAdjustable(const bool adjustable)
       .set("adjustTimeStep", adjustable);
 }
 
-Foam::functionObjects::mooseDeltaT &
+void
 FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
 {
+
+  runTime().setDeltaT(getTimeDelta());
+  for (int i = 0; i < runTime().functionObjects().size(); ++i)
+  {
+    if (dynamic_cast<Foam::functionObjects::mooseDeltaT *>(&runTime().functionObjects()[i]))
+      return;
+  }
+
   auto moose_dt = new Foam::functionObjects::mooseDeltaT("mooseTimeStep", runTime(), dt);
   runTime().functionObjects().append(moose_dt);
-  return *moose_dt;
 }
 
 Foam::functionObjects::mooseDeltaT &
-FoamSolver::getDeltaTFunctionObject(const Foam::scalar & dt)
+FoamSolver::getDeltaTFunctionObject()
 {
   // The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
   // loops over the function objects and chooses the minimum, so by having
@@ -209,7 +216,6 @@ FoamSolver::getDeltaTFunctionObject(const Foam::scalar & dt)
     if (ptr)
       return *ptr;
   }
-
-  return appendDeltaTFunctionObject(dt);
+  mooseError("MooseDeltaT function object not found. This is a bug, contact developers.");
 }
 } // namespace Hippo

@@ -21,7 +21,11 @@ public:
   static InputParameters validParams();
 
   // Get initial time step from OpenFOAM input file
-  virtual Real computeInitialDT() override { return computeDT(); };
+  virtual Real computeInitialDT() override
+  {
+    solver().appendDeltaTFunctionObject(_dt);
+    return computeDT();
+  };
 
   /* Read time step from OpenFOAM
     - Make sure the time step duration is computed in the current step

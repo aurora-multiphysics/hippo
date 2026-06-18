@@ -39,7 +39,7 @@ FoamTimeStepper::computeDT()
   // preSolve must be called as this updates the BCs.
   solver().preSolve();
 
-  auto & moose_dt = solver().getDeltaTFunctionObject(_dt);
+  auto & moose_dt = solver().getDeltaTFunctionObject();
   // Tells the mooseDelta function object what the previous desired time
   // step was so it can work out whether there was a MOOSE induced cutback.
   moose_dt.setOldDesiredDt(_desired_dt);
