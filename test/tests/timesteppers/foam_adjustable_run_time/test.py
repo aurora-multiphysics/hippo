@@ -1,4 +1,4 @@
-"""Test module for FoamTimeStepper where OpenFOAM uses CFL adaptive time stepping"""
+"""Test module for FoamTimeStepper where adjustableRunTIme is set for writeControl"""
 
 import os
 import re
@@ -6,11 +6,11 @@ import re
 from unittest import TestCase
 
 
-class TestFoamTimeStepper(TestCase):
+class TestFoamTimeStepperAdjustableRunTime(TestCase):
     """Test class for checking correct times are run"""
 
     def test_adjustable_run_time(self):
-        """Checks synchronisation with parent app and ensure timestep recovery after cutback"""
+        """Checks output folders match those expected from the controlDict"""
         dirs = [
             float(dir) for dir in os.listdir("fluid-openfoam") if re.search("0.*", dir)
         ]
