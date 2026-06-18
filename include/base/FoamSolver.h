@@ -50,7 +50,7 @@ public:
     if (!_old_desired_dt)
       mooseError("OldDesiredTimeStep must be set before the deltaTFactor is calculated");
 
-    if (time != _old_desired_dt.value())
+    if (time != _old_desired_dt)
       return _delta_t_factor * _old_desired_dt.value() / time;
     else
       return _delta_t_factor;
@@ -98,7 +98,7 @@ public:
   bool isDeltaTAdjustable() const;
   // Set whether OpenFOAM can adjust the timestep
   void setDeltaTAdjustable(const bool adjustable);
-  // get MooseDeltaT function object and create it if needed
+  // get mooseDeltaT function object
   Foam::functionObjects::mooseDeltaT & getDeltaTFunctionObject();
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }

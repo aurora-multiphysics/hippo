@@ -5,8 +5,6 @@
 
 #include <InputParameters.h>
 #include <TimeStepper.h>
-#include <functional>
-#include <optional>
 
 /*
 Time stepper that allows OpenFOAM to control the time step enabling features such as CFL
@@ -21,11 +19,7 @@ public:
   static InputParameters validParams();
 
   // Get initial time step from OpenFOAM input file
-  virtual Real computeInitialDT() override
-  {
-    solver().appendDeltaTFunctionObject(_dt);
-    return computeDT();
-  };
+  virtual Real computeInitialDT() override;
 
   /* Read time step from OpenFOAM
     - Make sure the time step duration is computed in the current step

@@ -57,6 +57,14 @@ FoamTimeStepper::computeDT()
   return _desired_dt;
 }
 
+Real
+FoamTimeStepper::computeInitialDT()
+{
+  // create mooseDeltaT FO before first use of computeDT
+  solver().appendDeltaTFunctionObject(_dt);
+  return computeDT();
+}
+
 FoamProblem *
 FoamTimeStepper::problem()
 {
