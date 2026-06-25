@@ -32,6 +32,9 @@ jobs:
       - name: Test production container
         run: |
           apptainer exec --writable-tmpfs hippo-release-${{ github.sha }}.sif bash -c "cd /opt/hippo && ./run_tests"
+      - name: Run unit tests in container
+        run: |
+          apptainer exec --writable-tmpfs hippo-release-${{ github.sha }}.sif bash -c "cd /opt/hippo/unit && make && ./run_tests"
       - name: Docs
         shell: bash
         run: |
