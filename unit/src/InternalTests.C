@@ -36,9 +36,9 @@ TEST(HippoTestInternals, copyParamTest)
 
   // Test copies
   Hippo::internal::copyParamFromParam<Real>(dst, src, "param1");
-  EXPECT_DOUBLE_EQ(dst.get<Real>("param1"), 4.2);
+  EXPECT_DOUBLE_EQ(dst.get<Real>("param1"), 4.2) << "param1 doesn't match expect value";
   Hippo::internal::copyParamFromParam<Real>(dst, src, "param2");
-  EXPECT_DOUBLE_EQ(dst.get<Real>("param2"), 2.1);
+  EXPECT_DOUBLE_EQ(dst.get<Real>("param2"), 2.1) << "param2 doesn't match expect value";
 
   // Check missing parameters results in an excection
   EXPECT_THROW_MSG(
