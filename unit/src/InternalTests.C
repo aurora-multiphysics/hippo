@@ -30,6 +30,12 @@ TEST(HippoTestInternals, copyParamTest)
   src.addParam<Real>("param3", "");
   dst.addParam<Real>("param4", "");
 
+  Hippo::internal::copyParamFromParam<Real>(dst, src, "param1");
+  Hippo::internal::copyParamFromParam<Real>(dst, src, "param2");
+
+  EXPECT_FALSE(dst.isParamSetByUser("param1")) << "param1 should not be set if src is not set";
+  EXPECT_FALSE(dst.isParamSetByUser("param2")) << "param2 should not be set if src is not set";
+
   // Set source parameters
   src.set<Real>("param1") = 4.2;
   src.set<Real>("param2") = 2.1;
@@ -43,15 +49,15 @@ TEST(HippoTestInternals, copyParamTest)
   // Check missing parameters results in an excection
   EXPECT_THROW_MSG(
       { Hippo::internal::copyParamFromParam<Real>(dst, src, "param4"); },
-      "Parameter 'param4' of type double not found in src parameters.");
+      "Parameter 'param4' of type double not available in src parameters.");
   EXPECT_THROW_MSG(
       { Hippo::internal::copyParamFromParam<Real>(dst, src, "param3"); },
-      "Parameter 'param3' of type double not found in dst parameters.");
+      "Parameter 'param3' of type double not available in dst parameters.");
 
   // Check error through if the type is wrong
   EXPECT_THROW_MSG(
       { Hippo::internal::copyParamFromParam<std::string>(dst, src, "param1"); },
-      "Parameter 'param1' of type .* not found in src parameters.");
+      "Parameter 'param1' of type .* not available in src parameters.");
 }
 
 TEST(HippoTestInternals, ListFromVectorTest)

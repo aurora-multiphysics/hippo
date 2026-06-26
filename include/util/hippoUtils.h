@@ -26,21 +26,24 @@ template <typename T>
 inline void
 copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)
 {
+  // Check the parameter is available in both src and dst
   if (!src.have_parameter<T>(name_in))
     mooseError("Parameter '",
                name_in,
                "' of type ",
                getDemangleName<T>(),
-               " not found in src parameters.");
+               " not available in src parameters.");
 
   if (!dst.have_parameter<T>(name_in))
     mooseError("Parameter '",
                name_in,
                "' of type ",
                getDemangleName<T>(),
-               " not found in dst parameters.");
+               " not available in dst parameters.");
 
-  dst.set<T>(name_in) = src.get<T>(name_in);
+  // Only set the parameter, if it has been set in src
+  if (src.isParamSetByUser(name_in))
+    dst.set<T>(name_in) = src.get<T>(name_in);
 }
 
 template <typename StrType>
