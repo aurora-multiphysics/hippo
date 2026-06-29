@@ -19,6 +19,6 @@ HippoInterface::extractFoamProblem(const MooseObject * moose_object)
   auto * problem = params.getCheckedPointerParam<FEProblemBase *>("_fe_problem_base");
   auto * foam_problem = dynamic_cast<FoamProblem *>(problem);
   if (!foam_problem)
-    mooseError(moose_object->name(), " can only be used with FoamProblem");
+    mooseError(moose_object->type(), " can only be used with FoamProblem");
   return *foam_problem;
 }
