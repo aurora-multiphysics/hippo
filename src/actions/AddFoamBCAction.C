@@ -29,14 +29,10 @@ AddFoamBCAction::AddFoamBCAction(const InputParameters & params) : MooseObjectAc
 void
 AddFoamBCAction::act()
 {
-  auto foam_problem = dynamic_cast<FoamProblem *>(_problem.get());
 
   // Adding BCs using [FoamBC] syntax
   if (_current_task == "add_foam_bc")
   {
-    if (!foam_problem)
-      mooseError("FoamBCs system can only be used with FoamProblem.");
-
     // Do not create aux variable if variable provided.
     if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
@@ -44,9 +40,9 @@ AddFoamBCAction::act()
     // Create receiver if pp_name not provided and pp_name is an allowed parameter
     if (findParamKey(_moose_object_pars, "pp_name") &&
         !_moose_object_pars.isParamSetByUser("pp_name"))
-      createReceiver(*foam_problem);
+      createReceiver(*_problem);
 
-    foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
+    _problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
   }
 }
 
@@ -74,7 +70,7 @@ AddFoamBCAction::createAuxVariable()
 }
 
 void
-AddFoamBCAction::createReceiver(FoamProblem & problem)
+AddFoamBCAction::createReceiver(FEProblemBase & problem)
 {
   auto params = _factory.getValidParams("Receiver");
 

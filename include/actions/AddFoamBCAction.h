@@ -19,5 +19,5 @@ protected:
   void createAuxVariable();
 
   // Create Receiver for Postprocessor-based BCs
-  void createReceiver(FoamProblem & problem);
+  void createReceiver(FEProblemBase & problem);
 };

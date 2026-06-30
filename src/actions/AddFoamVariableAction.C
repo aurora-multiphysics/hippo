@@ -25,17 +25,13 @@ AddFoamVariableAction::AddFoamVariableAction(const InputParameters & parameters)
 void
 AddFoamVariableAction::act()
 {
-  auto * foam_problem = dynamic_cast<FoamProblem *>(_problem.get());
 
   // Add variable through [FoamVariables] block
   if (_current_task == "add_foam_variable")
   {
-    if (!foam_problem)
-      mooseError("FoamVariables system can only be used with FoamProblem.");
-
     createAuxVariable();
 
-    foam_problem->addObject<FoamVariableField>(_type, _name, _moose_object_pars, false);
+    _problem->addObject<FoamVariableField>(_type, _name, _moose_object_pars, false);
   }
 }
 

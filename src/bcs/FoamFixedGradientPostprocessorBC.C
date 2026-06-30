@@ -25,7 +25,6 @@ FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
   auto subdomains = _mesh.getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    auto & boundary = _fv_mesh.boundary()[subdomain];
     // Get underlying field from OpenFOAM boundary patch.
     auto & foam_gradient =
         _mesh.getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);

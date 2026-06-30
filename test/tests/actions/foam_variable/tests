@@ -13,7 +13,7 @@
             type = RunException
             input = main.i
             prereq = transfer_test/setup
-            expect_err = "can only be used with FoamProblem"
+            expect_err = "FoamVariableField can only be used with FoamProblem"
             cli_args = "Problem/type=FEProblem"
         []
     []

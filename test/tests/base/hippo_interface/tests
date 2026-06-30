@@ -1,0 +1,20 @@
+[Tests]
+    [foam_bc_action_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -force -case foam"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = foam_bc_action_test/setup
+        []
+        [run_err]
+            type = RunException
+            input = main.i
+            cli_args="Problem/type=FEProblem"
+            prereq = foam_bc_action_test/setup
+            expect_err="FoamSideAverageValue can only be used with FoamProblem"
+        []
+    []
+[]
