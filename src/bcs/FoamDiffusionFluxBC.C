@@ -16,6 +16,8 @@ FoamDiffusionFluxBC::validParams()
   auto params = FoamVariableBCBase::validParams();
   params.addParam<std::string>(
       "diffusivity", "kappa", "Diffusivity for BC, defaults to kappa, the thermal conducitivity.");
+  params.set<std::string>("_foam_bc_type") = "fixedGradient";
+
   params.addClassDescription("A FoamBC that imposes a fixed gradient boundary condition "
                              "on the OpenFOAM simulation");
   return params;

@@ -9,6 +9,8 @@ InputParameters
 FoamFixedGradientPostprocessorBC::validParams()
 {
   auto params = FoamPostprocessorBCBase::validParams();
+  params.set<std::string>("_foam_bc_type") = "fixedGradient";
+
   return params;
 }
 

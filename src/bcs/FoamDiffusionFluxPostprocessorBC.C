@@ -12,6 +12,8 @@ FoamDiffusionFluxPostprocessorBC::validParams()
   auto params = FoamPostprocessorBCBase::validParams();
   params.addParam<std::string>(
       "diffusivity", "kappa", "Diffusivity for BC, defaults to kappa, the thermal conducitivity.");
+  params.set<std::string>("_foam_bc_type") = "fixedGradient";
+
   return params;
 }
 

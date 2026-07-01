@@ -6,7 +6,10 @@ registerMooseObject("hippoApp", FoamFixedValuePostprocessorBC);
 InputParameters
 FoamFixedValuePostprocessorBC::validParams()
 {
-  return FoamPostprocessorBCBase::validParams();
+  auto params = FoamPostprocessorBCBase::validParams();
+  params.set<std::string>("_foam_bc_type") = "fixedValue";
+
+  return params;
 }
 
 FoamFixedValuePostprocessorBC::FoamFixedValuePostprocessorBC(const InputParameters & params)

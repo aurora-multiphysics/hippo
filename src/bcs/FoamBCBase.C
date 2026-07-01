@@ -1,6 +1,7 @@
 
 #include "FoamBCBase.h"
 #include "FoamProblem.h"
+#include "MooseEnum.h"
 
 #include <Coupleable.h>
 #include <InputParameters.h>
@@ -9,6 +10,8 @@
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
 #include <Registry.h>
+#include <scalar.H>
+#include <scalarField.H>
 #include <volFieldsFwd.H>
 
 #include <algorithm>
@@ -24,6 +27,8 @@ FoamBCBase::validParams()
                                               "Boundaries that the boundary condition applies to.");
   params.addRequiredParam<std::string>("foam_variable",
                                        "Name of a Foam field. e.g. T (temperature) U (velocity).");
+
+  params.addPrivateParam<std::string>("_foam_bc_type");
 
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
@@ -59,4 +64,67 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
 
   if (_boundary.empty())
     _boundary = all_subdomain_names;
+
+  for (auto subdomain : _boundary)
+  {
+    if (_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
+      constructFoamScalarPatch(subdomain, params.get<std::string>("_foam_bc_type"));
+    else if (_mesh->foamHasObject<Foam::volVectorField>(_foam_variable))
+      constructFoamVectorPatch(subdomain, params.get<std::string>("_foam_bc_type"));
+    else
+      mooseError("Variable must have type scalar or vector.");
+  }
+}
+
+void
+FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type)
+{
+  auto & var = _mesh->fvMesh().lookupObjectRef<Foam::volScalarField>(_foam_variable);
+  Foam::label id = var.mesh().boundary().findIndex(patch_name);
+  auto & patch = var.mesh().boundary()[id];
+
+  Foam::dictionary bcDict;
+  if (bc_type == "fixedGradient")
+  {
+    bcDict.add("type", "fixedGradient");
+    bcDict.add("gradient", "uniform 0.");
+  }
+  else if (bc_type == "fixedValue")
+  {
+    bcDict.add("type", "fixedValue");
+    bcDict.add("value", "uniform 0.");
+  }
+  else
+  {
+    mooseError("Invalid _foam_bc_type");
+  }
+  var.boundaryFieldRef().set(
+      id, Foam::fvPatchField<Foam::scalar>::New(patch, var.internalField(), bcDict));
+}
+
+void
+FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::string & bc_type)
+{
+  auto & var = _mesh->fvMesh().lookupObjectRef<Foam::volVectorField>(_foam_variable);
+
+  Foam::label id = var.mesh().boundary().findIndex(patch_name);
+  auto & patch = var.mesh().boundary()[id];
+
+  Foam::dictionary bcDict;
+  if (bc_type == "fixedGradient")
+  {
+    bcDict.add("type", "fixedGradient");
+    bcDict.add("gradient", "uniform (0. 0. 0.)");
+  }
+  else if (bc_type == "fixedValue")
+  {
+    bcDict.add("type", "fixedValue");
+    bcDict.add("value", "uniform (0. 0. 0.)");
+  }
+  else
+  {
+    mooseError("Invalid _foam_bc_type");
+  }
+  var.boundaryFieldRef().set(
+      id, Foam::fvPatchField<Foam::vector>::New(patch, var.internalField(), bcDict));
 }

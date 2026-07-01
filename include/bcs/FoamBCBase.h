@@ -7,6 +7,8 @@
 #include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
+#include <volFieldsFwd.H>
+#include "MooseError.h"
 #include "VariadicTable.h"
 
 typedef std::tuple<std::string, std::string, std::string, std::string, std::string> BCInfoTableRow;
@@ -43,6 +45,9 @@ protected:
 
   // Get the data vector of the MOOSE field on a subdomain
   std::vector<Real> getMooseVariableArray(int subdomain_id);
+
+  void constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type);
+  void constructFoamVectorPatch(const std::string & patch_name, const std::string & bc_type);
 
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
