@@ -4,15 +4,18 @@
 #include "MooseEnum.h"
 
 #include <Coupleable.h>
+#include <DimensionedField.H>
 #include <InputParameters.h>
 #include <MooseError.h>
 #include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
 #include <Registry.h>
+#include <dimensionedScalar.H>
 #include <scalar.H>
 #include <scalarField.H>
 #include <volFieldsFwd.H>
+#include <basicThermo.H>
 
 #include <algorithm>
 #include <vector>
@@ -98,8 +101,12 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::
   {
     mooseError("Invalid _foam_bc_type");
   }
-  var.boundaryFieldRef().set(
-      id, Foam::fvPatchField<Foam::scalar>::New(patch, var.internalField(), bcDict));
+
+  var.boundaryFieldRef().set(id,
+                             Foam::fvPatchField<Foam::scalar>::New(
+                                 patch, var.boundaryField()[id].internalField(), bcDict));
+
+  updateEnergyPatch(patch_name, bc_type);
 }
 
 void
@@ -127,4 +134,43 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::
   }
   var.boundaryFieldRef().set(
       id, Foam::fvPatchField<Foam::vector>::New(patch, var.internalField(), bcDict));
+}
+
+void
+FoamBCBase::updateEnergyPatch(const std::string & patch_name, const std::string & bc_type)
+{
+  auto & foam_mesh = _mesh->fvMesh();
+  auto & var = foam_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
+  Foam::label id = foam_mesh.boundary().findIndex(patch_name);
+
+  auto thermos = foam_mesh.lookupClass<Foam::basicThermo>();
+
+  for (const auto & item : thermos)
+  {
+    auto & thermo = const_cast<Foam::basicThermo &>(*item);
+
+    // Only synchronize the thermo associated with this T field
+    if (&thermo.T() != &var)
+      continue;
+
+    auto & he = thermo.he(); // Returns e or h, depending on thermo configuration
+
+    Foam::dictionary dict;
+
+    if (bc_type == "fixedGradient")
+    {
+      dict.add("type", "gradientEnergy");
+      dict.add("gradient", "uniform 0");
+      dict.add("value", "uniform 0");
+    }
+    else if (bc_type == "fixedValue")
+    {
+      dict.add("type", "fixedEnergy");
+      dict.add("value", "uniform 0");
+    }
+
+    he.boundaryFieldRef().set(
+        id,
+        Foam::fvPatchField<Foam::scalar>::New(he.mesh().boundary()[id], he.internalField(), dict));
+  }
 }

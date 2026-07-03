@@ -26,8 +26,6 @@ FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
 void
 FoamFixedGradientBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
   auto subdomains = _mesh->getSubdomainIDs(_boundary);
