@@ -37,5 +37,6 @@ FoamPostprocessorBCBase::getInfoRow() const
                          type(),
                          foamVariable(),
                          moosePostprocessor(),
-                         Hippo::internal::listFromVector(boundary()));
+                         Hippo::internal::listFromVector(boundary()),
+                         _patch_replaced ? "yes" : "no");
 }

@@ -131,13 +131,13 @@ FoamProblem::verifyFoamBCs()
     unique_vars.insert(bc->foamVariable());
 
   // Create table for printing BC information
-  VariadicTable<std::string, std::string, std::string, std::string, std::string> vt({
-      "FoamBC name",
-      "Type",
-      "Foam variable",
-      "Moose variable/postprocessor",
-      "Boundaries",
-  });
+  VariadicTable<std::string, std::string, std::string, std::string, std::string, std::string> vt(
+      {"FoamBC name",
+       "Type",
+       "Foam variable",
+       "Moose variable/postprocessor",
+       "Boundaries",
+       "Patch replaced?"});
 
   for (auto var : unique_vars)
   {
@@ -153,8 +153,8 @@ FoamProblem::verifyFoamBCs()
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
         // List info about BC
-        auto [name, type, foam_var, moose_var, boundaries] = bc->getInfoRow();
-        vt.addRow(name, type, foam_var, moose_var, boundaries);
+        auto [name, type, foam_var, moose_var, boundaries, patch_replaced] = bc->getInfoRow();
+        vt.addRow(name, type, foam_var, moose_var, boundaries, patch_replaced);
       }
     }
 
@@ -176,7 +176,7 @@ FoamProblem::verifyFoamBCs()
         unused_bcs.push_back(bc);
     }
     if (unused_bcs.size() > 0)
-      vt.addRow("", "UnusedBoundaries", "", "", Hippo::internal::listFromVector(unused_bcs));
+      vt.addRow("", "UnusedBoundaries", "", "", Hippo::internal::listFromVector(unused_bcs), "");
   }
   vt.print(_console);
 }

@@ -55,8 +55,12 @@ BCInfoTableRow
 FoamVariableBCBase::getInfoRow() const
 {
   // List info about BC
-  return std::make_tuple(
-      name(), type(), foamVariable(), mooseVariable(), Hippo::internal::listFromVector(boundary()));
+  return std::make_tuple(name(),
+                         type(),
+                         foamVariable(),
+                         mooseVariable(),
+                         Hippo::internal::listFromVector(boundary()),
+                         _patch_replaced ? "yes" : "no");
 }
 
 Real

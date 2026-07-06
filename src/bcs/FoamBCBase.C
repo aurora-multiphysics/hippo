@@ -1,24 +1,18 @@
 
 #include "FoamBCBase.h"
 #include "FoamProblem.h"
-#include "MooseEnum.h"
 
 #include <Coupleable.h>
-#include <DimensionedField.H>
 #include <InputParameters.h>
 #include <MooseError.h>
 #include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
 #include <Registry.h>
-#include <dimensionedScalar.H>
-#include <scalar.H>
-#include <scalarField.H>
-#include <volFieldsFwd.H>
 #include <basicThermo.H>
 
-#include <algorithm>
 #include <vector>
+#include <volFieldsFwd.H>
 
 InputParameters
 FoamBCBase::validParams()
@@ -43,7 +37,8 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   : MooseObject(params),
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
-    _boundary(params.get<std::vector<SubdomainName>>("boundary"))
+    _boundary(params.get<std::vector<SubdomainName>>("boundary")),
+    _patch_replaced(false)
 {
   auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
   if (!problem)
@@ -82,21 +77,15 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
 void
 FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type)
 {
-  auto & var = _mesh->fvMesh().lookupObjectRef<Foam::volScalarField>(_foam_variable);
-  Foam::label id = var.mesh().boundary().findIndex(patch_name);
-  auto & patch = var.mesh().boundary()[id];
+  auto & foam_mesh = _mesh->fvMesh();
+  auto & var = foam_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
+  Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
   if (var.boundaryField()[id].type() == bc_type)
     return;
 
-  mooseInfo("Overriding foam patch for boundary '",
-            patch_name,
-            "' for variable ",
-            _foam_variable,
-            " from ",
-            var.boundaryField()[id].type(),
-            " to ",
-            bc_type);
+  // Used by getInfoRow to report in the BC table that the patch as been replaced
+  _patch_replaced = true;
 
   Foam::dictionary bcDict;
   if (bc_type == "fixedGradient")
@@ -114,32 +103,26 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::
     mooseError("Invalid _foam_bc_type");
   }
 
-  var.boundaryFieldRef().set(id,
-                             Foam::fvPatchField<Foam::scalar>::New(
-                                 patch, var.boundaryField()[id].internalField(), bcDict));
+  var.boundaryFieldRef().set(
+      id,
+      Foam::fvPatchField<Foam::scalar>::New(
+          foam_mesh.boundary()[id], var.boundaryField()[id].internalField(), bcDict));
 
-  updateEnergyPatch(patch_name, bc_type);
+  // If temperature is replaced, internal energy or enthalpy typically needs replacing.
+  updateEnergyPatch(var, id, bc_type);
 }
 
 void
 FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::string & bc_type)
 {
-  auto & var = _mesh->fvMesh().lookupObjectRef<Foam::volVectorField>(_foam_variable);
-
-  Foam::label id = var.mesh().boundary().findIndex(patch_name);
-  auto & patch = var.mesh().boundary()[id];
+  auto & foam_mesh = _mesh->fvMesh();
+  auto & var = foam_mesh.lookupObjectRef<Foam::volVectorField>(_foam_variable);
+  Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
   if (var.boundaryField()[id].type() == bc_type)
     return;
 
-  mooseInfo("Overriding foam patch for boundary '",
-            patch_name,
-            "' for variable ",
-            _foam_variable,
-            " from ",
-            var.boundaryField()[id].type(),
-            " to ",
-            bc_type);
+  _patch_replaced = true;
 
   Foam::dictionary bcDict;
   if (bc_type == "fixedGradient")
@@ -157,17 +140,17 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::
     mooseError("Invalid _foam_bc_type");
   }
   var.boundaryFieldRef().set(
-      id, Foam::fvPatchField<Foam::vector>::New(patch, var.internalField(), bcDict));
+      id,
+      Foam::fvPatchField<Foam::vector>::New(foam_mesh.boundary()[id], var.internalField(), bcDict));
 }
 
 void
-FoamBCBase::updateEnergyPatch(const std::string & patch_name, const std::string & bc_type)
+FoamBCBase::updateEnergyPatch(const Foam::volScalarField & var,
+                              Foam::label id,
+                              const std::string & bc_type)
 {
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & var = foam_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
-  Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
-  auto thermos = foam_mesh.lookupClass<Foam::basicThermo>();
+  auto thermos = var.mesh().lookupClass<Foam::basicThermo>();
 
   for (const auto & item : thermos)
   {

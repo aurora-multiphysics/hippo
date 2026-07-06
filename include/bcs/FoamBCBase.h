@@ -11,7 +11,8 @@
 #include "MooseError.h"
 #include "VariadicTable.h"
 
-typedef std::tuple<std::string, std::string, std::string, std::string, std::string> BCInfoTableRow;
+typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
+    BCInfoTableRow;
 
 class FoamBCBase : public MooseObject, public Coupleable
 {
@@ -50,7 +51,8 @@ protected:
   void constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type);
 
   // update the energy equation, if the temperature field is updated the energy equation must be
-  void updateEnergyPatch(const std::string & patch_name, const std::string & bc_type);
+  void
+  updateEnergyPatch(const Foam::volScalarField & var, Foam::label id, const std::string & bc_type);
 
   // Construct boundary patch for vector fields
   void constructFoamVectorPatch(const std::string & patch_name, const std::string & bc_type);
@@ -64,4 +66,7 @@ protected:
   // Boundaries that this object applies to
   // TODO: Replace with inherited from BoundaryRestricted once FoamMesh is updated
   std::vector<SubdomainName> _boundary;
+
+  // Records whether the boundary condition type has been replaced
+  bool _patch_replaced;
 };
