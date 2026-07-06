@@ -86,6 +86,18 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::
   Foam::label id = var.mesh().boundary().findIndex(patch_name);
   auto & patch = var.mesh().boundary()[id];
 
+  if (var.boundaryField()[id].type() == bc_type)
+    return;
+
+  mooseInfo("Overriding foam patch for boundary '",
+            patch_name,
+            "' for variable ",
+            _foam_variable,
+            " from ",
+            var.boundaryField()[id].type(),
+            " to ",
+            bc_type);
+
   Foam::dictionary bcDict;
   if (bc_type == "fixedGradient")
   {
@@ -116,6 +128,18 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::
 
   Foam::label id = var.mesh().boundary().findIndex(patch_name);
   auto & patch = var.mesh().boundary()[id];
+
+  if (var.boundaryField()[id].type() == bc_type)
+    return;
+
+  mooseInfo("Overriding foam patch for boundary '",
+            patch_name,
+            "' for variable ",
+            _foam_variable,
+            " from ",
+            var.boundaryField()[id].type(),
+            " to ",
+            bc_type);
 
   Foam::dictionary bcDict;
   if (bc_type == "fixedGradient")
