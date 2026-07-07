@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo:dev-4f60782085
+From: quay.io/ukaea/hippo_${MPI}_OF${OPENFOAM_VERSION}:dev-4f60782085
 
 %files
     .git /opt/hippo/.git
@@ -20,12 +20,11 @@ From: quay.io/ukaea/hippo:dev-4f60782085
     MINIMAL=1
 
 %post
-    export MPI_ROOT=/opt/openmpi
     export MOOSE_DIR=/opt/moose
 
-    source /opt/openfoam/OpenFOAM-12/etc/bashrc || true
-    export FOAM_USER_LIBBIN=/root/OpenFOAM-12/lib
-    export FOAM_USER_APPBIN=/root/OpenFOAM-12/bin
+    source /opt/openfoam/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc || true
+    export FOAM_USER_LIBBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/lib
+    export FOAM_USER_APPBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/bin
 
     cd /opt/hippo/
     # Restore git repository to pristine state - useful for building locally
@@ -49,8 +48,8 @@ From: quay.io/ukaea/hippo:dev-4f60782085
     fi
 
     source /opt/openfoam/OpenFOAM-12/etc/bashrc
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM-12/lib/
-    export PATH=$PATH:/root/OpenFOAM-12/bin/
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM-${OPENFOAM_VERSION}/lib/
+    export PATH=$PATH:/root/OpenFOAM-${OPENFOAM_VERSION}/bin/
     unset FOAM_SIGFPE
     export PMIX_MCA_gds=hash
 

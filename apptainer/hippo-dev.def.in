@@ -1,9 +1,10 @@
 Bootstrap: oras
-From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
+From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
 
 %arguments
     MOOSE_JOBS=4
     OPENFOAM_JOBS=4
+    OPENFOAM_VERSION=12
 
 %files
     ./scripts/install-openfoam.sh /opt/hippo/scripts/install-openfoam.sh
@@ -46,16 +47,16 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
     export VTKLIB_DIR=/opt/vtk/lib
 
     # MPI
-    export MPI_ROOT=/opt/openmpi
-    export MPI_ARCH_INC="-I/opt/openmpi/include"
-    export MPI_ARCH_LIBS="-L/opt/openmpi/lib -lmpi"
+    export MPI_ROOT=/opt/${MPI}
+    export MPI_ARCH_INC="-I/opt/${MPI}/include"
+    export MPI_ARCH_LIBS="-L/opt/${MPI}/lib -lmpi"
     export LD_LIBRARY_PATH="${MPI_ROOT}/lib:${LD_LIBRARY_PATH}"
     export PATH="${MPI_ROOT}/bin:${PATH}"
     # Compiler
-    export CC=/opt/openmpi/bin/mpicc
-    export CXX=/opt/openmpi/bin/mpicxx
-    export F77=/opt/openmpi/bin/mpif77
-    export F90=/opt/openmpi/bin/mpif90
+    export CC=/opt/${MPI}/bin/mpicc
+    export CXX=/opt/${MPI}/bin/mpicxx
+    export F77=/opt/${MPI}/bin/mpif77
+    export F90=/opt/${MPI}/bin/mpif90
     export PATH="/opt/rh/gcc-toolset-12/root/usr/bin:${PATH}"
     export CPLUS_INCLUDE_PATH="/opt/rh/gcc-toolset-12/root/usr/include/c++/12:${CPLUS_INCLUDE_PATH}"
     export LD_LIBRARY_PATH="/opt/rh/gcc-toolset-12/root/usr/lib64:/opt/rh/gcc-toolset-12/root/usr/lib:${LD_LIBRARY_PATH}"
@@ -88,22 +89,22 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.03.19
     ln -s "${MPI_ROOT}/lib" "${MPI_ROOT}/lib64"
 
     cd /opt/hippo
-    ./scripts/install-openfoam.sh -o /opt/openfoam -s -j {{ OPENFOAM_JOBS }} -q
+    ./scripts/install-openfoam.sh -o /opt/openfoam -s -j {{ OPENFOAM_JOBS }} -q -v {{ OPENFOAM_VERSION }}
 
     # So that prefs can be found when not run as root
     cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
 
-    echo 'export MPI_ROOT=/opt/openmpi' >> /opt/openfoam/OpenFOAM-12/etc/prefs.sh
-    echo 'export MPI_ARCH_FLAGS="-DOMPI_SKIP_MPICXX"' >> /opt/openfoam/OpenFOAM-12/etc/prefs.sh
-    echo 'export MPI_ARCH_INC="-isystem $MPI_ROOT/include"' >> /opt/openfoam/OpenFOAM-12/etc/prefs.sh
-    echo 'export MPI_ARCH_LIBS="-L$MPI_ROOT/lib -lmpi"' >> /opt/openfoam/OpenFOAM-12/etc/prefs.sh
+    echo 'export MPI_ROOT=/opt/${MPI}' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
+    echo 'export MPI_ARCH_FLAGS="-DOMPI_SKIP_MPICXX"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
+    echo 'export MPI_ARCH_INC="-isystem $MPI_ROOT/include"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
+    echo 'export MPI_ARCH_LIBS="-L$MPI_ROOT/lib -lmpi"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
 
     # Ensure base OpenFOAM directory is correct when bashrc is sourced in future
-    sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
+    sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/bashrc
 
     conda install --file /opt/hippo/requirements.test.txt -S --yes --quiet
 
 %environment
-    . /opt/openfoam/OpenFOAM-12/etc/bashrc
+    . /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose

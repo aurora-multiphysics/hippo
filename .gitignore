@@ -278,3 +278,6 @@ conf_vars.mk
 #OpenFOAM wmake build files
 **/lnInclude
 **/Make/linux*
+
+#apptainer definition files
+*.def
