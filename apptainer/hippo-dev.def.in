@@ -92,7 +92,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     ./scripts/install-openfoam.sh -o /opt/openfoam -s -j {{ OPENFOAM_JOBS }} -q -v {{ OPENFOAM_VERSION }}
 
     # So that prefs can be found when not run as root
-    cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
+    cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc
 
     echo 'export MPI_ROOT=/opt/${MPI}' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
     echo 'export MPI_ARCH_FLAGS="-DOMPI_SKIP_MPICXX"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
