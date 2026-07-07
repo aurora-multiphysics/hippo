@@ -23,7 +23,7 @@ jobs:
       - name: Login to remote
         run: apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
       - name: Substitute container
-        run: MPI=${{ matrix.mpi }}  envsubst '${MPI}' < apptainer/hippo_dev.def.in > apptainer/hippo_dev.def
+        run: MPI=${{ matrix.mpi }}  envsubst '${MPI}' < apptainer/hippo-dev.def.in > apptainer/hippo-dev.def
       - name: build container
         run: apptainer build --build-arg OPENFOAM_VERSION=${{ matrix.openfoam_version }} hippo-dev.sif apptainer/hippo-dev.def
       - name: push container
