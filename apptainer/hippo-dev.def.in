@@ -23,7 +23,6 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
 
     dnf --enablerepo=devel install -y \
         findutils \
-        flex \
         git \
         glibc-devel \
         glibc-headers \
@@ -79,6 +78,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     git checkout -d d41b47a41b7edac3875e308fb77df6069de32269
 
     conda install pyyaml jinja2 --yes --quiet
+    conda install -c conda-forge flex>=2.6.4 bison --yes --quiet
 
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=opt
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=dbg
