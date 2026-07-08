@@ -3,7 +3,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
 
 %arguments
     MOOSE_JOBS=4
-    OPENFOAM_JOBS=4
+    OPENFOAM_JOBS=0
     OPENFOAM_VERSION=12
 
 %files
