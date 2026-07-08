@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo_${MPI}_OF${OPENFOAM_VERSION}:dev-4f60782085
+From: quay.io/ukaea/hippo_${MPI}_of${OPENFOAM_VERSION}:dev-4f60782085
 
 %files
     .git /opt/hippo/.git
