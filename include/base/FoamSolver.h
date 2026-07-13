@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MooseError.h"
 #include "scalar.H"
 #include "solver.H"
 #include "functionObject.H"
@@ -7,16 +8,28 @@
 #include <Time.H>
 #include <TimeState.H>
 
+#include <optional>
+
 namespace Foam
 {
 namespace functionObjects
 {
-// Function object to tell OpenFOAM what MOOSE's dt is
+/*
+  The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
+  loops over the function objects and chooses the minimum
+  - So by having a function Object that returns what MOOSE wants, OpenFOAM will use the
+    MOOSE time step if it is smaller than what OpenFOAM wants.
+  - As a result, if MOOSE wants to add a synchronisation step OpenFOAM will also use it too.
+  - However, the MOOSE induced cutback can lead to a slow recovery of the timestep and more
+    time steps being taken than necessary
+  - So, after a cutback we modify DeltaTFactor to allow the next timestep to return to its
+    value before the cutback.
+*/
 class mooseDeltaT : public functionObject
 {
 private:
   const scalar & _dt;
-  scalar _old_desired_dt;
+  std::optional<Foam::scalar> _old_desired_dt;
   const scalar _delta_t_factor;
   bool _enabled;
 
@@ -26,7 +39,7 @@ public:
       mooseDeltaT(const word & name, const Time & runTime, const scalar & dt)
     : functionObject(name, runTime),
       _dt(dt),
-      _old_desired_dt(time_.deltaTValue()),
+      _old_desired_dt(),
       _delta_t_factor(Foam::solver::deltaTFactor),
       _enabled(true)
   {
@@ -43,8 +56,11 @@ public:
   void disable() { _enabled = false; }
   Foam::scalar calculateDeltaTFactor(const Foam::scalar time) const
   {
+    if (!_old_desired_dt.has_value())
+      mooseError("OldDesiredTimeStep must be set before the deltaTFactor is calculated");
+
     if (time != _old_desired_dt)
-      return _delta_t_factor * _old_desired_dt / time;
+      return _delta_t_factor * _old_desired_dt.value() / time;
     else
       return _delta_t_factor;
   }
@@ -91,11 +107,13 @@ public:
   bool isDeltaTAdjustable() const;
   // Set whether OpenFOAM can adjust the timestep
   void setDeltaTAdjustable(const bool adjustable);
-  // creates function object that tells OpenFOAM what MOOSE's
-  // time step is.
-  Foam::functionObjects::mooseDeltaT & appendDeltaTFunctionObject(const Foam::scalar & dt);
+  // get mooseDeltaT function object
+  Foam::functionObjects::mooseDeltaT & getDeltaTFunctionObject();
   // get the current deltaT.
   Foam::scalar getTimeDelta() const { return runTime().deltaTValue(); }
+  // creates function object that tells OpenFOAM what MOOSE's
+  // time step is.
+  void appendDeltaTFunctionObject(const Foam::scalar & dt);
 
 private:
   Foam::solver * _solver = nullptr;

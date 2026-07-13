@@ -17,7 +17,7 @@ FoamTimeStepper::validParams()
 }
 
 FoamTimeStepper::FoamTimeStepper(InputParameters const & params)
-  : TimeStepper(params), _foam_dt{}, _desired_dt{}, _moose_dt()
+  : TimeStepper(params), _foam_dt{}, _desired_dt{}
 {
   auto problem = dynamic_cast<FoamProblem *>(&_app.feProblem());
   if (!problem)
@@ -39,21 +39,30 @@ FoamTimeStepper::computeDT()
   // preSolve must be called as this updates the BCs.
   solver().preSolve();
 
+  auto & moose_dt = solver().getDeltaTFunctionObject();
   // Tells the mooseDelta function object what the previous desired time
   // step was so it can work out whether there was a MOOSE induced cutback.
-  _moose_dt->get().setOldDesiredDt(_desired_dt);
+  moose_dt.setOldDesiredDt(_desired_dt);
 
   // Ensure MOOSE gets OpenFOAM's time step unaffected by the mooseDeltaT
   // functionObject.
-  _moose_dt->get().disable();
+  moose_dt.disable();
 
   // compute OpenFOAM's desired time step
   _desired_dt = solver().computeDeltaT();
 
   // reenable the function object
-  _moose_dt->get().enable();
+  moose_dt.enable();
 
   return _desired_dt;
+}
+
+Real
+FoamTimeStepper::computeInitialDT()
+{
+  // create mooseDeltaT FO before first use of computeDT
+  solver().appendDeltaTFunctionObject(_dt);
+  return computeDT();
 }
 
 FoamProblem *
@@ -90,15 +99,6 @@ FoamTimeStepper::init()
   }
   // determine if OpenFOAM's time-step is adjustable in controlDict
   _dt_adjustable = solver().isDeltaTAdjustable();
-
-  // The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
-  // loops over the function objects and chooses the minimum, so by having
-  // a function Object that returns what MOOSE wants, OpenFOAM will use the
-  // MOOSE time step if it is smaller than what OpenFOAM wants. As a result,
-  // if MOOSE wants to add a synchronisation step OpenFOAM will also use it too.
-
-  // create function object and append it to the solver's function object list
-  _moose_dt = solver().appendDeltaTFunctionObject(_dt);
   _desired_dt = solver().getTimeDelta();
   if (!_dt_adjustable)
     _foam_dt = solver().getTimeDelta();

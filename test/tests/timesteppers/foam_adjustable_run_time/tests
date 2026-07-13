@@ -1,0 +1,19 @@
+[Tests]
+  [foam_adjustable_run_time]
+    # Check that the the correct time steps are used when dt is adjustable to coincide with write times
+    [setup]
+      type = RunCommand
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && blockMesh"'
+    []
+    [run]
+      type = RunApp
+      input = run.i
+      prereq = foam_adjustable_run_time/setup
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = foam_adjustable_run_time/run
+    []
+  []
+[]
