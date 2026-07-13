@@ -86,7 +86,7 @@ findMooseDeltaT(Foam::Time & time)
     if (ptr)
       return *ptr;
   }
-  return {};
+  return std::nullopt;
 }
 } // namespace
 
@@ -226,7 +226,7 @@ FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
 
   // Do not recreate function object if it exists. It seems MOOSE calls
   // computeInitialDT twice
-  if (findMooseDeltaT(runTime()))
+  if (findMooseDeltaT(runTime()).has_value())
     return;
 
   auto moose_dt = new Foam::functionObjects::mooseDeltaT("mooseTimeStep", runTime(), dt);
