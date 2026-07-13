@@ -6,8 +6,10 @@
 #include <Time.H>
 #include <fixedGradientFvPatchFields.H>
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
+#include <functional>
 #include <fvPatchField.H>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <pimpleSingleRegionControl.H>
 #include <scalarField.H>
@@ -74,7 +76,7 @@ setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
 /**
  * Returns the mooseDeltaT function object if it exists
  */
-Foam::functionObjects::mooseDeltaT *
+std::optional<std::reference_wrapper<Foam::functionObjects::mooseDeltaT>>
 findMooseDeltaT(Foam::Time & time)
 {
   auto & fo_list = time.functionObjects();
@@ -82,9 +84,9 @@ findMooseDeltaT(Foam::Time & time)
   {
     auto * ptr = dynamic_cast<Foam::functionObjects::mooseDeltaT *>(&fo_list[i]);
     if (ptr)
-      return ptr;
+      return *ptr;
   }
-  return nullptr;
+  return {};
 }
 } // namespace
 
@@ -177,16 +179,26 @@ FoamSolver::computeDeltaT()
 
   if (deltaT < Foam::rootVGreat)
   {
-    // We need the adjustDeltaT function of Foam::Time to be called for adjustableRunTime
-    // writeControl to work properly. However, it is protected so we must do it through the public
-    // function setDeltaT. As a result, we save and then reset deltaT to its original value.
-    //
+    /*
+    When adjustableRunTime writeControl is used, `Foam::Time` calls `adjustDeltaT`
+    to modify the time step so the time step falls on the write interval exactly.
+    - We must therefore also call adjustDeltaT
+    - However, it is a protected member of Foam::Time so, we must call it indirectly
+      through public member function setDeltaT and retrieve its value
+    - We must then reset the original value as the time step is not formally set until
+     `FoamSolver::run`
+    */
+
+    // 1. Store initial value
     Foam::scalar deltaT0 = _solver->runTime.deltaTValue();
+    // 2. Run setDeltaT
     runTime().setDeltaT(
         std::min(Foam::solver::deltaTFactor * _solver->runTime.deltaTValue(), deltaT));
-
+    // 3. Retrieve value
     deltaT = _solver->runTime.deltaTValue();
+    // 4. Reset initial value without adjustment
     runTime().setDeltaTNoAdjust(deltaT0);
+
     return deltaT;
   }
   return _solver->runTime.deltaTValue();
@@ -212,7 +224,8 @@ FoamSolver::appendDeltaTFunctionObject(const Foam::scalar & dt)
   // This clears the list, so we want to append mooseDeltaT after it has been cleared.
   runTime().setDeltaT(getTimeDelta());
 
-  // Check there is no existing mooseDeltaT object
+  // Do not recreate function object if it exists. It seems MOOSE calls
+  // computeInitialDT twice
   if (findMooseDeltaT(runTime()))
     return;
 
@@ -224,9 +237,10 @@ Foam::functionObjects::mooseDeltaT &
 FoamSolver::getDeltaTFunctionObject()
 {
   // Return reference to function object and error if it is not found.
-  Foam::functionObjects::mooseDeltaT * ptr = findMooseDeltaT(runTime());
-  if (!ptr)
+  auto moose_dt = findMooseDeltaT(runTime());
+  if (!moose_dt.has_value())
     mooseError("MooseDeltaT function object not found. This is a bug, contact developers.");
-  return *ptr;
+
+  return *moose_dt;
 }
 } // namespace Hippo

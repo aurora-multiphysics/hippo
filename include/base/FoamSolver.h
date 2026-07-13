@@ -14,7 +14,17 @@ namespace Foam
 {
 namespace functionObjects
 {
-// Function object to tell OpenFOAM what MOOSE's dt is
+/*
+  The key idea is that runTime.functionObjects().maxDeltaT() in adjustDeltaT
+  loops over the function objects and chooses the minimum
+  - So by having a function Object that returns what MOOSE wants, OpenFOAM will use the
+    MOOSE time step if it is smaller than what OpenFOAM wants.
+  - As a result, if MOOSE wants to add a synchronisation step OpenFOAM will also use it too.
+  - However, the MOOSE induced cutback can lead to a slow recovery of the timestep and more
+    time steps being taken than necessary
+  - So, after a cutback we modify DeltaTFactor to allow the next timestep to return to its
+    value before the cutback.
+*/
 class mooseDeltaT : public functionObject
 {
 private:
@@ -35,7 +45,6 @@ public:
   {
   }
 
-  virtual ~mooseDeltaT() {};
   virtual wordList fields() const override { return wordList::null(); }
 
   virtual bool executeAtStart() const override { return false; }
@@ -47,7 +56,7 @@ public:
   void disable() { _enabled = false; }
   Foam::scalar calculateDeltaTFactor(const Foam::scalar time) const
   {
-    if (!_old_desired_dt)
+    if (!_old_desired_dt.has_value())
       mooseError("OldDesiredTimeStep must be set before the deltaTFactor is calculated");
 
     if (time != _old_desired_dt)
