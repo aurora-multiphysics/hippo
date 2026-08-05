@@ -22,21 +22,19 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::solvers::bcTestSolver
+    Foam::solvers::baseTestSolver
 
 Description
-    Solver module for to test imposition of OpenFOAM boundary conditions using Moose input file
-    syntax. Based on Solid solver
+    Base class for constructing tests. Removes abstract functions to inherted classes
 
 SourceFiles
-    bcTestSolver.C
+    baseTestSolver.C
 
 \*---------------------------------------------------------------------------*/
 
 #pragma once
 
-#include "baseTestSolver.H"
-#include "solidThermophysicalTransportModel.H"
+#include "solver.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,54 +44,84 @@ namespace solvers
 {
 
 /*---------------------------------------------------------------------------*\
-                          Class bcTestSolver Declaration
+                          Class baseTestSolver Declaration
 \*---------------------------------------------------------------------------*/
 
-class bcTestSolver : public baseTestSolver
+class baseTestSolver : public solver
 {
 
 protected:
   // Control parameters
   scalar maxDeltaT_;
 
-  // Thermophysical properties
-  autoPtr<solidThermo> thermoPtr_;
+  // Protected Member Functions
 
-  solidThermo & thermo_;
+  //- Return true if the solver's dependencies have been modified
+  virtual bool dependenciesModified() const;
 
-  volScalarField T_;
-
-  autoPtr<solidThermophysicalTransportModel> thermophysicalTransport;
+  //- Read controls
+  virtual bool read();
 
 public:
-  // Public Data
-  // reference to thermophysical properties
-  const solidThermo & thermo;
-
-  //- Reference to the temperature field
-  const volScalarField & T;
-
   //- Runtime type information
-  TypeName("bcTestSolver");
+  TypeName("baseTestSolver");
 
-  // Constructors
-
-  //- Construct from region mesh
-  bcTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr);
-
-  bcTestSolver(fvMesh & mesh);
+  // add basic fvmesh constructor
+  baseTestSolver(fvMesh & mesh) : solver(mesh) {};
 
   //- Disallow default bitwise copy construction
-  bcTestSolver(const bcTestSolver &) = delete;
+  baseTestSolver(const baseTestSolver &) = delete;
 
-  virtual void moveMesh();
+  //- Destructor
+  virtual ~baseTestSolver();
 
+  // Member Functions
+
+  //- Return the current maximum time-step for stable solution
+  virtual scalar maxDeltaT() const;
+
+  //- Called at the start of the time-step, before the PIMPLE loop
   virtual void preSolve();
 
-  //- Construct and solve the energy equation,
+  //- Called at the start of the PIMPLE loop to move the mesh
+  virtual void moveMesh() {};
+
+  //- Corrections that follow mesh motion
+  virtual void motionCorrector() {};
+
+  //- Called at the start of the PIMPLE loop
+  virtual void prePredictor() {};
+
+  //- Predict the momentum transport
+  virtual void momentumTransportPredictor() {};
+
+  //- Predict thermophysical transport
+  virtual void thermophysicalTransportPredictor() {};
+
+  //- Construct and optionally solve the momentum equation
+  virtual void momentumPredictor() {};
+
+  //- Construct and solve the thermophysical property equations,
   //  convert to temperature
   //  and update thermophysical and transport properties
-  virtual void thermophysicalTransportPredictor();
+  virtual void thermophysicalPredictor() {};
+
+  //- Construct and solve the pressure equation in the PISO loop
+  virtual void pressureCorrector() {};
+
+  //- Correct the momentum transport
+  virtual void momentumTransportCorrector() {};
+
+  //- Correct the thermophysical transport
+  virtual void thermophysicalTransportCorrector() {};
+
+  //- Called after the PIMPLE loop at the end of the time-step
+  virtual void postSolve() {};
+
+  // Member Operators
+
+  //- Disallow default bitwise assignment
+  void operator=(const baseTestSolver &) = delete;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -25,7 +25,7 @@ License
 
 #include "dimensionSets.H"
 #include "fvMesh.H"
-#include "bcTestSolver.H"
+#include "baseTestSolver.H"
 #include "fvMeshMover.H"
 #include "addToRunTimeSelectionTable.H"
 #include "fvConstraints.H"
@@ -37,8 +37,8 @@ namespace Foam
 {
 namespace solvers
 {
-defineTypeNameAndDebug(bcTestSolver, 0);
-addToRunTimeSelectionTable(solver, bcTestSolver, fvMesh);
+defineTypeNameAndDebug(baseTestSolver, 0);
+addToRunTimeSelectionTable(solver, baseTestSolver, fvMesh);
 }
 }
 
@@ -46,64 +46,43 @@ addToRunTimeSelectionTable(solver, bcTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-// Solver based on solid.C module
-Foam::solvers::bcTestSolver::bcTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr)
-  : baseTestSolver(mesh),
-
-    thermoPtr_(thermoPtr),
-    thermo_(thermoPtr_()),
-
-    T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
-
-    thermophysicalTransport(solidThermophysicalTransportModel::New(thermo_)),
-    thermo(thermo_),
-    T(T_)
+bool
+Foam::solvers::baseTestSolver::dependenciesModified() const
 {
-  thermo.validate("solid", "h", "e");
+  return runTime.controlDict().modified();
 }
 
-Foam::solvers::bcTestSolver::bcTestSolver(fvMesh & mesh)
-  : bcTestSolver(mesh, solidThermo::New(mesh))
+bool
+Foam::solvers::baseTestSolver::read()
 {
-  // Read the controls
-  read();
+  solver::read();
+
+  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
+                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
+                   : vGreat;
+
+  return true;
 }
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::solvers::baseTestSolver::~baseTestSolver() {}
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+
+Foam::scalar
+Foam::solvers::baseTestSolver::maxDeltaT() const
+{
+  return min(fvModels().maxDeltaT(), maxDeltaT_);
+}
+
 void
-Foam::solvers::bcTestSolver::preSolve()
+Foam::solvers::baseTestSolver::preSolve()
 {
   fvModels().preUpdateMesh();
 
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
-}
-
-void
-Foam::solvers::bcTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
-}
-
-void
-Foam::solvers::bcTestSolver::thermophysicalTransportPredictor()
-{
-  fvScalarMatrix eEqn(fvm::laplacian(thermo_.kappa(), thermo.he()));
-
-  eEqn.solve();
-
-  thermo.he().write();
-  thermo_.correct();
 }
 
 // ************************************************************************* //
