@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo_${MPI}_of${OPENFOAM_VERSION}:dev-4f60782085
+From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-547ad25d4e
 
 %files
     .git /opt/hippo/.git
@@ -51,7 +51,7 @@ From: quay.io/ukaea/hippo_${MPI}_of${OPENFOAM_VERSION}:dev-4f60782085
         echo "WARNING: Potential clash of OpenFOAM environment variables from $HOME/.OpenFOAM/prefs.sh. Consider removing!"
     fi
 
-    source /opt/openfoam/OpenFOAM-12/etc/bashrc
+    source /opt/openfoam/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM-${OPENFOAM_VERSION}/lib/
     export PATH=$PATH:/root/OpenFOAM-${OPENFOAM_VERSION}/bin/
     unset FOAM_SIGFPE
