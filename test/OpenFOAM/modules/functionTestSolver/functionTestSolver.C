@@ -43,28 +43,10 @@ addToRunTimeSelectionTable(solver, functionTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::functionTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::functionTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::solvers::functionTestSolver::functionTestSolver(fvMesh & mesh)
-  : solver(mesh),
+  : baseTestSolver(mesh),
     T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
     dTdt_(IOobject("dTdt", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
           mesh,
@@ -82,12 +64,6 @@ Foam::solvers::functionTestSolver::functionTestSolver(fvMesh & mesh)
 }
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::scalar
-Foam::solvers::functionTestSolver::maxDeltaT() const
-{
-  return min(fvModels().maxDeltaT(), maxDeltaT_);
-}
 
 void
 Foam::solvers::functionTestSolver::preSolve()

@@ -93,7 +93,7 @@ public:
   //- Construct and solve the energy equation,
   //  convert to temperature
   //  and update thermophysical and transport properties
-  virtual void thermophysicalTransportPredictor();
+  virtual void thermophysicalPredictor();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

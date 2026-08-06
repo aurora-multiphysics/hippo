@@ -96,7 +96,7 @@ Foam::solvers::bcTestSolver::moveMesh()
 }
 
 void
-Foam::solvers::bcTestSolver::thermophysicalTransportPredictor()
+Foam::solvers::bcTestSolver::thermophysicalPredictor()
 {
   fvScalarMatrix eEqn(fvm::laplacian(thermo_.kappa(), thermo.he()));
 

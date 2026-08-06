@@ -52,28 +52,10 @@ addToRunTimeSelectionTable(solver, odeTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::odeTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::odeTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::solvers::odeTestSolver::odeTestSolver(fvMesh & mesh)
-  : solver(mesh),
+  : baseTestSolver(mesh),
     T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
     kappa_(IOobject("kappa", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
            mesh,

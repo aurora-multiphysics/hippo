@@ -63,7 +63,7 @@ public:
   postprocessorTestSolver(const postprocessorTestSolver &) = delete;
 
   //- Destructor
-  virtual ~postprocessorTestSolver();
+  virtual ~postprocessorTestSolver() {};
 
   // Member Functions
 

@@ -281,3 +281,4 @@ conf_vars.mk
 
 #apptainer definition files
 *.def
+*.sif

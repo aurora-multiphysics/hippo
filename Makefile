@@ -62,4 +62,4 @@ include            $(FRAMEWORK_DIR)/app.mk
 ###############################################################################
 # Additional special case targets should be added here
 
-#include test/OpenFOAM/foam_modules.mk
+include test/OpenFOAM/foam_modules.mk

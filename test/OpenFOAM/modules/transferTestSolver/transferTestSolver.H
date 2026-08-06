@@ -35,7 +35,7 @@ SourceFiles
 
 #pragma once
 
-#include "solver.H"
+#include "baseTestSolver.H"
 #include "solidThermophysicalTransportModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -49,7 +49,7 @@ namespace solvers
                           Class transferTestSolver Declaration
 \*---------------------------------------------------------------------------*/
 
-class transferTestSolver : public solver
+class transferTestSolver : public baseTestSolver
 {
 
 protected:
@@ -64,14 +64,6 @@ protected:
   volScalarField T_;
 
   autoPtr<solidThermophysicalTransportModel> thermophysicalTransport;
-
-  // Protected Member Functions
-
-  //- Return true if the solver's dependencies have been modified
-  virtual bool dependenciesModified() const;
-
-  //- Read controls
-  virtual bool read();
 
 public:
   // Public Data
@@ -94,9 +86,6 @@ public:
   //- Disallow default bitwise copy construction
   transferTestSolver(const transferTestSolver &) = delete;
 
-  //- Destructor
-  virtual ~transferTestSolver();
-
   // Member Functions
 
   //- Return the current maximum time-step for stable solution
@@ -108,28 +97,10 @@ public:
   //- Called at the start of the PIMPLE loop to move the mesh
   virtual void moveMesh();
 
-  //- Corrections that follow mesh motion
-  virtual void motionCorrector();
-
-  //- Called at the beginning of the PIMPLE loop
-  virtual void prePredictor();
-
-  //- Construct and optionally solve the momentum equation
-  virtual void momentumPredictor();
-
   //- Construct and solve the energy equation,
   //  convert to temperature
   //  and update thermophysical and transport properties
-  virtual void thermophysicalPredictor();
-
-  //- Construct and solve the pressure equation in the PISO loop
-  virtual void pressureCorrector();
-
-  //- Correct the thermophysical transport modelling
-  virtual void postCorrector();
-
-  //- Called after the PIMPLE loop at the end of the time-step
-  virtual void postSolve();
+  virtual void thermophysicalTransportPredictor();
 
   // Member Operators
 
