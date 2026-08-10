@@ -86,8 +86,6 @@ public:
   //- Disallow default bitwise copy construction
   bcTestSolver(const bcTestSolver &) = delete;
 
-  virtual void moveMesh();
-
   virtual void preSolve();
 
   //- Construct and solve the energy equation,

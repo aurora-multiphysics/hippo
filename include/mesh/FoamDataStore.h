@@ -335,9 +335,9 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
   storeFields<Foam::surfaceTensorField, false>(stream, mesh, dbg_field_list);
   storeFields<Foam::surfaceSymmTensorField, false>(stream, mesh, dbg_field_list);
 
-  storeFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>, true>(
+  storeFields<Foam::DimensionedField<Foam::scalar, Foam::fvMesh>, true>(
       stream, mesh, dbg_field_list);
-  storeFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>, true>(
+  storeFields<Foam::DimensionedField<Foam::vector, Foam::fvMesh>, true>(
       stream, mesh, dbg_field_list);
   storeFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>, true>(
       stream, mesh, dbg_field_list);
@@ -369,8 +369,8 @@ dataLoad(std::istream & stream, Foam::fvMesh & mesh, void * context)
   loadFields<Foam::surfaceTensorField>(stream, mesh);
   loadFields<Foam::surfaceSymmTensorField>(stream, mesh);
 
-  loadFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>>(stream, mesh);
-  loadFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::scalar, Foam::fvMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::vector, Foam::fvMesh>>(stream, mesh);
   loadFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>>(stream, mesh);
   loadFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>>(stream, mesh);
 

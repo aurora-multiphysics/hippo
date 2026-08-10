@@ -24,7 +24,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "DimensionedField.H"
-#include "dimensionSets.H"
 #include "dimensionedScalar.H"
 #include "dimensionedVector.H"
 #include "fvMesh.H"
@@ -33,7 +32,6 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "scalar.H"
 #include "volFieldsFwd.H"
-#include "volMesh.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -63,21 +61,6 @@ Foam::solvers::postprocessorTestSolver::preSolve()
 
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
-}
-
-void
-Foam::solvers::postprocessorTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
 }
 
 void

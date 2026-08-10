@@ -23,7 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "dimensionSets.H"
 #include "fvMesh.H"
 #include "baseTestSolver.H"
 #include "fvMeshMover.H"

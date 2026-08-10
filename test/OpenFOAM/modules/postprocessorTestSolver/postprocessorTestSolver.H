@@ -70,9 +70,6 @@ public:
   //- Called at the start of the time-step, before the PIMPLE loop
   virtual void preSolve();
 
-  //- Called at the start of the PIMPLE loop to move the mesh
-  virtual void moveMesh();
-
   //- Corrections that follow mesh motion
   virtual void motionCorrector() {};
 

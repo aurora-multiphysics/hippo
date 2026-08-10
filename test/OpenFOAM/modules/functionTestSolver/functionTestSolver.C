@@ -75,21 +75,6 @@ Foam::solvers::functionTestSolver::preSolve()
 }
 
 void
-Foam::solvers::functionTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
-}
-
-void
 Foam::solvers::functionTestSolver::thermophysicalPredictor()
 {
   // Set T to the current time

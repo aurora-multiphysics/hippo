@@ -24,7 +24,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "dimensionSet.H"
-#include "dimensionSets.H"
 #include "dimensionedType.H"
 #include "fvmDdt.H"
 #include "odeTestSolver.H"
@@ -82,21 +81,6 @@ Foam::solvers::odeTestSolver::preSolve()
 
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
-}
-
-void
-Foam::solvers::odeTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
 }
 
 void

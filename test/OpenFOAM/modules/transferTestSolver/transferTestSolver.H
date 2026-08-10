@@ -94,9 +94,6 @@ public:
   //- Called at the start of the time-step, before the PIMPLE loop
   virtual void preSolve();
 
-  //- Called at the start of the PIMPLE loop to move the mesh
-  virtual void moveMesh();
-
   //- Construct and solve the energy equation,
   //  convert to temperature
   //  and update thermophysical and transport properties

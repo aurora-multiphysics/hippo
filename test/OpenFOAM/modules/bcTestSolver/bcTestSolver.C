@@ -23,7 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "dimensionSets.H"
 #include "fvMesh.H"
 #include "bcTestSolver.H"
 #include "fvMeshMover.H"
@@ -78,21 +77,6 @@ Foam::solvers::bcTestSolver::preSolve()
 
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
-}
-
-void
-Foam::solvers::bcTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
 }
 
 void
