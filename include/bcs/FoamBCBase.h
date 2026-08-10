@@ -19,7 +19,7 @@ enum class FoamBCType
   fixedGradient
 };
 
-class FoamBCBase : public MooseObject, public Coupleable, public HippoInterface
+class FoamBCBase : public MooseObject, public Coupleable, protected HippoInterface
 {
 public:
   static InputParameters validParams();

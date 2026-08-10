@@ -4,7 +4,7 @@
 #include "MooseObject.h"
 #include "FoamMesh.h"
 
-class FoamVariableField : public MooseObject, public HippoInterface
+class FoamVariableField : public MooseObject, protected HippoInterface
 {
 public:
   static InputParameters validParams();

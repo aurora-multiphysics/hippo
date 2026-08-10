@@ -7,7 +7,9 @@
 #include "Postprocessor.h"
 #include "ElementUserObject.h"
 
-class FoamPostprocessorBase : public ElementUserObject, public Postprocessor, public HippoInterface
+class FoamPostprocessorBase : public ElementUserObject,
+                              public Postprocessor,
+                              protected HippoInterface
 {
 public:
   static InputParameters validParams();
