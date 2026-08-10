@@ -11,9 +11,10 @@ jobs:
       github.actor == 'mattfalcone1997' ||
       github.actor == 'k-collie'
     runs-on: ubuntu-latest
-    matrix:
-      openfoam_version: [13, 14]
-      mpi: [openmpi, mpich]
+    strategy:
+      matrix:
+        openfoam_version: [13, 14]
+        mpi: [openmpi, mpich]
     steps:
       - uses: actions/checkout@v6
       - name: Install apptainer
