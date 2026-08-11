@@ -7,6 +7,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     OPENFOAM_VERSION=12
 
 %files
+    ./scripts/install-findutils.sh /opt/hippo/scripts/install-findutils.sh
     ./scripts/install-openfoam.sh /opt/hippo/scripts/install-openfoam.sh
     ./scripts/openfoam.patch /opt/hippo/scripts/openfoam.patch
     ./requirements.test.txt /opt/hippo/
@@ -36,6 +37,11 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
         zlib-devel
 
     dnf clean all
+
+    # OpenFOAM CleanFunctions uses comma-separated arguments to find's -type,
+    # which are not supported by Rocky 8's findutils 4.6.
+    bash /opt/hippo/scripts/install-findutils.sh
+    hash -r
 
     # MOOSE
     export MOOSE_DIR=/opt/moose
@@ -105,6 +111,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     conda install --file /opt/hippo/requirements.test.txt -S --yes --quiet
 
 %environment
+    export PATH=/usr/local/bin:$PATH
     . /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose
