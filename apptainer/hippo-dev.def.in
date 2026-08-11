@@ -115,3 +115,15 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     . /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose
+
+%test
+    set -eu
+
+    # Exercise the find syntax required by OpenFOAM's CleanFunctions.
+    find /tmp -maxdepth 0 -type f,l -print > /dev/null
+
+    # Check that core OpenFOAM utilities can be found and loaded.
+    for utility in blockMesh decomposePar foamRun; do
+        command -v "${utility}" > /dev/null
+        "${utility}" -help > /dev/null 2>&1
+    done
