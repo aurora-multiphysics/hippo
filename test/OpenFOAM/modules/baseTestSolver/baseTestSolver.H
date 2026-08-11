@@ -64,7 +64,7 @@ protected:
 
 public:
   //- Runtime type information
-  TypeName("baseTestSolver");
+  TypeName("baseTest");
 
   // add basic fvmesh constructor
   baseTestSolver(fvMesh & mesh) : solver(mesh) {};

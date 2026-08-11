@@ -75,7 +75,7 @@ public:
   const volScalarField & kappa;
 
   //- Runtime type information
-  TypeName("odeTestSolver");
+  TypeName("odeTest");
 
   // Constructors
 

@@ -27,6 +27,8 @@ jobs:
           pip install pre-commit
           pre-commit install
           SKIP=no-commit-to-branch pre-commit run --all
+      - name: Substitute production container
+        run: MPI=openmpi OPENFOAM_VERSION=14 envsubst '${MPI} ${OPENFOAM_VERSION}' < apptainer/hippo-release.def.in > apptainer/hippo-release.def
       - name: Build apptainer production container
         run: sudo apptainer build hippo-release-${{ github.sha }}.sif apptainer/hippo-release.def
       - name: Test production container

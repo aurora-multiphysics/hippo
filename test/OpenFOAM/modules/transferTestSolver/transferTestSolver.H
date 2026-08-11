@@ -74,7 +74,7 @@ public:
   const volScalarField & T;
 
   //- Runtime type information
-  TypeName("transferTestSolver");
+  TypeName("transferTest");
 
   // Constructors
 

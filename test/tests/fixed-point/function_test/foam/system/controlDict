@@ -15,7 +15,7 @@ FoamFile
 
 application     foamRun;
 
-solver          functionTestSolver;
+solver          functionTest;
 
 startFrom       startTime;
 

@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-7beb881149
+From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-15321b4bb7
 
 %files
     .git /opt/hippo/.git
@@ -52,8 +52,10 @@ From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-7beb881149
     fi
 
     source /opt/openfoam/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM-${OPENFOAM_VERSION}/lib/
-    export PATH=$PATH:/root/OpenFOAM-${OPENFOAM_VERSION}/bin/
+    export FOAM_USER_LIBBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/lib
+    export FOAM_USER_APPBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/bin
+    export LD_LIBRARY_PATH=${FOAM_USER_LIBBIN}:${LD_LIBRARY_PATH}
+    export PATH=${FOAM_USER_APPBIN}:${PATH}
     unset FOAM_SIGFPE
     export PMIX_MCA_gds=hash
 

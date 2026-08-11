@@ -77,7 +77,7 @@ public:
   const volScalarField & kappa;
 
   //- Runtime type information
-  TypeName("functionTestSolver");
+  TypeName("functionTest");
 
   // Constructors
 

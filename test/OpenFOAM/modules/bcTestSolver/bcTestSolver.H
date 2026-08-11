@@ -74,7 +74,7 @@ public:
   const volScalarField & T;
 
   //- Runtime type information
-  TypeName("bcTestSolver");
+  TypeName("bcTest");
 
   // Constructors
 

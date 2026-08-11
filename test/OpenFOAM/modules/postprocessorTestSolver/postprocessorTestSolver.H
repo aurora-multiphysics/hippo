@@ -53,7 +53,7 @@ class postprocessorTestSolver : public fluid
 
 public:
   //- Runtime type information
-  TypeName("postprocessorTestSolver");
+  TypeName("postprocessorTest");
 
   // Constructors
 

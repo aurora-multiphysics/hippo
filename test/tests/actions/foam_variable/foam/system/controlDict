@@ -13,7 +13,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solver          transferTestSolver;
+solver          transferTest;
 
 startFrom       startTime;
 

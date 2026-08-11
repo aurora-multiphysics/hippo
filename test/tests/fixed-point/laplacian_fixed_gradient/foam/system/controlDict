@@ -15,7 +15,7 @@ FoamFile
 
 application     foamRun;
 
-solver          laplacianTestSolver;
+solver          laplacianTest;
 
 startFrom       startTime;
 

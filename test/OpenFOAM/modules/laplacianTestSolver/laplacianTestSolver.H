@@ -73,7 +73,7 @@ public:
   const volScalarField & kappa;
 
   //- Runtime type information
-  TypeName("laplacianTestSolver");
+  TypeName("laplacianTest");
 
   // Constructors
 
