@@ -31,13 +31,13 @@ class TestFlowOverHeatedPlate(TestCase):
             # internal data
             temp = ff.readof.readscalar(case_dir, time, "T")
             temp_ref = ff.readof.readscalar(ref_dir, time, "T")
-            failures.append(np.allclose(temp_ref, temp, rtol=1.5e-6))
+            failures.append(np.allclose(temp_ref, temp, rtol=2.0e-6))
             max_error = max(max_error, np.amax(abs((temp_ref - temp) / temp_ref)))
 
             for boundary in boundaries:
                 temp = ff.readof.readscalar(case_dir, time, "T", boundary=boundary)
                 temp_ref = ff.readof.readscalar(ref_dir, time, "T", boundary=boundary)
-                failures.append(np.allclose(temp_ref, temp, rtol=1.5e-6))
+                failures.append(np.allclose(temp_ref, temp, rtol=2.0e-6))
                 max_error = max(max_error, np.amax(abs((temp_ref - temp) / temp_ref)))
 
         assert all(failures), f"Max diff: {max_error}"

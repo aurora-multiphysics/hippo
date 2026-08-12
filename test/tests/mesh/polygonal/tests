@@ -2,7 +2,7 @@
   [poly]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/polygon.msh && polyDualMesh -overwrite 75 && decomposePar"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/polygon.msh && polyDualMesh -overwrite 75 && if [ -d 0/polyMesh ]; then mkdir -p constant && mv 0/polyMesh constant/polyMesh; fi && decomposePar"'
     []
     [run]
       type = RunApp
@@ -25,6 +25,7 @@
     [reconstruct]
       type = RunCommand
       command = 'bash -c "reconstructPar -case fluid-openfoam"'
+      prereq = poly/run_distributed
     []
     [verify_distributed]
       type = PythonUnitTest
