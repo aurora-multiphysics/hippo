@@ -36,6 +36,7 @@ namespace
  * This was copied (with some minor adjustments) from
  * 'applications/solvers/foamRun/setDeltaT.C' OpenFOAM-12 revision
  * 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6.
+ * No changes for OpenFOAM-14
  */
 void
 adjustDeltaT(Foam::Time & runTime, const Foam::solver & solver)
@@ -57,6 +58,7 @@ adjustDeltaT(Foam::Time & runTime, const Foam::solver & solver)
  * This was copied (with some minor adjustments) from
  * 'applications/solvers/foamRun/setDeltaT.C' OpenFOAM-12 revision
  * 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6.
+ * No changes for OpenFOAM-14
  */
 void
 setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
