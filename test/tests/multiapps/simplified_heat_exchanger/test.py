@@ -7,7 +7,7 @@ import numpy as np
 ROOT_DIR = Path(__file__).parent
 BOTTOM_CASE = "fluid-bottom-openfoam"
 TOP_CASE = "fluid-top-openfoam"
-REF_TIME = "1"  # second
+REF_TIME = "0.1"  # seconds
 
 
 class TestSimplifiedHeatExchanger(unittest.TestCase):

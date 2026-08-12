@@ -21,7 +21,7 @@ import numpy as np
 BOUNDARY_NAME = "interface"
 BOTTOM_CASE = "fluid-bottom-openfoam"
 TOP_CASE = "fluid-top-openfoam"
-REFERENCE_TIME = 1  # second
+REFERENCE_TIME = 0.1  # seconds
 
 
 @dataclass
