@@ -1,2 +1,0 @@
-NODAL VARIABLES
-	T relative 5.E-5
