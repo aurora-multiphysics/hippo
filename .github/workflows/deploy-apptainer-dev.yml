@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        openfoam_version: [13, 14]
         mpi: [openmpi, mpich]
     steps:
       - uses: actions/checkout@v6
@@ -26,6 +25,6 @@ jobs:
       - name: Substitute container
         run: MPI=${{ matrix.mpi }}  envsubst '${MPI}' < apptainer/hippo-dev.def.in > apptainer/hippo-dev.def
       - name: build container
-        run: apptainer build --build-arg OPENFOAM_VERSION=${{ matrix.openfoam_version }} hippo-dev.sif apptainer/hippo-dev.def
+        run: apptainer build --build-arg OPENFOAM_VERSION=14 hippo-dev.sif apptainer/hippo-dev.def
       - name: push container
-        run: apptainer push hippo-dev.sif oras://quay.io/ukaea/hippo:dev-${{ matrix.mpi }}-of${{ matrix.openfoam_version }}-${GITHUB_SHA::10}
+        run: apptainer push hippo-dev.sif oras://quay.io/ukaea/hippo:dev-${{ matrix.mpi }}-of14-${GITHUB_SHA::10}
