@@ -6,8 +6,8 @@ MAKEFLAGS += --no-print-directory
 
 build_foam_tests:
 	$(info Building Hippo's OpenFOAM test modules)
-	+@$(WMAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/transferTestSolver/
 	+@$(WMAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/baseTestSolver/
+	+@$(WMAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/transferTestSolver/
 	+@$(WMAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/bcTestSolver/
 	+@$(WMAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/functionTestSolver/
 	+@$(WMAKE) -s -j $(MOOSE_JOBS) test/OpenFOAM/modules/laplacianTestSolver/
