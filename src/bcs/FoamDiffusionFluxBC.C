@@ -16,7 +16,6 @@ FoamDiffusionFluxBC::validParams()
   auto params = FoamVariableBCBase::validParams();
   params.addParam<std::string>(
       "diffusivity", "kappa", "Diffusivity for BC, defaults to kappa, the thermal conducitivity.");
-  params.set<std::string>("_foam_bc_type") = "fixedGradient";
 
   params.addClassDescription("A FoamBC that imposes a fixed gradient boundary condition "
                              "on the OpenFOAM simulation");
@@ -24,7 +23,7 @@ FoamDiffusionFluxBC::validParams()
 }
 
 FoamDiffusionFluxBC::FoamDiffusionFluxBC(const InputParameters & params)
-  : FoamVariableBCBase(params), _diffusivity(getParam<std::string>("diffusivity"))
+  : FoamVariableBCBase(params, "fixedGradient"), _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {

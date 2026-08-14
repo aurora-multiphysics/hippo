@@ -12,13 +12,13 @@ FoamDiffusionFluxPostprocessorBC::validParams()
   auto params = FoamPostprocessorBCBase::validParams();
   params.addParam<std::string>(
       "diffusivity", "kappa", "Diffusivity for BC, defaults to kappa, the thermal conducitivity.");
-  params.set<std::string>("_foam_bc_type") = "fixedGradient";
 
   return params;
 }
 
 FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params), _diffusivity(getParam<std::string>("diffusivity"))
+  : FoamPostprocessorBCBase(params, "fixedGradient"),
+    _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {

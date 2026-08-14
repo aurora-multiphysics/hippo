@@ -9,7 +9,6 @@ InputParameters
 FoamFixedValueBC::validParams()
 {
   auto params = FoamVariableBCBase::validParams();
-  params.set<std::string>("_foam_bc_type") = "fixedValue";
 
   params.addClassDescription("A FoamBC that imposes a fixed value dirichlet boundary condition "
                              "on the OpenFOAM simulation");
@@ -17,7 +16,7 @@ FoamFixedValueBC::validParams()
 }
 
 FoamFixedValueBC::FoamFixedValueBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters)
+  : FoamVariableBCBase(parameters, "fixedValue")
 {
 }
 

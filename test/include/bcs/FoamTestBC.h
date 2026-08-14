@@ -5,7 +5,7 @@ class FoamTestBC : public FoamVariableBCBase
 {
 public:
   static InputParameters validParams();
-  explicit FoamTestBC(const InputParameters & params) : FoamVariableBCBase(params) {};
+  explicit FoamTestBC(const InputParameters & params) : FoamVariableBCBase(params, "fixedValue") {};
 
   void imposeBoundaryCondition() {};
 };

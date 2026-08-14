@@ -25,15 +25,13 @@ FoamBCBase::validParams()
   params.addRequiredParam<std::string>("foam_variable",
                                        "Name of a Foam field. e.g. T (temperature) U (velocity).");
 
-  params.addPrivateParam<std::string>("_foam_bc_type");
-
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
 
   return params;
 }
 
-FoamBCBase::FoamBCBase(const InputParameters & params)
+FoamBCBase::FoamBCBase(const InputParameters & params, const std::string & bc_type)
   : MooseObject(params),
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
@@ -63,12 +61,16 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
   if (_boundary.empty())
     _boundary = all_subdomain_names;
 
+  // Check validity of BC Type
+  if (_foam_bc_types.find(bc_type) == _foam_bc_types.items().end())
+    mooseError("'", bc_type, "' invalid Foam BC Type.");
+
   for (auto subdomain : _boundary)
   {
     if (_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
-      constructFoamScalarPatch(subdomain, params.get<std::string>("_foam_bc_type"));
+      constructFoamScalarPatch(subdomain, bc_type);
     else if (_mesh->foamHasObject<Foam::volVectorField>(_foam_variable))
-      constructFoamVectorPatch(subdomain, params.get<std::string>("_foam_bc_type"));
+      constructFoamVectorPatch(subdomain, bc_type);
     else
       mooseError("Variable must have type scalar or vector.");
   }
@@ -81,7 +83,7 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::
   auto & var = foam_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
   Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
-  if (var.boundaryField()[id].type() == bc_type)
+  if (bc_type == var.boundaryField()[id].type())
     return;
 
   // Used by getInfoRow to report in the BC table that the patch as been replaced
@@ -97,10 +99,6 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::
   {
     bcDict.add("type", "fixedValue");
     bcDict.add("value", "uniform 0.");
-  }
-  else
-  {
-    mooseError("Invalid _foam_bc_type");
   }
 
   var.boundaryFieldRef().set(
@@ -119,7 +117,7 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::
   auto & var = foam_mesh.lookupObjectRef<Foam::volVectorField>(_foam_variable);
   Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
-  if (var.boundaryField()[id].type() == bc_type)
+  if (bc_type == var.boundaryField()[id].type())
     return;
 
   _patch_replaced = true;
@@ -135,10 +133,7 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::
     bcDict.add("type", "fixedValue");
     bcDict.add("value", "uniform (0. 0. 0.)");
   }
-  else
-  {
-    mooseError("Invalid _foam_bc_type");
-  }
+
   var.boundaryFieldRef().set(
       id,
       Foam::fvPatchField<Foam::vector>::New(foam_mesh.boundary()[id], var.internalField(), bcDict));

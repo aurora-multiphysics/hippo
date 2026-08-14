@@ -14,13 +14,12 @@ FoamMassFlowRateInletBC::validParams()
   params.addParam<Real>("scale_factor", 1., "Scale factor multiply mass flow rate pp_name by.");
   params.suppressParameter<std::string>("foam_variable");
   params.set<std::string>("foam_variable") = "U";
-  params.set<std::string>("_foam_bc_type") = "fixedValue";
 
   return params;
 }
 
 FoamMassFlowRateInletBC::FoamMassFlowRateInletBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params), _scale_factor(params.get<Real>("scale_factor"))
+  : FoamPostprocessorBCBase(params, "fixedValue"), _scale_factor(params.get<Real>("scale_factor"))
 {
 }
 

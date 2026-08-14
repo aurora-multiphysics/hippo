@@ -6,7 +6,6 @@
 #include "MooseTypes.h"
 #include "PostprocessorInterface.h"
 #include "Receiver.h"
-#include <tuple>
 
 InputParameters
 FoamPostprocessorBCBase::validParams()
@@ -19,8 +18,9 @@ FoamPostprocessorBCBase::validParams()
   return params;
 }
 
-FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params)
-  : FoamBCBase(params),
+FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params,
+                                                 const std::string & bc_type)
+  : FoamBCBase(params, bc_type),
     PostprocessorInterface(this),
     _pp_name((params.isParamSetByUser("pp_name")) ? params.get<PostprocessorName>("pp_name")
                                                   : _name),

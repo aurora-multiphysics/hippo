@@ -14,12 +14,15 @@
 typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
     BCInfoTableRow;
 
+// valid underlying Foam BC types
+static MooseEnum _foam_bc_types("fixedGradient fixedValue");
+
 class FoamBCBase : public MooseObject, public Coupleable
 {
 public:
   static InputParameters validParams();
 
-  explicit FoamBCBase(const InputParameters & params);
+  explicit FoamBCBase(const InputParameters & params, const std::string & bc_type);
 
   virtual void imposeBoundaryCondition() = 0;
 

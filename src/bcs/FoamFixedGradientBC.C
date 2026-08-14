@@ -11,7 +11,6 @@ InputParameters
 FoamFixedGradientBC::validParams()
 {
   auto params = FoamVariableBCBase::validParams();
-  params.set<std::string>("_foam_bc_type") = "fixedGradient";
 
   params.addClassDescription("A FoamBC that imposes a fixed gradient boundary condition "
                              "on the OpenFOAM simulation");
@@ -19,7 +18,7 @@ FoamFixedGradientBC::validParams()
 }
 
 FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters)
+  : FoamVariableBCBase(parameters, "fixedGradient")
 {
 }
 

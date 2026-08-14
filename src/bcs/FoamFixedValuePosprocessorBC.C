@@ -7,13 +7,12 @@ InputParameters
 FoamFixedValuePostprocessorBC::validParams()
 {
   auto params = FoamPostprocessorBCBase::validParams();
-  params.set<std::string>("_foam_bc_type") = "fixedValue";
 
   return params;
 }
 
 FoamFixedValuePostprocessorBC::FoamFixedValuePostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params)
+  : FoamPostprocessorBCBase(params, "fixedValue")
 {
 }
 
