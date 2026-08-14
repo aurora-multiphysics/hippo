@@ -35,6 +35,10 @@ From: quay.io/ukaea/hippo:dev-4f60782085
     make -j {{ MOOSE_JOBS }} all METHOD=opt
     make -j {{ MOOSE_JOBS }} all METHOD=dbg
 
+    # Build unit test app
+    make -j {{ MOOSE_JOBS}} -C unit METHOD=opt
+    make -j {{ MOOSE_JOBS}} -C unit METHOD=dbg
+
     if [[ {{ MINIMAL }} -eq 1 ]]; then
         rm -rf /opt/moose/framework/build/
         rm -rf /opt/moose/modules/heat_transfer/build
