@@ -26,9 +26,14 @@ main(int argc, char ** argv)
   // gtest removes (only) its args from argc and argv - so this  must be before moose init
   testing::InitGoogleTest(&argc, argv);
 
+  // Prevent warning message when using death tests
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
+
   MooseInit init(argc, argv);
   registerApp(hippoApp);
-  Moose::_throw_on_error = true;
+
+  // Allow usage of death tests
+  Moose::_throw_on_error = false;
 
   return RUN_ALL_TESTS();
 }

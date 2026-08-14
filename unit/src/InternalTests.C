@@ -4,13 +4,6 @@
 #include "InputParameters.h"
 #include "hippoUtils.h"
 
-#define EXPECT_THROW_MSG(statement, msg)                                                           \
-  try statement catch (const std::exception & e)                                                   \
-  {                                                                                                \
-    const std::string err_msg{std::string(e.what()) + " vs " + msg};                               \
-    EXPECT_TRUE(std::regex_search(e.what(), std::regex(msg))) << err_msg;                          \
-  }
-
 InputParameters
 setupParameters()
 {
@@ -47,16 +40,19 @@ TEST(HippoTestInternals, copyParamTest)
   EXPECT_DOUBLE_EQ(dst.get<Real>("param2"), 2.1) << "param2 doesn't match expect value";
 
   // Check missing parameters results in an excection
-  EXPECT_THROW_MSG(
+  EXPECT_EXIT(
       { Hippo::internal::copyParamFromParam<Real>(dst, src, "param4"); },
+      ::testing::ExitedWithCode(1),
       "Parameter 'param4' of type double not available in src parameters.");
-  EXPECT_THROW_MSG(
+  EXPECT_EXIT(
       { Hippo::internal::copyParamFromParam<Real>(dst, src, "param3"); },
+      ::testing::ExitedWithCode(1),
       "Parameter 'param3' of type double not available in dst parameters.");
 
   // Check error through if the type is wrong
-  EXPECT_THROW_MSG(
+  EXPECT_EXIT(
       { Hippo::internal::copyParamFromParam<std::string>(dst, src, "param1"); },
+      ::testing::ExitedWithCode(1),
       "Parameter 'param1' of type .* not available in src parameters.");
 }
 
