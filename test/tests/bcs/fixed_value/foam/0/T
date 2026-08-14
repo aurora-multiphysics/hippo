@@ -25,6 +25,7 @@ boundaryField
         type            fixedValue;
         value           uniform 0.;
     }
+    // Use fixed gradient to check Hippo's ability to override this type
     right
     {
         type            fixedGradient;

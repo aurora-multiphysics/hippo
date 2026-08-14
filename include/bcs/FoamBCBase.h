@@ -53,7 +53,7 @@ protected:
   // Construct boundary patch for scalar fields
   void constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type);
 
-  // update the energy equation, if the temperature field is updated the energy equation must be
+  // Update the energy equation, if the temperature field is updated the energy equation must be
   void
   updateEnergyPatch(const Foam::volScalarField & var, Foam::label id, const std::string & bc_type);
 
