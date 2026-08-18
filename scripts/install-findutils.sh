@@ -3,7 +3,7 @@ set -euo pipefail
 
 version="4.10.0"
 prefix="/opt/findutils-${version}"
-build_dir="$(mktemp -d /tmp/findutils-build.XXXXXX)"
+build_dir="$(mktemp --tmpdir --directory findutils-build.XXXXXX)"
 
 cleanup()
 {
