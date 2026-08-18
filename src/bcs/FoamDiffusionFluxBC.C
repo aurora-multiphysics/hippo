@@ -1,4 +1,5 @@
 
+#include "FoamBCBase.h"
 #include "FoamDiffusionFluxBC.h"
 #include "FoamVariableBCBase.h"
 #include "MooseError.h"
@@ -23,7 +24,8 @@ FoamDiffusionFluxBC::validParams()
 }
 
 FoamDiffusionFluxBC::FoamDiffusionFluxBC(const InputParameters & params)
-  : FoamVariableBCBase(params, "fixedGradient"), _diffusivity(getParam<std::string>("diffusivity"))
+  : FoamVariableBCBase(params, FoamBCType::fixedGradient),
+    _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {

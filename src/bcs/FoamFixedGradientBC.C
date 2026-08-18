@@ -18,7 +18,7 @@ FoamFixedGradientBC::validParams()
 }
 
 FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters, "fixedGradient")
+  : FoamVariableBCBase(parameters, FoamBCType::fixedGradient)
 {
 }
 

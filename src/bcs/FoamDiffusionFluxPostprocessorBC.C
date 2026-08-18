@@ -1,3 +1,4 @@
+#include "FoamBCBase.h"
 #include "FoamDiffusionFluxPostprocessorBC.h"
 #include "FoamPostprocessorBCBase.h"
 #include "PstreamReduceOps.H"
@@ -17,7 +18,7 @@ FoamDiffusionFluxPostprocessorBC::validParams()
 }
 
 FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params, "fixedGradient"),
+  : FoamPostprocessorBCBase(params, FoamBCType::fixedGradient),
     _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity))

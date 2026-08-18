@@ -19,7 +19,7 @@ FoamPostprocessorBCBase::validParams()
 }
 
 FoamPostprocessorBCBase::FoamPostprocessorBCBase(const InputParameters & params,
-                                                 const std::string & bc_type)
+                                                 const FoamBCType bc_type)
   : FoamBCBase(params, bc_type),
     PostprocessorInterface(this),
     _pp_name((params.isParamSetByUser("pp_name")) ? params.get<PostprocessorName>("pp_name")

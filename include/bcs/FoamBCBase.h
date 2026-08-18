@@ -9,20 +9,23 @@
 #include <MooseVariableFieldBase.h>
 #include <volFieldsFwd.H>
 #include "MooseError.h"
-#include "VariadicTable.h"
 
 typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
     BCInfoTableRow;
 
 // valid underlying Foam BC types
-static MooseEnum _foam_bc_types("fixedGradient fixedValue");
+enum class FoamBCType
+{
+  fixedValue,
+  fixedGradient
+};
 
 class FoamBCBase : public MooseObject, public Coupleable
 {
 public:
   static InputParameters validParams();
 
-  explicit FoamBCBase(const InputParameters & params, const std::string & bc_type);
+  explicit FoamBCBase(const InputParameters & params, const FoamBCType bc_type);
 
   virtual void imposeBoundaryCondition() = 0;
 
@@ -51,14 +54,14 @@ protected:
   std::vector<Real> getMooseVariableArray(int subdomain_id);
 
   // Construct boundary patch for scalar fields
-  void constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type);
+  void constructFoamScalarPatch(const std::string & patch_name, const FoamBCType bc_type);
 
   // Update the energy equation, if the temperature field is updated the energy equation must be
   void
-  updateEnergyPatch(const Foam::volScalarField & var, Foam::label id, const std::string & bc_type);
+  updateEnergyPatch(const Foam::volScalarField & var, Foam::label id, const FoamBCType bc_type);
 
   // Construct boundary patch for vector fields
-  void constructFoamVectorPatch(const std::string & patch_name, const std::string & bc_type);
+  void constructFoamVectorPatch(const std::string & patch_name, const FoamBCType bc_type);
 
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;

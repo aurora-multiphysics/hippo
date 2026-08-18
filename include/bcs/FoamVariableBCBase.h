@@ -9,7 +9,7 @@ class FoamVariableBCBase : public FoamBCBase
 public:
   static InputParameters validParams();
 
-  explicit FoamVariableBCBase(const InputParameters & params, const std::string & bc_type);
+  explicit FoamVariableBCBase(const InputParameters & params, const FoamBCType bc_type);
 
   // returns the moose AuxVariable imposed on OpenFOAM
   VariableName mooseVariable() const { return _moose_var->get().name(); }

@@ -30,7 +30,7 @@ FoamVariableBCBase::validParams()
   return params;
 }
 
-FoamVariableBCBase::FoamVariableBCBase(const InputParameters & params, const std::string & bc_type)
+FoamVariableBCBase::FoamVariableBCBase(const InputParameters & params, const FoamBCType bc_type)
   : FoamBCBase(params, bc_type), _moose_var()
 {
 }

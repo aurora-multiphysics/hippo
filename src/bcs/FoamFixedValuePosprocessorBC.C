@@ -12,7 +12,7 @@ FoamFixedValuePostprocessorBC::validParams()
 }
 
 FoamFixedValuePostprocessorBC::FoamFixedValuePostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params, "fixedValue")
+  : FoamPostprocessorBCBase(params, FoamBCType::fixedValue)
 {
 }
 

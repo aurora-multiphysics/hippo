@@ -16,7 +16,7 @@ FoamFixedValueBC::validParams()
 }
 
 FoamFixedValueBC::FoamFixedValueBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters, "fixedValue")
+  : FoamVariableBCBase(parameters, FoamBCType::fixedValue)
 {
 }
 

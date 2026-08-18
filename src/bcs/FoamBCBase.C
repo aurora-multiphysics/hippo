@@ -14,6 +14,23 @@
 #include <vector>
 #include <volFieldsFwd.H>
 
+namespace
+{
+std::string
+bc_type_to_string(FoamBCType const & bc_type)
+{
+  switch (bc_type)
+  {
+    case FoamBCType::fixedValue:
+      return "fixedValue";
+    case FoamBCType::fixedGradient:
+      return "fixedGradient";
+    default:
+      mooseError("Unhandled (should be impossible)");
+  }
+}
+}
+
 InputParameters
 FoamBCBase::validParams()
 {
@@ -31,7 +48,7 @@ FoamBCBase::validParams()
   return params;
 }
 
-FoamBCBase::FoamBCBase(const InputParameters & params, const std::string & bc_type)
+FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
   : MooseObject(params),
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
@@ -61,10 +78,6 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const std::string & bc_ty
   if (_boundary.empty())
     _boundary = all_subdomain_names;
 
-  // Check validity of BC Type
-  if (_foam_bc_types.find(bc_type) == _foam_bc_types.items().end())
-    mooseError("'", bc_type, "' invalid Foam BC Type.");
-
   for (auto subdomain : _boundary)
   {
     if (_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
@@ -77,27 +90,26 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const std::string & bc_ty
 }
 
 void
-FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::string & bc_type)
+FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const FoamBCType bc_type)
 {
   auto & foam_mesh = _mesh->fvMesh();
   auto & var = foam_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
   Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
-  if (bc_type == var.boundaryField()[id].type())
+  if (bc_type_to_string(bc_type) == var.boundaryField()[id].type())
     return;
 
   // Used by getInfoRow to report in the BC table that the patch as been replaced
   _patch_replaced = true;
 
   Foam::dictionary bcDict;
-  if (bc_type == "fixedGradient")
+  bcDict.add("type", bc_type_to_string(bc_type));
+  if (bc_type == FoamBCType::fixedGradient)
   {
-    bcDict.add("type", "fixedGradient");
     bcDict.add("gradient", "uniform 0.");
   }
-  else if (bc_type == "fixedValue")
+  else if (bc_type == FoamBCType::fixedValue)
   {
-    bcDict.add("type", "fixedValue");
     bcDict.add("value", "uniform 0.");
   }
 
@@ -111,26 +123,25 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const std::
 }
 
 void
-FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::string & bc_type)
+FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const FoamBCType bc_type)
 {
   auto & foam_mesh = _mesh->fvMesh();
   auto & var = foam_mesh.lookupObjectRef<Foam::volVectorField>(_foam_variable);
   Foam::label id = foam_mesh.boundary().findIndex(patch_name);
 
-  if (bc_type == var.boundaryField()[id].type())
+  if (bc_type_to_string(bc_type) == var.boundaryField()[id].type())
     return;
 
   _patch_replaced = true;
 
   Foam::dictionary bcDict;
-  if (bc_type == "fixedGradient")
+  bcDict.add("type", bc_type_to_string(bc_type));
+  if (bc_type == FoamBCType::fixedGradient)
   {
-    bcDict.add("type", "fixedGradient");
     bcDict.add("gradient", "uniform (0. 0. 0.)");
   }
-  else if (bc_type == "fixedValue")
+  else if (bc_type == FoamBCType::fixedValue)
   {
-    bcDict.add("type", "fixedValue");
     bcDict.add("value", "uniform (0. 0. 0.)");
   }
 
@@ -142,7 +153,7 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const std::
 void
 FoamBCBase::updateEnergyPatch(const Foam::volScalarField & var,
                               Foam::label id,
-                              const std::string & bc_type)
+                              const FoamBCType bc_type)
 {
 
   auto thermos = var.mesh().lookupClass<Foam::basicThermo>();
@@ -159,13 +170,13 @@ FoamBCBase::updateEnergyPatch(const Foam::volScalarField & var,
 
     Foam::dictionary dict;
 
-    if (bc_type == "fixedGradient")
+    if (bc_type == FoamBCType::fixedGradient)
     {
       dict.add("type", "gradientEnergy");
       dict.add("gradient", "uniform 0");
       dict.add("value", "uniform 0");
     }
-    else if (bc_type == "fixedValue")
+    else if (bc_type == FoamBCType::fixedValue)
     {
       dict.add("type", "fixedEnergy");
       dict.add("value", "uniform 0");
