@@ -1,7 +1,8 @@
 Bootstrap: oras
-From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
+From: ghcr.io/idaholab/apptainer/moose-dev-{{ MPI }}-x86_64:2026.03.19
 
 %arguments
+    MPI=openmpi
     MOOSE_JOBS=4
     OPENFOAM_JOBS=0
     OPENFOAM_VERSION=14
@@ -52,16 +53,16 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     export VTKLIB_DIR=/opt/vtk/lib
 
     # MPI
-    export MPI_ROOT=/opt/${MPI}
-    export MPI_ARCH_INC="-I/opt/${MPI}/include"
-    export MPI_ARCH_LIBS="-L/opt/${MPI}/lib -lmpi"
+    export MPI_ROOT=/opt/{{ MPI }}
+    export MPI_ARCH_INC="-I/opt/{{ MPI }}/include"
+    export MPI_ARCH_LIBS="-L/opt/{{ MPI }}/lib -lmpi"
     export LD_LIBRARY_PATH="${MPI_ROOT}/lib:${LD_LIBRARY_PATH}"
     export PATH="${MPI_ROOT}/bin:${PATH}"
     # Compiler
-    export CC=/opt/${MPI}/bin/mpicc
-    export CXX=/opt/${MPI}/bin/mpicxx
-    export F77=/opt/${MPI}/bin/mpif77
-    export F90=/opt/${MPI}/bin/mpif90
+    export CC=/opt/{{ MPI }}/bin/mpicc
+    export CXX=/opt/{{ MPI }}/bin/mpicxx
+    export F77=/opt/{{ MPI }}/bin/mpif77
+    export F90=/opt/{{ MPI }}/bin/mpif90
     export PATH="/opt/rh/gcc-toolset-12/root/usr/bin:${PATH}"
     export CPLUS_INCLUDE_PATH="/opt/rh/gcc-toolset-12/root/usr/include/c++/12:${CPLUS_INCLUDE_PATH}"
     export LD_LIBRARY_PATH="/opt/rh/gcc-toolset-12/root/usr/lib64:/opt/rh/gcc-toolset-12/root/usr/lib:${LD_LIBRARY_PATH}"
@@ -100,7 +101,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-${MPI}-x86_64:2026.03.19
     # So that prefs can be found when not run as root
     cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc
 
-    echo 'export MPI_ROOT=/opt/${MPI}' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
+    echo 'export MPI_ROOT=/opt/{{ MPI }}' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
     echo 'export MPI_ARCH_FLAGS="-DOMPI_SKIP_MPICXX"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
     echo 'export MPI_ARCH_INC="-isystem $MPI_ROOT/include"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
     echo 'export MPI_ARCH_LIBS="-L$MPI_ROOT/lib -lmpi"' >> /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/prefs.sh
