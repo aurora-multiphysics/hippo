@@ -11,21 +11,20 @@ InputParameters
 FoamFixedGradientBC::validParams()
 {
   auto params = FoamVariableBCBase::validParams();
+
   params.addClassDescription("A FoamBC that imposes a fixed gradient boundary condition "
                              "on the OpenFOAM simulation");
   return params;
 }
 
 FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters)
+  : FoamVariableBCBase(parameters, FoamBCType::fixedGradient)
 {
 }
 
 void
 FoamFixedGradientBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
   auto subdomains = _mesh->getSubdomainIDs(_boundary);

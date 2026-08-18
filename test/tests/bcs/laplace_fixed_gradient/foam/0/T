@@ -27,8 +27,8 @@ boundaryField
     }
     right
     {
-        type            fixedGradient;
-        gradient          uniform 1.;
+        type            fixedValue;
+        value           uniform 0.;
     }
     top
     {

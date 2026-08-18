@@ -1,3 +1,4 @@
+#include "FoamBCBase.h"
 #include "FoamDiffusionFluxPostprocessorBC.h"
 #include "FoamPostprocessorBCBase.h"
 #include "PstreamReduceOps.H"
@@ -12,11 +13,13 @@ FoamDiffusionFluxPostprocessorBC::validParams()
   auto params = FoamPostprocessorBCBase::validParams();
   params.addParam<std::string>(
       "diffusivity", "kappa", "Diffusivity for BC, defaults to kappa, the thermal conducitivity.");
+
   return params;
 }
 
 FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params), _diffusivity(getParam<std::string>("diffusivity"))
+  : FoamPostprocessorBCBase(params, FoamBCType::fixedGradient),
+    _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {

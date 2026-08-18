@@ -7,16 +7,25 @@
 #include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
-#include "VariadicTable.h"
+#include <volFieldsFwd.H>
+#include "MooseError.h"
 
-typedef std::tuple<std::string, std::string, std::string, std::string, std::string> BCInfoTableRow;
+typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
+    BCInfoTableRow;
+
+// valid underlying Foam BC types
+enum class FoamBCType
+{
+  fixedValue,
+  fixedGradient
+};
 
 class FoamBCBase : public MooseObject, public Coupleable
 {
 public:
   static InputParameters validParams();
 
-  explicit FoamBCBase(const InputParameters & params);
+  explicit FoamBCBase(const InputParameters & params, const FoamBCType bc_type);
 
   virtual void imposeBoundaryCondition() = 0;
 
@@ -44,6 +53,16 @@ protected:
   // Get the data vector of the MOOSE field on a subdomain
   std::vector<Real> getMooseVariableArray(int subdomain_id);
 
+  // Construct boundary patch for scalar fields
+  void constructFoamScalarPatch(const std::string & patch_name, const FoamBCType bc_type);
+
+  // Update the energy equation, if the temperature field is updated the energy equation must be
+  void
+  updateEnergyPatch(const Foam::volScalarField & var, Foam::label id, const FoamBCType bc_type);
+
+  // Construct boundary patch for vector fields
+  void constructFoamVectorPatch(const std::string & patch_name, const FoamBCType bc_type);
+
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
 
@@ -53,4 +72,7 @@ protected:
   // Boundaries that this object applies to
   // TODO: Replace with inherited from BoundaryRestricted once FoamMesh is updated
   std::vector<SubdomainName> _boundary;
+
+  // Records whether the boundary condition type has been replaced
+  bool _patch_replaced;
 };

@@ -9,11 +9,12 @@ InputParameters
 FoamFixedGradientPostprocessorBC::validParams()
 {
   auto params = FoamPostprocessorBCBase::validParams();
+
   return params;
 }
 
 FoamFixedGradientPostprocessorBC::FoamFixedGradientPostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params)
+  : FoamPostprocessorBCBase(params, FoamBCType::fixedGradient)
 {
 }
 

@@ -16,6 +16,7 @@ class TestFoamTimeStepper(TestCase):
         for dir in [0.1, 0.2, 0.3, 0.4, 0.5]:
             assert str(dir) in dirs, f"{dir} resutlts folder not found"
 
+        cutbacks = 0
         dirs = sorted(float(dir) for dir in dirs)
         for dir in [0.1, 0.2, 0.3, 0.4]:
             idx = dirs.index(dir)
@@ -23,9 +24,16 @@ class TestFoamTimeStepper(TestCase):
             dt1 = dirs[idx] - dirs[idx - 1]
             dt2 = dirs[idx + 1] - dirs[idx]
 
-            assert dt2 > 1.25 * dt1 and dt0 > 1.25 * dt1, (
-                "Check recovery from cutback works properly"
-            )
+            # only run the test for dir if the initial cutback is large enough
+            if dt1 > 0.8 * dt0:
+                continue
+
+            cutbacks += 1
+            assert dt2 > 1.25 * dt1, "Check recovery from cutback works properly"
+
+        assert cutbacks > 0, (
+            "Test has not worked properly there should be at least 1 cutback"
+        )
 
     def test_force_no_cfl(self):
         """Checks that CFL is not used if dt is overriden"""

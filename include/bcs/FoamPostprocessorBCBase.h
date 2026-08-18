@@ -10,7 +10,7 @@ class FoamPostprocessorBCBase : public FoamBCBase, public PostprocessorInterface
 public:
   static InputParameters validParams();
 
-  explicit FoamPostprocessorBCBase(const InputParameters & params);
+  explicit FoamPostprocessorBCBase(const InputParameters & params, const FoamBCType bc_type);
 
   // returns the moose Postprocessor imposed on OpenFOAM
   VariableName moosePostprocessor() const { return _pp_name; }
