@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-15321b4bb7
+From: quay.io/ukaea/hippo:dev-{{ MPI }}-of{{ OPENFOAM_VERSION }}-dad506ddc6
 
 %files
     .git /opt/hippo/.git
@@ -18,13 +18,15 @@ From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-15321b4bb7
 %arguments
     MOOSE_JOBS=4
     MINIMAL=1
+    MPI=openmpi
+    OPENFOAM_VERSION=14
 
 %post
     export MOOSE_DIR=/opt/moose
 
-    source /opt/openfoam/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc || true
-    export FOAM_USER_LIBBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/lib
-    export FOAM_USER_APPBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/bin
+    source /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/bashrc || true
+    export FOAM_USER_LIBBIN=/root/OpenFOAM-{{ OPENFOAM_VERSION }}/lib
+    export FOAM_USER_APPBIN=/root/OpenFOAM-{{ OPENFOAM_VERSION }}/bin
 
     cd /opt/hippo/
     # Restore git repository to pristine state - useful for building locally
@@ -51,9 +53,9 @@ From: quay.io/ukaea/hippo:dev-${MPI}-of${OPENFOAM_VERSION}-15321b4bb7
         echo "WARNING: Potential clash of OpenFOAM environment variables from $HOME/.OpenFOAM/prefs.sh. Consider removing!"
     fi
 
-    source /opt/openfoam/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc
-    export FOAM_USER_LIBBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/lib
-    export FOAM_USER_APPBIN=/root/OpenFOAM-${OPENFOAM_VERSION}/bin
+    source /opt/openfoam/OpenFOAM-{{ OPENFOAM_VERSION }}/etc/bashrc
+    export FOAM_USER_LIBBIN=/root/OpenFOAM-{{ OPENFOAM_VERSION }}/lib
+    export FOAM_USER_APPBIN=/root/OpenFOAM-{{ OPENFOAM_VERSION }}/bin
     export LD_LIBRARY_PATH=${FOAM_USER_LIBBIN}:${LD_LIBRARY_PATH}
     export PATH=${FOAM_USER_APPBIN}:${PATH}
     unset FOAM_SIGFPE
