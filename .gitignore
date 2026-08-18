@@ -279,6 +279,5 @@ conf_vars.mk
 **/lnInclude
 **/Make/linux*
 
-#apptainer definition files
-*.def
+# apptainer image files
 *.sif
