@@ -60,6 +60,7 @@ From: quay.io/ukaea/hippo:dev-{{ MPI }}-of{{ OPENFOAM_VERSION }}-0ec4697e70
     export PATH=${FOAM_USER_APPBIN}:${PATH}
     unset FOAM_SIGFPE
     export PMIX_MCA_gds=hash
+    export CUSTOM_PROMPT="\[\e[00;36m\]hippo-release-{{ MPI }}-of{{ OPENFOAM_VERSION }} \$\[\e[00m\] "
 
 
 %runscript
