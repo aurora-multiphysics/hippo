@@ -33,7 +33,7 @@ jobs:
           pre-commit install
           SKIP=no-commit-to-branch pre-commit run --all
       - name: Build apptainer production container
-        run: sudo apptainer build --build-arg MPI=${{ matrix.mpi }} ${IMAGE_FILE_NAME} apptainer/hippo-release.def
+        run: apptainer build --build-arg MPI=${{ matrix.mpi }} ${IMAGE_FILE_NAME} apptainer/hippo-release.def
       - name: Test production container
         run: |
           apptainer exec --writable-tmpfs ${IMAGE_FILE_NAME} bash -c "cd /opt/hippo && ./run_tests"
@@ -62,7 +62,7 @@ jobs:
           tar -czvf hippo-docs-${{ github.sha }}.tar.gz ${{ github.workspace }}/doc/htmldoc
       - name: Artifact docs for release
         id: docs-artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: hippo-docs-artifact
