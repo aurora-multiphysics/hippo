@@ -5,7 +5,10 @@
 #include "OutputInterface.h"
 
 HippoInterface::HippoInterface(const MooseObject * moose_object)
-  : _foam_problem(extractFoamProblem(moose_object)), _foam_fvmesh(_foam_problem.mesh().fvMesh())
+  : _foam_problem(extractFoamProblem(moose_object)),
+    _mesh(_foam_problem.mesh()),
+    _fv_mesh(_mesh.fvMesh()),
+    _foam_time(const_cast<Foam::Time &>(_fv_mesh.time()))
 {
 }
 
@@ -16,6 +19,6 @@ HippoInterface::extractFoamProblem(const MooseObject * moose_object)
   auto * problem = params.getCheckedPointerParam<FEProblemBase *>("_fe_problem_base");
   auto * foam_problem = dynamic_cast<FoamProblem *>(problem);
   if (!foam_problem)
-    mooseError("This object can only be used with FoamProblem");
+    mooseError(moose_object->name(), " can only be used with FoamProblem");
   return *foam_problem;
 }

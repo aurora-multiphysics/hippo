@@ -21,16 +21,14 @@ FoamFixedGradientPostprocessorBC::FoamFixedGradientPostprocessorBC(const InputPa
 void
 FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-
   // Get subdomains this FoamBC acts on
-  auto subdomains = _mesh->getSubdomainIDs(_boundary);
+  auto subdomains = _mesh.getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    auto & boundary = foam_mesh.boundary()[subdomain];
+    auto & boundary = _fv_mesh.boundary()[subdomain];
     // Get underlying field from OpenFOAM boundary patch.
     auto & foam_gradient =
-        _mesh->getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
+        _mesh.getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
     // If diffusivity_coefficient is specified grad array is a flux, so result
     // must be divided by it

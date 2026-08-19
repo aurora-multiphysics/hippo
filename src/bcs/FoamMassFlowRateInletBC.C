@@ -27,14 +27,12 @@ FoamMassFlowRateInletBC::FoamMassFlowRateInletBC(const InputParameters & params)
 void
 FoamMassFlowRateInletBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
-  auto subdomains = _mesh->getSubdomainIDs(_boundary);
+  auto subdomains = _mesh.getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    const auto & boundary_patch = foam_mesh.boundary()[subdomain];
+    const auto & boundary_patch = _fv_mesh.boundary()[subdomain];
 
     auto & U_var = const_cast<Foam::fvPatchField<Foam::vector> &>(
         boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));

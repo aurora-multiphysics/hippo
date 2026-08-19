@@ -1,12 +1,13 @@
 #pragma once
 
+#include "HippoInterface.h"
 #include "fvCFD_moose.h"
 
 #include "InputParameters.h"
 #include "Postprocessor.h"
 #include "ElementUserObject.h"
 
-class FoamPostprocessorBase : public ElementUserObject, public Postprocessor
+class FoamPostprocessorBase : public ElementUserObject, public Postprocessor, public HippoInterface
 {
 public:
   static InputParameters validParams();
@@ -26,7 +27,4 @@ public:
 
   // Compute postprocessor, to be called within FoamProblem
   virtual void compute() = 0;
-
-protected:
-  Foam::fvMesh * _foam_mesh;
 };

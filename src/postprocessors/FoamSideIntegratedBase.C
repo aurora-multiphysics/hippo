@@ -32,21 +32,21 @@ FoamSideIntegratedBase::integrateValue(const std::string & variable)
   // loop over boundary ids
   for (auto & boundary : _boundary)
   {
-    auto & areas = _foam_mesh->boundary()[boundary].magSf();
+    auto & areas = _fv_mesh.boundary()[boundary].magSf();
     Foam::Field<double> var_array;
 
-    if (_foam_mesh->foundObject<Foam::volVectorField>(variable))
+    if (_fv_mesh.foundObject<Foam::volVectorField>(variable))
     {
       // get vector data associated with the boundary
       auto & vec_data =
-          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(variable);
+          _fv_mesh.boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(variable);
 
       // get the component specified in parameters and get the
       // component of the vector in that direction
       auto components = parameters().get<MooseEnum>("component");
       if (components == "normal")
       {
-        auto && normals = _foam_mesh->boundary()[boundary].nf();
+        auto && normals = _fv_mesh.boundary()[boundary].nf();
         var_array = normals & vec_data;
       }
       else if (components == "magnitude")
@@ -57,7 +57,7 @@ FoamSideIntegratedBase::integrateValue(const std::string & variable)
     else
     {
       var_array =
-          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(variable);
+          _fv_mesh.boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(variable);
     }
 
     // Integrate
@@ -80,7 +80,7 @@ FoamSideIntegratedBase::getArea()
   // loop over boundary ids
   for (auto & boundary : _boundary)
   {
-    auto & areas = _foam_mesh->boundary()[boundary].magSf();
+    auto & areas = _fv_mesh.boundary()[boundary].magSf();
     for (int i = 0; i < areas.size(); ++i)
     {
       area += areas[i];

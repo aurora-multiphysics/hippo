@@ -27,14 +27,14 @@ FoamFixedGradientBC::imposeBoundaryCondition()
 {
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
-  auto subdomains = _mesh->getSubdomainIDs(_boundary);
+  auto subdomains = _mesh.getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
     std::vector<Real> && grad_array = getMooseVariableArray(subdomain);
 
     // Get the gradient associated with the field
     auto & foam_gradient =
-        _mesh->getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
+        _mesh.getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
     assert(grad_array.size() == static_cast<size_t>(foam_gradient.size()));
 
     std::copy(grad_array.begin(), grad_array.end(), foam_gradient.begin());
