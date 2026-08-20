@@ -2,7 +2,7 @@
   [tri]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/triangular.msh && if [ -d 0/polyMesh ]; then mkdir -p constant && mv 0/polyMesh constant/polyMesh; fi && decomposePar"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/triangular.msh && decomposePar"'
     []
     [run]
       type = RunApp
