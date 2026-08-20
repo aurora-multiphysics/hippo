@@ -20,7 +20,7 @@ FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamVar
   auto patch_ids{_mesh.getSubdomainList()};
   Foam::wordList patch_names;
   for (auto id : patch_ids)
-    patch_names.append(mesh.boundary()[id].name());
+    patch_names.append(_fv_mesh.boundary()[id].name());
 
   fo_dict.set("patches", patch_names);
   fo_dict.set("writeToFile", false);
