@@ -93,8 +93,8 @@ findMooseDeltaT(Foam::Time & time)
 } // namespace
 
 /**
- * This was copied from 'applications/solvers/foamRun/foamRun.C' OpenFOAM-12
- * revision 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6. Modifications made:
+ * This was copied from 'applications/solvers/foamRun/foamRun.C' OpenFOAM-14
+ * revision 9971c8c5028f3924400d82c454c4d9ad750cad3e. Modifications made:
  *   - We already have a solver, mesh, and runtime, so the construction of them
  * was removed.
  *   - The outer pimple-loop was removed so we're only running one timestep at a
