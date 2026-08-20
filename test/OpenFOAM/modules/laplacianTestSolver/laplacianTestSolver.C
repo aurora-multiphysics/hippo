@@ -24,7 +24,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "dimensionSet.H"
-#include "dimensionSets.H"
 #include "dimensionedType.H"
 #include "laplacianTestSolver.H"
 #include "fvcSurfaceIntegrate.H"
@@ -51,28 +50,10 @@ addToRunTimeSelectionTable(solver, laplacianTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::laplacianTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::laplacianTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::solvers::laplacianTestSolver::laplacianTestSolver(fvMesh & mesh)
-  : solver(mesh),
+  : baseTestSolver(mesh),
     T_(IOobject("T", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh),
     kappa_(IOobject("kappa", mesh.time().name(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
            mesh,
@@ -99,21 +80,6 @@ Foam::solvers::laplacianTestSolver::preSolve()
 
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
-}
-
-void
-Foam::solvers::laplacianTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
 }
 
 void

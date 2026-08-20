@@ -23,7 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "dimensionSets.H"
 #include "fvMesh.H"
 #include "bcTestSolver.H"
 #include "fvMeshMover.H"
@@ -46,28 +45,10 @@ addToRunTimeSelectionTable(solver, bcTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::bcTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::bcTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 // Solver based on solid.C module
 Foam::solvers::bcTestSolver::bcTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr)
-  : solver(mesh),
+  : baseTestSolver(mesh),
 
     thermoPtr_(thermoPtr),
     thermo_(thermoPtr_()),
@@ -88,18 +69,7 @@ Foam::solvers::bcTestSolver::bcTestSolver(fvMesh & mesh)
   read();
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::solvers::bcTestSolver::~bcTestSolver() {}
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::scalar
-Foam::solvers::bcTestSolver::maxDeltaT() const
-{
-  return min(fvModels().maxDeltaT(), maxDeltaT_);
-}
-
 void
 Foam::solvers::bcTestSolver::preSolve()
 {
@@ -107,36 +77,6 @@ Foam::solvers::bcTestSolver::preSolve()
 
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
-}
-
-void
-Foam::solvers::bcTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
-}
-
-void
-Foam::solvers::bcTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::bcTestSolver::prePredictor()
-{
-}
-
-void
-Foam::solvers::bcTestSolver::momentumPredictor()
-{
 }
 
 void
@@ -148,21 +88,6 @@ Foam::solvers::bcTestSolver::thermophysicalPredictor()
 
   thermo.he().write();
   thermo_.correct();
-}
-
-void
-Foam::solvers::bcTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::bcTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::bcTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //

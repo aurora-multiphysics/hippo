@@ -2,7 +2,7 @@
   [tri]
     [setup]
       type = RunCommand
-      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/triangular.msh && decomposePar"'
+      command = 'bash -c "cd fluid-openfoam && ./Allclean && fluentMeshToFoam constant/triangular.msh && mv 0/polyMesh constant/ && decomposePar"'
     []
     [run]
       type = RunApp
@@ -17,7 +17,7 @@
     [run_distributed]
       type = RunApp
       input = run.i
-      prereq = tri/setup
+      prereq = tri/verify
       min_parallel=2
       max_parallel=2
       cli_args='--distributed-mesh'
@@ -25,6 +25,7 @@
     [reconstruct]
       type = RunCommand
       command = 'bash -c "reconstructPar -case fluid-openfoam"'
+      prereq = tri/run_distributed
     []
     [verify_distributed]
       type = PythonUnitTest

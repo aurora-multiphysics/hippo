@@ -13,7 +13,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solver          postprocessorTestSolver;
+solver          postprocessorTest;
 
 startFrom       startTime;
 

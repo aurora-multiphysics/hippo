@@ -7,10 +7,11 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 STRIP_SOURCES=0
 BUILD_JOBS=""
 QUIET_COMPILATION=0
+VERSION=14
 OUT_DIR="$(dirname "${SCRIPT_DIR}")/external/openfoam"
 USAGE="usage: install-openfoam.sh [-h] [-q] [-s] [-j JOBS] [-o DIRECTORY]
 
-Install OpenFOAM-12 for Ubuntu, applying the patch required by hippo.
+Install OpenFOAM-14 for Ubuntu, applying the patch required by hippo.
 
 Note that you will need to install OpenFOAM's requirements separately.
 You can do this by running:
@@ -33,6 +34,7 @@ options:
                   hippo
   -j              set the number of build jobs, no limit by default. Pass 0 for
                   no limit
+  -v              Version of OpenFOAM to use
   -q              run compilations in silent/quiet mode
   -h              show help and exit
 "
@@ -45,10 +47,11 @@ for REQ in "${SCRIPT_REQUIREMENTS[@]}"; do
     fi
 done
 
-while getopts "o:j:sqh" opt; do
+while getopts "o:j:v:sqh" opt; do
     case "${opt}" in
         o) OUT_DIR="${OPTARG}" ;;
         j) BUILD_JOBS="${OPTARG}" ;;
+        v) VERSION="${OPTARG}" ;;
         s) STRIP_SOURCES=1 ;;
         q) QUIET_COMPILATION=1 ;;
         h) echo "${USAGE}" && exit 0 ;;
@@ -61,23 +64,20 @@ if [ "${BUILD_JOBS}" = "0" ]; then
     BUILD_JOBS=""
 fi;
 
-OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-12"
-OPENFOAM_REV="9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6"
-THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-12"
-THIRDPARTY_REV="cab725f5e7929e8f5ec35c54edc493a822355235"
+OPENFOAM_DIR="${OUT_DIR}/OpenFOAM-${VERSION}"
+THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-${VERSION}"
 
 # Fetch and patch OpenFOAM
 mkdir -p "${OPENFOAM_DIR}"
 if [ ! -d "${OPENFOAM_DIR}/.git" ]; then
-    git clone https://github.com/OpenFOAM/OpenFOAM-12.git "${OPENFOAM_DIR}"
+    git clone --depth=1 https://github.com/OpenFOAM/OpenFOAM-${VERSION}.git "${OPENFOAM_DIR}"
 fi
-git -C "${OPENFOAM_DIR}" reset --hard "${OPENFOAM_REV}"
 git -C "${OPENFOAM_DIR}" apply "${SCRIPT_DIR}/openfoam.patch"
 
 # Set up OpenFOAM
 source "${OPENFOAM_DIR}/etc/bashrc" || true
 
-echo "Hippo installing OpenFOAM-12 with options:"
+echo "Hippo installing OpenFOAM-${VERSION} with options:"
 echo "------------------------------------------"
 echo "  WM_ARCH_OPTION:      ${WM_ARCH_OPTION}"
 echo "  WM_COMPILE_OPTION:   ${WM_COMPILE_OPTION}"
@@ -95,9 +95,8 @@ fi
 
 mkdir -p "${THIRDPARTY_DIR}"
 if [ ! -d "${THIRDPARTY_DIR}/.git" ]; then
-    git clone https://github.com/OpenFOAM/ThirdParty-12.git "${THIRDPARTY_DIR}"
+    git clone --depth=1 https://github.com/OpenFOAM/ThirdParty-${VERSION}.git "${THIRDPARTY_DIR}"
 fi
-git -C "${THIRDPARTY_DIR}" reset --hard "${THIRDPARTY_REV}"
 (
     cd "${THIRDPARTY_DIR}" \
     && ${ALLWMAKE}

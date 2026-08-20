@@ -36,6 +36,7 @@ namespace
  * This was copied (with some minor adjustments) from
  * 'applications/solvers/foamRun/setDeltaT.C' OpenFOAM-12 revision
  * 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6.
+ * No changes for OpenFOAM-14
  */
 void
 adjustDeltaT(Foam::Time & runTime, const Foam::solver & solver)
@@ -57,6 +58,7 @@ adjustDeltaT(Foam::Time & runTime, const Foam::solver & solver)
  * This was copied (with some minor adjustments) from
  * 'applications/solvers/foamRun/setDeltaT.C' OpenFOAM-12 revision
  * 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6.
+ * No changes for OpenFOAM-14
  */
 void
 setDeltaT(Foam::Time & runTime, const Foam::solver & solver)
@@ -91,8 +93,8 @@ findMooseDeltaT(Foam::Time & time)
 } // namespace
 
 /**
- * This was copied from 'applications/solvers/foamRun/foamRun.C' OpenFOAM-12
- * revision 9ec94dd57a8d98c3f3422ce9b2156a8b268bbda6. Modifications made:
+ * This was copied from 'applications/solvers/foamRun/foamRun.C' OpenFOAM-14
+ * revision 9971c8c5028f3924400d82c454c4d9ad750cad3e. Modifications made:
  *   - We already have a solver, mesh, and runtime, so the construction of them
  * was removed.
  *   - The outer pimple-loop was removed so we're only running one timestep at a
@@ -131,14 +133,59 @@ FoamSolver::run()
   // PIMPLE corrector loop
   while (pimple.loop())
   {
-    solver.moveMesh();
-    solver.motionCorrector();
-    solver.fvModels().correct();
+    if (solver.pimple.flow())
+    {
+      solver.moveMesh();
+      solver.motionCorrector();
+    }
+
+    if (solver.pimple.models())
+    {
+      solver.fvModels().correct();
+    }
+
     solver.prePredictor();
-    solver.momentumPredictor();
-    solver.thermophysicalPredictor();
-    solver.pressureCorrector();
-    solver.postCorrector();
+
+    if (solver.pimple.predictTransport())
+    {
+      if (solver.pimple.flow())
+      {
+        solver.momentumTransportPredictor();
+      }
+
+      if (solver.pimple.thermophysics())
+      {
+        solver.thermophysicalTransportPredictor();
+      }
+    }
+
+    if (solver.pimple.flow())
+    {
+      solver.momentumPredictor();
+    }
+
+    if (solver.pimple.thermophysics())
+    {
+      solver.thermophysicalPredictor();
+    }
+
+    if (solver.pimple.flow())
+    {
+      solver.pressureCorrector();
+    }
+
+    if (solver.pimple.correctTransport())
+    {
+      if (solver.pimple.flow())
+      {
+        solver.momentumTransportCorrector();
+      }
+
+      if (solver.pimple.thermophysics())
+      {
+        solver.thermophysicalTransportCorrector();
+      }
+    }
   }
 
   solver.postSolve();
@@ -146,8 +193,7 @@ FoamSolver::run()
   time.write();
 
   std::cout << "ExecutionTime = " << time.elapsedCpuTime() << " s"
-            << "  ClockTime = " << time.elapsedClockTime() << " s"
-            << "\n"
+            << "  ClockTime = " << time.elapsedClockTime() << " s" << "\n"
             << std::endl;
 }
 

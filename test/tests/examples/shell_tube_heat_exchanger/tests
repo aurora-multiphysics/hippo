@@ -1,0 +1,21 @@
+[Tests]
+  [setup]
+    type = RunCommand
+    command = "bash -c './prep.sh'"
+  []
+  [run]
+    type = Exodiff
+    input = solid.i
+    cli_args = 'Executioner/end_time=2'
+    prereq = setup
+    min_parallel = 4
+    max_parallel = 4
+    exodiff = solid_out.e
+    exodiff_opts = '-f test/tests/examples/shell_tube_heat_exchanger/exodiff_filter.txt'
+  []
+  [cleanup]
+    type = RunCommand
+    command = "bash -c './clean_test_case.sh'"
+    prereq = run
+  []
+[]

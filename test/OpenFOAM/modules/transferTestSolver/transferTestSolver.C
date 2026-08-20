@@ -23,7 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "dimensionSets.H"
 #include "fvMesh.H"
 #include "transferTestSolver.H"
 #include "fvMeshMover.H"
@@ -44,28 +43,10 @@ addToRunTimeSelectionTable(solver, transferTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::transferTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::transferTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 // Solver based on solid.C module
 Foam::solvers::transferTestSolver::transferTestSolver(fvMesh & mesh, autoPtr<solidThermo> thermoPtr)
-  : solver(mesh),
+  : baseTestSolver(mesh),
 
     thermoPtr_(thermoPtr),
     thermo_(thermoPtr_()),
@@ -86,10 +67,6 @@ Foam::solvers::transferTestSolver::transferTestSolver(fvMesh & mesh)
   read();
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::solvers::transferTestSolver::~transferTestSolver() {}
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 Foam::scalar
@@ -108,37 +85,7 @@ Foam::solvers::transferTestSolver::preSolve()
 }
 
 void
-Foam::solvers::transferTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
-}
-
-void
-Foam::solvers::transferTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::transferTestSolver::prePredictor()
-{
-}
-
-void
-Foam::solvers::transferTestSolver::momentumPredictor()
-{
-}
-
-void
-Foam::solvers::transferTestSolver::thermophysicalPredictor()
+Foam::solvers::transferTestSolver::thermophysicalTransportPredictor()
 {
   // To set temperature for testing, internal energy must be set. The
   // thermo_.correct() call calculates Temperature.
@@ -158,21 +105,6 @@ Foam::solvers::transferTestSolver::thermophysicalPredictor()
                 t);
 
   thermo_.correct();
-}
-
-void
-Foam::solvers::transferTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::transferTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::transferTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //

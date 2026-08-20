@@ -50,3 +50,4 @@
 #include <functionObjects/field/wallShearStress/wallShearStress.H>
 
 #undef NotImplemented
+#undef FunctionName

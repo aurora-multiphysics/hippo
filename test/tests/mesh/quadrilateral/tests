@@ -17,7 +17,7 @@
     [run_distributed]
       type = RunApp
       input = run.i
-      prereq = quad/setup
+      prereq = quad/verify
       min_parallel=2
       max_parallel=2
       cli_args='--distributed-mesh'
@@ -25,6 +25,7 @@
     [reconstruct]
       type = RunCommand
       command = 'bash -c "reconstructPar -case fluid-openfoam"'
+      prereq = quad/run_distributed
     []
     [verify_distributed]
       type = PythonUnitTest

@@ -183,8 +183,8 @@ struct is_geometric_field : std::false_type
 {
 };
 
-template <typename Type, template <class> class Patch, typename Mesh>
-struct is_geometric_field<Foam::GeometricField<Type, Patch, Mesh>> : std::true_type
+template <typename Type, typename Mesh, template <class> class Patch>
+struct is_geometric_field<Foam::GeometricField<Type, Mesh, Patch>> : std::true_type
 {
 };
 
@@ -214,7 +214,8 @@ removeOldTime(Foam::fvMesh & mesh, T & field)
     {
       // otbf is set in the setBase functions of the OldTimeField. This is mirrored here
       // in order to null it.
-      auto & otbf = const_cast<typename T::Base::OldTime &>(Foam::OldTimeBaseFieldType<T>()(field));
+      auto & otbf = const_cast<Foam::OldTimeField<typename T::Base> &>(
+          Foam::OldTimeBaseFieldType<T>()(field));
       otbf.clearOldTimes();
       otbf.nullOldestTime();
     }
@@ -334,9 +335,9 @@ dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
   storeFields<Foam::surfaceTensorField, false>(stream, mesh, dbg_field_list);
   storeFields<Foam::surfaceSymmTensorField, false>(stream, mesh, dbg_field_list);
 
-  storeFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>, true>(
+  storeFields<Foam::DimensionedField<Foam::scalar, Foam::fvMesh>, true>(
       stream, mesh, dbg_field_list);
-  storeFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>, true>(
+  storeFields<Foam::DimensionedField<Foam::vector, Foam::fvMesh>, true>(
       stream, mesh, dbg_field_list);
   storeFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>, true>(
       stream, mesh, dbg_field_list);
@@ -368,8 +369,8 @@ dataLoad(std::istream & stream, Foam::fvMesh & mesh, void * context)
   loadFields<Foam::surfaceTensorField>(stream, mesh);
   loadFields<Foam::surfaceSymmTensorField>(stream, mesh);
 
-  loadFields<Foam::DimensionedField<Foam::scalar, Foam::volMesh>>(stream, mesh);
-  loadFields<Foam::DimensionedField<Foam::vector, Foam::volMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::scalar, Foam::fvMesh>>(stream, mesh);
+  loadFields<Foam::DimensionedField<Foam::vector, Foam::fvMesh>>(stream, mesh);
   loadFields<Foam::DimensionedField<Foam::scalar, Foam::surfaceMesh>>(stream, mesh);
   loadFields<Foam::DimensionedField<Foam::vector, Foam::surfaceMesh>>(stream, mesh);
 
