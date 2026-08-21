@@ -3,11 +3,15 @@
 #include "InputParameters.h"
 #include "MooseObject.h"
 #include <fvMesh.H>
-#include <string>
 
 class FoamProblem;
 class FoamMesh;
 
+/*
+HippoInterface is a base class containing convenient access to common
+Hippo and Foam objects such as Foam::Time, Foam::fvMesh and
+FoamProblem.
+*/
 class HippoInterface
 {
 public:
