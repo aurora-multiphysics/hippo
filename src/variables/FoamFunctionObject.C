@@ -11,18 +11,16 @@ registerMooseObject("hippoApp", FoamFunctionObject);
 
 FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamVariableField(params)
 {
-  auto & mesh = _mesh->fvMesh();
-
   // construct input Foam dictionary for the functionObject
-  auto fo_dict = mesh.time().controlDict().lookupOrDefault(_foam_variable, Foam::dictionary());
+  auto fo_dict = _foam_time.controlDict().lookupOrDefault(_foam_variable, Foam::dictionary());
 
   // create patch names where functionObject applies
   // TODO: when volumetric mirror is implemented some of this may need to be
   // put in the _getFunctionObject function.
-  auto patch_ids{_mesh->getSubdomainList()};
+  auto patch_ids{_mesh.getSubdomainList()};
   Foam::wordList patch_names;
   for (auto id : patch_ids)
-    patch_names.append(mesh.boundary()[id].name());
+    patch_names.append(_fv_mesh.boundary()[id].name());
 
   fo_dict.set("patches", patch_names);
   fo_dict.set("writeToFile", false);
@@ -39,7 +37,7 @@ FoamFunctionObject::_getFunctionObject(Foam::dictionary fo_dict)
   if (_foam_variable == "wallHeatFlux")
   {
     Foam::functionObjects::wallHeatFlux * whf_func =
-        new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _mesh->fvMesh().time(), fo_dict);
+        new Foam::functionObjects::wallHeatFlux("wallHeatFlux", _foam_time, fo_dict);
     return static_cast<Foam::functionObject *>(whf_func);
   }
   else

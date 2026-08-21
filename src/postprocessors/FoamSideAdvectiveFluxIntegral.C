@@ -22,10 +22,10 @@ FoamSideAdvectiveFluxIntegral::FoamSideAdvectiveFluxIntegral(const InputParamete
     _advection_velocity(params.get<std::string>("advective_velocity"))
 {
 
-  if (!_foam_mesh->foundObject<Foam::volScalarField>(_foam_scalar))
+  if (!_fv_mesh.foundObject<Foam::volScalarField>(_foam_scalar))
     mooseError("foam_scalar '", _foam_scalar, "' not found.");
 
-  if (!_foam_mesh->foundObject<Foam::volVectorField>(_advection_velocity))
+  if (!_fv_mesh.foundObject<Foam::volVectorField>(_advection_velocity))
     mooseError("advective_velocity '", _advection_velocity, "' not found.");
 }
 
@@ -36,15 +36,13 @@ FoamSideAdvectiveFluxIntegral::compute()
   for (auto & boundary : _boundary)
   {
     auto & var_array =
-        _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(
-            _foam_scalar);
+        _fv_mesh.boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(_foam_scalar);
 
-    auto & vel_array =
-        _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(
-            _advection_velocity);
+    auto & vel_array = _fv_mesh.boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(
+        _advection_velocity);
 
-    auto & areas = _foam_mesh->boundary()[boundary].magSf();
-    auto && normals = _foam_mesh->boundary()[boundary].nf();
+    auto & areas = _fv_mesh.boundary()[boundary].magSf();
+    auto && normals = _fv_mesh.boundary()[boundary].nf();
 
     // integrate locally
     for (int i = 0; i < var_array.size(); ++i)

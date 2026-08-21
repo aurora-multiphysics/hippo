@@ -1,6 +1,7 @@
 
 #include "FoamBCBase.h"
 #include "FoamProblem.h"
+#include "HippoInterface.h"
 
 #include <Coupleable.h>
 #include <InputParameters.h>
@@ -51,23 +52,18 @@ FoamBCBase::validParams()
 FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
   : MooseObject(params),
     Coupleable(this, false),
+    HippoInterface(this),
     _foam_variable(params.get<std::string>("foam_variable")),
     _boundary(params.get<std::vector<SubdomainName>>("boundary")),
     _patch_replaced(false)
 {
-  auto * problem = dynamic_cast<FoamProblem *>(&_c_fe_problem);
-  if (!problem)
-    mooseError("FoamBC system can only be used with FoamProblem");
-
-  _mesh = &problem->mesh();
-
   // check that the foam variable exists
   if (!params.isPrivate("foam_variable") &&
-      !_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
+      !_mesh.foamHasObject<Foam::volScalarField>(_foam_variable))
     mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
 
   // check that the boundary is in the FoamMesh
-  auto all_subdomain_names = _mesh->getSubdomainNames(_mesh->getSubdomainList());
+  auto all_subdomain_names = _mesh.getSubdomainNames(_mesh.getSubdomainList());
   for (auto subdomain : _boundary)
   {
     auto it = std::find(all_subdomain_names.begin(), all_subdomain_names.end(), subdomain);
@@ -80,9 +76,9 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
 
   for (auto subdomain : _boundary)
   {
-    if (_mesh->foamHasObject<Foam::volScalarField>(_foam_variable))
+    if (_mesh.foamHasObject<Foam::volScalarField>(_foam_variable))
       constructFoamScalarPatch(subdomain, bc_type);
-    else if (_mesh->foamHasObject<Foam::volVectorField>(_foam_variable))
+    else if (_mesh.foamHasObject<Foam::volVectorField>(_foam_variable))
       constructFoamVectorPatch(subdomain, bc_type);
     else
       mooseError("Variable must have type scalar or vector.");
@@ -92,9 +88,8 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
 void
 FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const FoamBCType bc_type)
 {
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & var = foam_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
-  Foam::label id = foam_mesh.boundary().findIndex(patch_name);
+  auto & var = _fv_mesh.lookupObjectRef<Foam::volScalarField>(_foam_variable);
+  Foam::label id = _fv_mesh.boundary().findIndex(patch_name);
 
   if (bc_type_to_string(bc_type) == var.boundaryField()[id].type())
     return;
@@ -116,7 +111,7 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const FoamB
   var.boundaryFieldRef().set(
       id,
       Foam::fvPatchField<Foam::scalar>::New(
-          foam_mesh.boundary()[id], var.boundaryField()[id].internalField(), bcDict));
+          _fv_mesh.boundary()[id], var.boundaryField()[id].internalField(), bcDict));
 
   // If temperature is replaced, internal energy or enthalpy typically needs replacing.
   updateEnergyPatch(var, id, bc_type);
@@ -125,9 +120,8 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const FoamB
 void
 FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const FoamBCType bc_type)
 {
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & var = foam_mesh.lookupObjectRef<Foam::volVectorField>(_foam_variable);
-  Foam::label id = foam_mesh.boundary().findIndex(patch_name);
+  auto & var = _fv_mesh.lookupObjectRef<Foam::volVectorField>(_foam_variable);
+  Foam::label id = _fv_mesh.boundary().findIndex(patch_name);
 
   if (bc_type_to_string(bc_type) == var.boundaryField()[id].type())
     return;
@@ -147,7 +141,7 @@ FoamBCBase::constructFoamVectorPatch(const std::string & patch_name, const FoamB
 
   var.boundaryFieldRef().set(
       id,
-      Foam::fvPatchField<Foam::vector>::New(foam_mesh.boundary()[id], var.internalField(), bcDict));
+      Foam::fvPatchField<Foam::vector>::New(_fv_mesh.boundary()[id], var.internalField(), bcDict));
 }
 
 void
@@ -156,7 +150,7 @@ FoamBCBase::updateEnergyPatch(const Foam::volScalarField & var,
                               const FoamBCType bc_type)
 {
 
-  auto thermos = var.mesh().lookupClass<Foam::basicThermo>();
+  auto thermos = _fv_mesh.lookupClass<Foam::basicThermo>();
 
   for (const auto & item : thermos)
   {

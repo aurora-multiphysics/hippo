@@ -74,14 +74,14 @@ FoamVariableBCBase::variableValueAtElement(const libMesh::Elem & elem) const
 std::vector<Real>
 FoamVariableBCBase::getMooseVariableArray(int subdomainId) const
 {
-  size_t patch_count = _mesh->getPatchCount(subdomainId);
-  size_t patch_offset = _mesh->getPatchOffset(subdomainId);
+  size_t patch_count = _mesh.getPatchCount(subdomainId);
+  size_t patch_offset = _mesh.getPatchOffset(subdomainId);
 
   std::vector<Real> var_array(patch_count);
   for (size_t j = 0; j < patch_count; ++j)
   {
     auto elem = patch_offset + j;
-    const auto elem_ptr = _mesh->getElemPtr(elem + _mesh->rank_element_offset);
+    const auto elem_ptr = _mesh.getElemPtr(elem + _mesh.rank_element_offset);
     assert(elem_ptr);
     var_array[j] = variableValueAtElement(*elem_ptr);
   }

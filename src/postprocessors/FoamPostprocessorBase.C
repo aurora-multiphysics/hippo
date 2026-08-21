@@ -1,5 +1,6 @@
 #include "FoamMesh.h"
 #include "FoamPostprocessorBase.h"
+#include "HippoInterface.h"
 #include "InputParameters.h"
 #include "Postprocessor.h"
 #include "ElementUserObject.h"
@@ -14,13 +15,8 @@ FoamPostprocessorBase::validParams()
 }
 
 FoamPostprocessorBase::FoamPostprocessorBase(const InputParameters & params)
-  : ElementUserObject(params), Postprocessor(this), _foam_mesh(nullptr)
+  : ElementUserObject(params), Postprocessor(this), HippoInterface(this)
 {
-  FoamProblem * problem = dynamic_cast<FoamProblem *>(&getSubProblem());
-  if (!problem)
-    mooseError("Foam-based Postprocessors can only be used with FoamProblem");
-
-  _foam_mesh = &problem->mesh().fvMesh();
 }
 
 void
