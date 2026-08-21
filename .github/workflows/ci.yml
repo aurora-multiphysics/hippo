@@ -42,6 +42,7 @@ jobs:
           apptainer exec --writable-tmpfs ${IMAGE_FILE_NAME} bash -c "cd /opt/hippo/unit && ./run_tests"
       - name: Docs
         shell: bash
+        if: ${{ matrix.mpi == 'openmpi' }}
         run: |
           apptainer exec ${IMAGE_FILE_NAME} bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
           [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
@@ -53,15 +54,18 @@ jobs:
           path: ${{ env.IMAGE_FILE_NAME }}
       - name: Artifact docs for pages
         id: deployment
+        if: ${{ matrix.mpi == 'openmpi' }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ github.workspace }}/doc/htmldoc
       - name: Compress docs for release artifact
         shell: bash
+        if: ${{ matrix.mpi == 'openmpi' }}
         run: |
           tar -czvf hippo-docs-${{ github.sha }}.tar.gz ${{ github.workspace }}/doc/htmldoc
       - name: Artifact docs for release
         id: docs-artifact
+        if: ${{ matrix.mpi == 'openmpi' }}
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
