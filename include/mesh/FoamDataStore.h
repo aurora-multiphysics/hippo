@@ -189,52 +189,6 @@ struct is_geometric_field<Foam::GeometricField<Type, Mesh, Patch>> : std::true_t
 };
 
 template <typename T>
-void
-removeOldTime(Foam::fvMesh & mesh, T & field)
-{
-  // This is required for Hippo to behave the exact same as OpenFOAM when using
-  // fixed-point iteration. The differences only affect the fvc::ddt calls on the first
-  // time step. In OpenFOAM, on the first timestep fvc::ddt calls return 0. However,
-  // on the second fixed-point they don't unless the old time base field is cleared, but
-  // this results in an internal OpenFOAM error for some time schemes.
-  // Schemes known to work:
-  //   - Euler (implicit)
-  // Schemes known not to work
-  //   - Crank-Nicolson
-  // Current behaviour do not clear the old time base field for CN even though this would result in
-  // a small error compared to not using fixed-point. Potentially add warning.
-  auto scheme = Foam::fv::ddtScheme<typename T::cmptType>::New(
-                    mesh, mesh.schemes().ddt("ddt(" + field.name() + ')'))
-                    ->type();
-
-  if (scheme == "Euler")
-  {
-    // Only geometric fields have a base field
-    if constexpr (is_geometric_field<T>::value)
-    {
-      // otbf is set in the setBase functions of the OldTimeField. This is mirrored here
-      // in order to null it.
-      auto & otbf = const_cast<Foam::OldTimeField<typename T::Base> &>(
-          Foam::OldTimeBaseFieldType<T>()(field));
-      otbf.clearOldTimes();
-      otbf.nullOldestTime();
-    }
-    field.clearOldTimes();
-  }
-  else
-  {
-    mooseDoOnce(mooseWarning("Temporal scheme '",
-                             scheme,
-                             "' may result in slightly different behaviour on the first time step "
-                             "when using fixed-point iteration. See comments above ",
-                             __LINE__,
-                             " in file ",
-                             __FILE__,
-                             " for more details."));
-  }
-}
-
-template <typename T>
 inline void
 loadFields(std::istream & stream, Foam::fvMesh & mesh)
 {
@@ -251,7 +205,7 @@ loadFields(std::istream & stream, Foam::fvMesh & mesh)
     // fields which haven't been stored being used on the first time step.
     if (mesh.time().timeIndex() == 0)
     {
-      removeOldTime(mesh, field);
+      field.clearOldTimes();
       if (mesh.time().timeIndex() != field.timeIndex())
       {
         mesh.checkOut(field);
