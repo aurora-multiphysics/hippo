@@ -70,7 +70,7 @@ THIRDPARTY_DIR="${OUT_DIR}/ThirdParty-${VERSION}"
 # Fetch and patch OpenFOAM
 mkdir -p "${OPENFOAM_DIR}"
 if [ ! -d "${OPENFOAM_DIR}/.git" ]; then
-    git clone --depth=1 https://github.com/OpenFOAM/OpenFOAM-${VERSION}.git "${OPENFOAM_DIR}"
+    git clone --depth=1 -b version-${VERSION} https://github.com/OpenFOAM/OpenFOAM-${VERSION}.git "${OPENFOAM_DIR}"
 fi
 git -C "${OPENFOAM_DIR}" apply "${SCRIPT_DIR}/openfoam.patch"
 
@@ -95,7 +95,7 @@ fi
 
 mkdir -p "${THIRDPARTY_DIR}"
 if [ ! -d "${THIRDPARTY_DIR}/.git" ]; then
-    git clone --depth=1 https://github.com/OpenFOAM/ThirdParty-${VERSION}.git "${THIRDPARTY_DIR}"
+    git clone --depth=1 -b version-${VERSION} https://github.com/OpenFOAM/ThirdParty-${VERSION}.git "${THIRDPARTY_DIR}"
 fi
 (
     cd "${THIRDPARTY_DIR}" \
