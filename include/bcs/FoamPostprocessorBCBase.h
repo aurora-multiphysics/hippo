@@ -10,12 +10,10 @@ class FoamPostprocessorBCBase : public FoamBCBase, public PostprocessorInterface
 public:
   static InputParameters validParams();
 
-  explicit FoamPostprocessorBCBase(const InputParameters & params, const FoamBCType bc_type);
+  explicit FoamPostprocessorBCBase(const InputParameters & params);
 
   // returns the moose Postprocessor imposed on OpenFOAM
   VariableName moosePostprocessor() const { return _pp_name; }
-
-  virtual void initialSetup() override {};
 
   virtual BCInfoTableRow getInfoRow() const override;
 

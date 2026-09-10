@@ -19,8 +19,7 @@ FoamMassFlowRateInletBC::validParams()
 }
 
 FoamMassFlowRateInletBC::FoamMassFlowRateInletBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params, FoamBCType::fixedValue),
-    _scale_factor(params.get<Real>("scale_factor"))
+  : FoamPostprocessorBCBase(params), _scale_factor(params.get<Real>("scale_factor"))
 {
 }
 

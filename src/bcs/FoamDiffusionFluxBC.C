@@ -24,8 +24,7 @@ FoamDiffusionFluxBC::validParams()
 }
 
 FoamDiffusionFluxBC::FoamDiffusionFluxBC(const InputParameters & params)
-  : FoamVariableBCBase(params, FoamBCType::fixedGradient),
-    _diffusivity(getParam<std::string>("diffusivity"))
+  : FoamVariableBCBase(params), _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!getFvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {

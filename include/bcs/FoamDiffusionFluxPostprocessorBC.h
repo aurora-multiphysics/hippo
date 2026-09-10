@@ -14,6 +14,8 @@ public:
   virtual void imposeBoundaryCondition() override;
 
 protected:
+  void constructFoamPatch(Foam::label patch_id) override { constructFixedGradientPatch(patch_id); }
+
   // name of diffusivity coefficient used to divide flux
   std::string _diffusivity;
 };

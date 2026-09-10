@@ -13,5 +13,7 @@ public:
   virtual void imposeBoundaryCondition() override;
 
 protected:
+  void constructFoamPatch(Foam::label patch_id) override { constructFixedValuePatch(patch_id); }
+
   const Real _scale_factor;
 };

@@ -12,4 +12,7 @@ public:
 
   // impose boundary condition
   virtual void imposeBoundaryCondition() override;
+
+protected:
+  void constructFoamPatch(Foam::label patch_id) override { constructFixedGradientPatch(patch_id); }
 };

@@ -5,8 +5,10 @@ class FoamTestBC : public FoamVariableBCBase
 {
 public:
   static InputParameters validParams();
-  explicit FoamTestBC(const InputParameters & params)
-    : FoamVariableBCBase(params, FoamBCType::fixedValue) {};
+  explicit FoamTestBC(const InputParameters & params) : FoamVariableBCBase(params) {};
 
-  void imposeBoundaryCondition() {};
+  void imposeBoundaryCondition() override {};
+
+protected:
+  void constructFoamPatch(Foam::label patch_id) override;
 };

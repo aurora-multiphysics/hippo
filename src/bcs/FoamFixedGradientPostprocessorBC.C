@@ -14,7 +14,7 @@ FoamFixedGradientPostprocessorBC::validParams()
 }
 
 FoamFixedGradientPostprocessorBC::FoamFixedGradientPostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params, FoamBCType::fixedGradient)
+  : FoamPostprocessorBCBase(params)
 {
 }
 
