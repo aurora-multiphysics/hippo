@@ -19,7 +19,7 @@ FoamFixedGradientPostprocessorBC::FoamFixedGradientPostprocessorBC(const InputPa
 }
 
 void
-FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
+FoamFixedGradientPostprocessorBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
@@ -31,6 +31,6 @@ FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
 
     // If diffusivity_coefficient is specified grad array is a flux, so result
     // must be divided by it
-    updateBC(foam_gradient, _pp_value);
+    updateBC(foam_gradient, _pp_value, initialisation);
   }
 }

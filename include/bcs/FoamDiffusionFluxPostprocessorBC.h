@@ -11,7 +11,7 @@ public:
   FoamDiffusionFluxPostprocessorBC(const InputParameters & params);
 
   // impose boundary condition
-  virtual void imposeBoundaryCondition() override;
+  virtual void imposeBoundaryCondition(bool initialisation = false) override;
 
 protected:
   void constructFoamPatch(Foam::label patch_id) override { constructFixedGradientPatch(patch_id); }

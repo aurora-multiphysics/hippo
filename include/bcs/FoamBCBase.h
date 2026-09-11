@@ -19,7 +19,7 @@ public:
 
   explicit FoamBCBase(const InputParameters & params);
 
-  virtual void imposeBoundaryCondition() = 0;
+  virtual void imposeBoundaryCondition(bool initialisation = false) = 0;
 
   // returns foam variable BC applies to
   std::string foamVariable() const { return _foam_variable; };
@@ -63,10 +63,10 @@ protected:
                          const Foam::dictionary & dict);
 
   template <typename Type, typename Array>
-  void updateBC(Foam::Field<Type> & foam_patch, const Array & input);
+  void updateBC(Foam::Field<Type> & foam_patch, const Array & input, bool initialisation);
 
   template <typename Type>
-  void updateBC(Foam::Field<Type> & foam_patch, const Real & input);
+  void updateBC(Foam::Field<Type> & foam_patch, const Real & input, bool initialisation);
 
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
@@ -97,9 +97,9 @@ FoamBCBase::constructFoamFieldPatch(Foam::label patch_id, const Foam::dictionary
 
 template <typename Type, typename Array>
 void
-FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Array & input)
+FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Array & input, bool initialisation)
 {
-  if (_relaxation_factor != 1.0)
+  if (_relaxation_factor != 1.0 && !initialisation)
   {
     for (auto i = 0; i < foam_patch.size(); ++i)
     {
@@ -114,9 +114,9 @@ FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Array & input)
 
 template <typename Type>
 void
-FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Real & input)
+FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Real & input, bool initialisation)
 {
-  if (_relaxation_factor != 1.0)
+  if (_relaxation_factor != 1.0 && !initialisation)
   {
     for (auto i = 0; i < foam_patch.size(); ++i)
     {

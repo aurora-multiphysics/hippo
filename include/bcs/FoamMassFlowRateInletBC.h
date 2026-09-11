@@ -10,7 +10,7 @@ public:
 
   FoamMassFlowRateInletBC(const InputParameters & params);
 
-  virtual void imposeBoundaryCondition() override;
+  virtual void imposeBoundaryCondition(bool initialisation = false) override;
 
 protected:
   void constructFoamPatch(Foam::label patch_id) override { constructFixedValuePatch(patch_id); }

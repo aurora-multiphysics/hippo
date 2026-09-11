@@ -27,7 +27,7 @@ FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputPa
 }
 
 void
-FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
+FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
@@ -50,6 +50,6 @@ FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
         Foam::returnReduce(Foam::sum(coeff * area), Foam::sumOp<Foam::scalar>()) / total_area;
 
     // set gradient
-    updateBC(foam_gradient, _pp_value / coeff_bulk);
+    updateBC(foam_gradient, _pp_value / coeff_bulk, initialisation);
   }
 }

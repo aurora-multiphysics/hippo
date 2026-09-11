@@ -24,7 +24,7 @@ FoamMassFlowRateInletBC::FoamMassFlowRateInletBC(const InputParameters & params)
 }
 
 void
-FoamMassFlowRateInletBC::imposeBoundaryCondition()
+FoamMassFlowRateInletBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
@@ -39,6 +39,6 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
     const Real area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
 
     auto value = -_scale_factor * _pp_value * boundary_patch.nf() / (rho * area);
-    updateBC(U_var, value());
+    updateBC(U_var, value(), initialisation);
   }
 }

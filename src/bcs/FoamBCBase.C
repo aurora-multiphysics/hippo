@@ -68,6 +68,8 @@ FoamBCBase::initialSetup()
       mooseError("Boundary '", boundary, "' not found in OpenFOAM mesh");
     constructFoamPatch(id);
   }
+
+  imposeBoundaryCondition(true);
 }
 
 void

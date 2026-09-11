@@ -17,7 +17,7 @@ FoamFixedValuePostprocessorBC::FoamFixedValuePostprocessorBC(const InputParamete
 }
 
 void
-FoamFixedValuePostprocessorBC::imposeBoundaryCondition()
+FoamFixedValuePostprocessorBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
@@ -27,6 +27,6 @@ FoamFixedValuePostprocessorBC::imposeBoundaryCondition()
     auto & foam_var =
         getFoamMesh().getBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
-    updateBC(foam_var, _pp_value);
+    updateBC(foam_var, _pp_value, initialisation);
   }
 }
