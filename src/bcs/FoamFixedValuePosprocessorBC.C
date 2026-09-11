@@ -27,6 +27,6 @@ FoamFixedValuePostprocessorBC::imposeBoundaryCondition()
     auto & foam_var =
         getFoamMesh().getBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
-    std::fill(foam_var.begin(), foam_var.end(), _pp_value);
+    updateBC(foam_var, _pp_value);
   }
 }

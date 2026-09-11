@@ -50,6 +50,6 @@ FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
         Foam::returnReduce(Foam::sum(coeff * area), Foam::sumOp<Foam::scalar>()) / total_area;
 
     // set gradient
-    std::fill(foam_gradient.begin(), foam_gradient.end(), _pp_value / coeff_bulk);
+    updateBC(foam_gradient, _pp_value / coeff_bulk);
   }
 }

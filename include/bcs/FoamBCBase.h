@@ -62,6 +62,12 @@ protected:
                          Foam::label patch_id,
                          const Foam::dictionary & dict);
 
+  template <typename Type, typename Array>
+  void updateBC(Foam::Field<Type> & foam_patch, const Array & input);
+
+  template <typename Type>
+  void updateBC(Foam::Field<Type> & foam_patch, const Real & input);
+
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
 
@@ -71,6 +77,7 @@ protected:
 
   // Records whether the boundary condition type has been replaced
   bool _patch_replaced;
+  const Real _relaxation_factor;
 };
 
 template <typename Type>
@@ -86,4 +93,38 @@ FoamBCBase::constructFoamFieldPatch(Foam::label patch_id, const Foam::dictionary
       Foam::fvPatchField<Type>::New(getFvMesh().boundary()[patch_id], var.internalField(), dict));
   _patch_replaced = true;
   return true;
+}
+
+template <typename Type, typename Array>
+void
+FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Array & input)
+{
+  if (_relaxation_factor != 1.0)
+  {
+    for (auto i = 0; i < foam_patch.size(); ++i)
+    {
+      foam_patch[i] = (1. - _relaxation_factor) * foam_patch[i] + _relaxation_factor * input[i];
+    }
+  }
+  else
+  {
+    std::copy(input.begin(), input.end(), foam_patch.begin());
+  }
+}
+
+template <typename Type>
+void
+FoamBCBase::updateBC(Foam::Field<Type> & foam_patch, const Real & input)
+{
+  if (_relaxation_factor != 1.0)
+  {
+    for (auto i = 0; i < foam_patch.size(); ++i)
+    {
+      foam_patch[i] = (1. - _relaxation_factor) * foam_patch[i] + _relaxation_factor * input;
+    }
+  }
+  else
+  {
+    std::fill(foam_patch.begin(), foam_patch.end(), input);
+  }
 }

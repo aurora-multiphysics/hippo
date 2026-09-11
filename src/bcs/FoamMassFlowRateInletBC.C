@@ -37,6 +37,8 @@ FoamMassFlowRateInletBC::imposeBoundaryCondition()
         boundary_patch.lookupPatchField<Foam::volVectorField, double>("U"));
     const auto & rho = boundary_patch.lookupPatchField<Foam::volScalarField, double>("rho");
     const Real area = Foam::returnReduce(Foam::sum(boundary_patch.magSf()), Foam::sumOp<Real>());
-    U_var == -_scale_factor * _pp_value * boundary_patch.nf() / (rho * area);
+
+    auto value = -_scale_factor * _pp_value * boundary_patch.nf() / (rho * area);
+    updateBC(U_var, value());
   }
 }

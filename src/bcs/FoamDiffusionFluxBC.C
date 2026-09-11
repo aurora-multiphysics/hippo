@@ -40,21 +40,22 @@ FoamDiffusionFluxBC::imposeBoundaryCondition()
   auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    std::vector<Real> && grad_array = getMooseVariableArray(subdomain);
+    std::vector<Real> grad_array = getMooseVariableArray(subdomain);
+
+    auto & coeff = getFvMesh().boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
+        _diffusivity);
+
+    assert(grad_array.size() == static_cast<size_t>(coeff.size()));
+    // set gradient
+    for (auto i = 0lu; i < grad_array.size(); ++i)
+    {
+      grad_array[i] = grad_array[i] / coeff[i];
+    }
 
     // Get the gradient associated with the field
     auto & foam_gradient =
         getFoamMesh().getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
     assert(grad_array.size() == static_cast<size_t>(foam_gradient.size()));
-
-    auto & coeff = getFvMesh().boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
-        _diffusivity);
-
-    assert(foam_gradient.size() == coeff.size());
-    // set gradient
-    for (auto i = 0; i < foam_gradient.size(); ++i)
-    {
-      foam_gradient[i] = grad_array[i] / coeff[i];
-    }
+    updateBC(foam_gradient, grad_array);
   }
 }

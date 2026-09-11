@@ -9,6 +9,7 @@
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
 #include <Registry.h>
+#include <algorithm>
 #include <basicThermo.H>
 
 #include <vector>
@@ -22,7 +23,8 @@ FoamBCBase::validParams()
                                        "Name of a Foam field. e.g. T (temperature) U (velocity).");
   params.addParam<std::vector<SubdomainName>>("boundary",
                                               "Boundaries that the boundary condition applies to.");
-
+  params.addParam<Real>(
+      "relaxation_factor", 1., "Relaxation factor for applying boundary conditions.");
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
 
@@ -34,7 +36,8 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
     Coupleable(this, false),
     _foam_variable(params.get<std::string>("foam_variable")),
     _boundary(params.get<std::vector<SubdomainName>>("boundary")),
-    _patch_replaced(false)
+    _patch_replaced(false),
+    _relaxation_factor(getParam<Real>("relaxation_factor"))
 {
   // check that the foam variable exists
   if (!params.isPrivate("foam_variable") &&
