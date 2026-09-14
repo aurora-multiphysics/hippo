@@ -34,7 +34,8 @@ FoamBCBase::validParams()
 FoamBCBase::FoamBCBase(const InputParameters & params)
   : HippoObject(params),
     Coupleable(this, false),
-    _foam_variable(params.get<std::string>("foam_variable")),
+    _foam_variable(params.isParamValid("foam_variable") ? params.get<std::string>("foam_variable")
+                                                        : std::string()),
     _boundary(params.get<std::vector<SubdomainName>>("boundary")),
     _patch_replaced(false),
     _relaxation_factor(getParam<Real>("relaxation_factor"))

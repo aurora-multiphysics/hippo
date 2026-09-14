@@ -24,6 +24,9 @@ public:
   // returns foam variable BC applies to
   std::string foamVariable() const { return _foam_variable; };
 
+  // All fields modified by this BC, available before initialSetup.
+  virtual std::vector<std::string> foamVariables() const { return {_foam_variable}; }
+
   // returns the moose AuxVariable imposed on OpenFOAM
   AuxVariableName mooseVariable() const { return _moose_var->name(); }
 
