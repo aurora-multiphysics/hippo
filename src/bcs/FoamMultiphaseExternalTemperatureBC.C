@@ -26,7 +26,7 @@ FoamMultiphaseExternalTemperatureBC::validParams()
   params.addClassDescription(
       "Transfers total wall heat flux [W/m^2], positive into the fluid, to all phase "
       "temperatures using multiphaseExternalTemperature and its wall-boiling coupling. "
-      "Existing multiphaseExternalTemperature patches are required.");
+      "Temperature and energy patches are converted automatically when required.");
   return params;
 }
 
@@ -48,57 +48,44 @@ FoamMultiphaseExternalTemperatureBC::foamVariables() const
 }
 
 void
-FoamMultiphaseExternalTemperatureBC::initialSetup()
-{
-  // Validate all phase patches before replacing any of them.
-  for (const auto & boundary : _boundary)
-  {
-    const auto id = getFvMesh().boundary().findIndex(boundary);
-    if (id < 0)
-      mooseError("Boundary '", boundary, "' not found in OpenFOAM mesh");
-    for (const auto & phase : _phases.phases())
-    {
-      const auto & thermo = phase.thermo();
-      const auto & T = thermo.T().boundaryField()[id];
-      if (T.type() != "multiphaseExternalTemperature" &&
-          T.type() != "hippoMultiphaseExternalTemperature")
-        mooseError("Field '",
-                   thermo.T().name(),
-                   "' on boundary '",
-                   boundary,
-                   "' must use multiphaseExternalTemperature");
-      if (!Foam::isA<Foam::mixedEnergyFvPatchScalarField>(thermo.he().boundaryField()[id]))
-        mooseError("Energy field '",
-                   thermo.he().name(),
-                   "' on boundary '",
-                   boundary,
-                   "' must use mixedEnergy");
-    }
-  }
-  FoamVariableBCBase::initialSetup();
-}
-
-void
 FoamMultiphaseExternalTemperatureBC::constructFoamPatch(Foam::label id)
 {
   for (auto & phase : _phases.phases())
   {
     auto & T = phase.thermo().T();
-    if (T.boundaryField()[id].type() == "hippoMultiphaseExternalTemperature")
-      continue;
+    if (T.boundaryField()[id].type() != "hippoMultiphaseExternalTemperature")
+    {
+      Foam::OStringStream os;
+      if (Foam::isA<Foam::externalTemperatureFvPatchScalarField>(T.boundaryField()[id]))
+        // Preserve compatible thermal settings and mixed coefficients.
+        T.boundaryField()[id].write(os);
+      else
+        // Other patch dictionaries may contain unrelated thermal settings.
+        Foam::writeEntry(
+            os, "value", static_cast<const Foam::scalarField &>(T.boundaryField()[id]));
+      Foam::IStringStream is(os.str());
+      Foam::dictionary dict(is);
+      dict.set("type", "hippoMultiphaseExternalTemperature");
+      dict.remove("q");
+      dict.remove("Q");
+      dict.set("coupledHeatFlux", "uniform 0");
+      T.boundaryFieldRef().set(
+          id, Foam::fvPatchScalarField::New(T.mesh().boundary()[id], T.internalField(), dict));
+      _patch_replaced = true;
+    }
 
-    // Preserve temperature, mixed coefficients and the parent's thermal settings.
-    Foam::OStringStream os;
-    T.boundaryField()[id].write(os);
-    Foam::IStringStream is(os.str());
-    Foam::dictionary dict(is);
-    dict.set("type", "hippoMultiphaseExternalTemperature");
-    dict.remove("q");
-    dict.remove("Q");
-    dict.set("coupledHeatFlux", "uniform 0");
-    T.boundaryFieldRef().set(
-        id, Foam::fvPatchScalarField::New(T.mesh().boundary()[id], T.internalField(), dict));
-    _patch_replaced = true;
+    // Repair energy independently, including when the temperature patch already has our type.
+    auto & he = phase.thermo().he();
+    if (!Foam::isA<Foam::mixedEnergyFvPatchScalarField>(he.boundaryField()[id]))
+    {
+      auto * patch =
+          new Foam::mixedEnergyFvPatchScalarField(he.mesh().boundary()[id], he.internalField());
+      patch->operator==(he.boundaryField()[id]);
+      patch->refValue() = he.boundaryField()[id];
+      patch->valueFraction() = 1;
+      he.boundaryFieldRef().set(id, patch);
+      _patch_replaced = true;
+    }
   }
 }
 
