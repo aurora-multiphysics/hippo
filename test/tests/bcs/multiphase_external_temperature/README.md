@@ -24,3 +24,7 @@ tables are unpacked locally to avoid OpenFOAM/libMesh gzstream conflicts.
 
 Duplicate assignments are tested in `actions/foam_bc`. Parallel, restart and
 integrated wall-flux checks remain deferred.
+
+Verification uses the shared OpenFOAM-backed float64 readers. FoamReader generates
+`constant/C` once for spatial face coordinates using OpenFOAM geometry; no VTK or
+fluidfoam parsing is used for these checks.

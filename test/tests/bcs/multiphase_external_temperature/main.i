@@ -3,18 +3,21 @@
   case = foam
   foam_patch = wall
 []
+
 [Variables]
   [dummy]
     family = MONOMIAL
     order = CONSTANT
   []
 []
+
 [FoamBCs]
   [heat_flux]
     type = FoamMultiphaseExternalTemperatureBC
     boundary = wall
   []
 []
+
 [AuxKernels]
   [heat_flux]
     type = ParsedAux
