@@ -10,3 +10,5 @@
 /invalid/
 
 /foam/
+
+!/template/constant/wallBoiling-saturation.csv

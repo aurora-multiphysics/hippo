@@ -38,11 +38,6 @@ if [[ "$1" == nonphase ]]; then
 fi
 
 cp -r template "$case_dir"
-# Avoid OpenFOAM/libMesh gzstream symbol conflicts by using local plain tables.
-for table in liquid vapour; do
-    gzip -dc "$FOAM_TUTORIALS/resources/thermoData/wallBoiling-$table.gz" > "$case_dir/constant/wallBoiling-$table"
-done
-sed -i 's|$FOAM_TUTORIALS/resources/thermoData/||g' "$case_dir"/constant/physicalProperties.*
 
 blockMesh -case "$case_dir"
 extrudeMesh -case "$case_dir"

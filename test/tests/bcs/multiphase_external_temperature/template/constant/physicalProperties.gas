@@ -32,6 +32,6 @@ mixture
         molWeight       120.914;
     }
 
-    #include "$FOAM_TUTORIALS/resources/thermoData/wallBoiling-vapour"
+    #include "wallBoiling-vapour"
 }
 // ************************************************************************* //

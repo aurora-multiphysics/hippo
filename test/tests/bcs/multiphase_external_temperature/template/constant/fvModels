@@ -55,7 +55,7 @@ heatTransferLimitedPhaseChange
             units           ([MPa] [K]);
             columns         (1 0);
             mergeSeparators no;
-            file "$FOAM_TUTORIALS/resources/thermoData/wallBoiling-saturation.csv";
+            file "$FOAM_CASE/constant/wallBoiling-saturation.csv";
         }
     }
 }
