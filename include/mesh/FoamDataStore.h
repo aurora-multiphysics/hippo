@@ -5,6 +5,11 @@
 
 #include <DataIO.h>
 
+#include <SymmTensor.H>
+#include <array>
+#include <symmTensor.H>
+#include <vector.H>
+
 // This function extracts the keys associated with fields of type T from the
 // mesh object registry. Note for some fields, the field.name() and the
 // key are not the same. *strict* indicates whether types derived from T are
@@ -43,7 +48,7 @@ readBoundary(istream & stream, GeoField & field)
   for (auto & bField : field.boundaryFieldRef())
   {
     std::vector<typename GeoField::value_type> data(bField.size());
-    loadHelper(stream, data, nullptr);
+    dataLoad(stream, data, nullptr);
     std::copy(data.begin(), data.end(), bField.begin());
   }
 }
@@ -55,7 +60,7 @@ readField(std::istream & stream, GeoField & field)
 {
 
   std::vector<typename GeoField::value_type> internal_data(field.size());
-  loadHelper(stream, internal_data, nullptr);
+  dataLoad(stream, internal_data, nullptr);
 
   for (auto i = 0lu; i < internal_data.size(); ++i)
   {
@@ -70,7 +75,7 @@ inline void
 readField(std::istream & stream, Foam::uniformDimensionedScalarField & field)
 {
   Foam::scalar value;
-  loadHelper(stream, value, nullptr);
+  dataLoad(stream, value, nullptr);
   field.value() = value;
 }
 
@@ -89,10 +94,57 @@ writeBoundary(ostream & stream, const GeoField & field)
   {
     std::vector<typename GeoField::value_type> data(bField.size());
     std::copy(bField.begin(), bField.end(), data.begin());
-    storeHelper(stream, data, nullptr);
+    dataStore(stream, data, nullptr);
   }
 }
 
+template <>
+inline void
+dataStore(std::ostream & stream, Foam::vector & vector, void * context)
+{
+  for (int i = 0; i < vector.nComponents; ++i)
+    dataStore(stream, vector[i], context);
+}
+
+template <>
+inline void
+dataLoad(std::istream & stream, Foam::vector & vector, void * context)
+{
+  for (int i = 0; i < vector.nComponents; ++i)
+    dataLoad(stream, vector[i], context);
+}
+
+template <>
+inline void
+dataStore(std::ostream & stream, Foam::symmTensor & vector, void * context)
+{
+  for (int i = 0; i < vector.nComponents; ++i)
+    dataStore(stream, vector[i], context);
+}
+
+template <>
+inline void
+dataLoad(std::istream & stream, Foam::symmTensor & vector, void * context)
+{
+  for (int i = 0; i < vector.nComponents; ++i)
+    dataLoad(stream, vector[i], context);
+}
+
+template <>
+inline void
+dataStore(std::ostream & stream, Foam::tensor & vector, void * context)
+{
+  for (int i = 0; i < vector.nComponents; ++i)
+    dataStore(stream, vector[i], context);
+}
+
+template <>
+inline void
+dataLoad(std::istream & stream, Foam::tensor & vector, void * context)
+{
+  for (int i = 0; i < vector.nComponents; ++i)
+    dataLoad(stream, vector[i], context);
+}
 // writeField for GeometricFields and DimensionedFields
 template <typename GeoField>
 inline void
@@ -101,7 +153,7 @@ writeField(ostream & stream, const GeoField & field)
   std::vector<typename GeoField::value_type> internal_field(field.primitiveField().size());
   std::copy(field.primitiveField().begin(), field.primitiveField().end(), internal_field.begin());
 
-  storeHelper(stream, internal_field, nullptr);
+  dataStore(stream, internal_field, nullptr);
 
   writeBoundary(stream, field);
 }
@@ -111,7 +163,7 @@ template <typename Type>
 inline void
 writeField(ostream & stream, const Foam::UniformDimensionedField<Type> & field)
 {
-  storeHelper(stream, field.value(), nullptr);
+  dataStore(stream, field.value(), nullptr);
 }
 
 // Generic function for serialising any field and its old times
@@ -123,10 +175,10 @@ dataStoreField(std::ostream & stream,
                std::set<std::string> & field_list)
 {
   auto nOldTimes{field.nOldTimes(false)};
-  storeHelper(stream, nOldTimes, nullptr);
+  dataStore(stream, nOldTimes, nullptr);
 
   std::string field_name{name};
-  storeHelper(stream, field_name, nullptr);
+  dataStore(stream, field_name, nullptr);
   writeField(stream, field);
 
   field_list.insert(name);
@@ -144,10 +196,10 @@ dataLoadField(std::istream & stream, Foam::fvMesh & foam_mesh)
 {
 
   Foam::label nOldTimes;
-  loadHelper(stream, nOldTimes, nullptr);
+  dataLoad(stream, nOldTimes, nullptr);
 
   std::string field_name;
-  loadHelper(stream, field_name, nullptr);
+  dataLoad(stream, field_name, nullptr);
   auto & field = foam_mesh.lookupObjectRef<T>(field_name);
   readField(stream, field);
 
@@ -166,7 +218,7 @@ storeFields(std::ostream & stream, const Foam::fvMesh & mesh, std::set<std::stri
   const auto cur_fields{getFieldkeys<T, strict>(mesh)};
   auto nFields{static_cast<int>(cur_fields.size())};
 
-  storeHelper(stream, nFields, nullptr);
+  dataStore(stream, nFields, nullptr);
   for (auto & key : cur_fields)
   {
     auto & field = mesh.lookupObjectRef<T>(key);
@@ -193,7 +245,7 @@ inline void
 loadFields(std::istream & stream, Foam::fvMesh & mesh)
 {
   int nFields{};
-  loadHelper(stream, nFields, nullptr);
+  dataLoad(stream, nFields, nullptr);
   for (int i = 0; i < nFields; ++i)
   {
     dataLoadField<T>(stream, mesh);
@@ -222,9 +274,9 @@ dataStore(std::ostream & stream, const Foam::Time & time, void * context)
   auto deltaT = time.deltaTValue();
   auto timeValue = time.userTimeValue();
 
-  storeHelper(stream, timeIndex, context);
-  storeHelper(stream, deltaT, context);
-  storeHelper(stream, timeValue, context);
+  dataStore(stream, timeIndex, context);
+  dataStore(stream, deltaT, context);
+  dataStore(stream, timeValue, context);
 }
 
 template <>
@@ -234,9 +286,9 @@ dataLoad(std::istream & stream, Foam::Time & time, void * context)
   Foam::label timeIndex;
   Foam::scalar deltaT, timeValue;
 
-  loadHelper(stream, timeIndex, context);
-  loadHelper(stream, deltaT, context);
-  loadHelper(stream, timeValue, context);
+  dataLoad(stream, timeIndex, context);
+  dataLoad(stream, deltaT, context);
+  dataLoad(stream, timeValue, context);
 
   time.setDeltaTNoAdjust(deltaT);
   // This ensures that the delta0 variable is internally updated before
@@ -275,7 +327,7 @@ template <>
 inline void
 dataStore(std::ostream & stream, Foam::fvMesh & mesh, void * context)
 {
-  storeHelper(stream, mesh.time(), context);
+  dataStore(stream, mesh.time(), context);
 
   std::set<std::string> dbg_field_list;
 
@@ -311,7 +363,7 @@ template <>
 inline void
 dataLoad(std::istream & stream, Foam::fvMesh & mesh, void * context)
 {
-  loadHelper(stream, const_cast<Foam::Time &>(mesh.time()), context);
+  dataLoad(stream, const_cast<Foam::Time &>(mesh.time()), context);
 
   loadFields<Foam::volScalarField>(stream, mesh);
   loadFields<Foam::volVectorField>(stream, mesh);
