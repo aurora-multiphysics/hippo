@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: ghcr.io/idaholab/apptainer/moose-dev-{{ MPI }}-x86_64:2026.03.19
+From: ghcr.io/idaholab/apptainer/moose-dev-{{ MPI }}-x86_64:2026.07.30
 
 %arguments
     MPI=openmpi
