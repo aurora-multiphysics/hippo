@@ -5,11 +5,6 @@
 
 #include <DataIO.h>
 
-#include <SymmTensor.H>
-#include <array>
-#include <symmTensor.H>
-#include <vector.H>
-
 // This function extracts the keys associated with fields of type T from the
 // mesh object registry. Note for some fields, the field.name() and the
 // key are not the same. *strict* indicates whether types derived from T are
@@ -116,34 +111,34 @@ dataLoad(std::istream & stream, Foam::vector & vector, void * context)
 
 template <>
 inline void
-dataStore(std::ostream & stream, Foam::symmTensor & vector, void * context)
+dataStore(std::ostream & stream, Foam::symmTensor & symm_tensor, void * context)
 {
-  for (int i = 0; i < vector.nComponents; ++i)
-    dataStore(stream, vector[i], context);
+  for (int i = 0; i < symm_tensor.nComponents; ++i)
+    dataStore(stream, symm_tensor[i], context);
 }
 
 template <>
 inline void
-dataLoad(std::istream & stream, Foam::symmTensor & vector, void * context)
+dataLoad(std::istream & stream, Foam::symmTensor & symm_tensor, void * context)
 {
-  for (int i = 0; i < vector.nComponents; ++i)
-    dataLoad(stream, vector[i], context);
+  for (int i = 0; i < symm_tensor.nComponents; ++i)
+    dataLoad(stream, symm_tensor[i], context);
 }
 
 template <>
 inline void
-dataStore(std::ostream & stream, Foam::tensor & vector, void * context)
+dataStore(std::ostream & stream, Foam::tensor & tensor, void * context)
 {
-  for (int i = 0; i < vector.nComponents; ++i)
-    dataStore(stream, vector[i], context);
+  for (int i = 0; i < tensor.nComponents; ++i)
+    dataStore(stream, tensor[i], context);
 }
 
 template <>
 inline void
-dataLoad(std::istream & stream, Foam::tensor & vector, void * context)
+dataLoad(std::istream & stream, Foam::tensor & tensor, void * context)
 {
-  for (int i = 0; i < vector.nComponents; ++i)
-    dataLoad(stream, vector[i], context);
+  for (int i = 0; i < tensor.nComponents; ++i)
+    dataLoad(stream, tensor[i], context);
 }
 // writeField for GeometricFields and DimensionedFields
 template <typename GeoField>
