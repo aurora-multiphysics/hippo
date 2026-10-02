@@ -49,5 +49,8 @@
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <functionObjects/field/wallShearStress/wallShearStress.H>
 
+// FoamMappedInletBCBase.h
+#include <meshSearch.H>
+
 #undef NotImplemented
 #undef FunctionName

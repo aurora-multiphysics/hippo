@@ -12,7 +12,7 @@ class TestFoamBCFixedGradient(unittest.TestCase):
     def test_diffusion_flux_x(self):
         """
         Test case for imposing diffusion flux BCs using the default value of the
-        underlying reciever.
+        underlying receiver.
 
         Solves laplace equation with right BC being \partial_x T = 1.
         The analytical solution is x.
