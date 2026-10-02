@@ -1,0 +1,20 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object fvSolution;
+}
+
+solvers
+{
+ "alpha.*" { nCorrectors 1; nSubCycles 1; }
+}
+PIMPLE
+{
+ nOuterCorrectors 1;
+ nCorrectors 1;
+ nNonOrthogonalCorrectors 0;
+ momentumPredictor no;
+ pRefCell 0;
+ pRefValue 100000;
+}
