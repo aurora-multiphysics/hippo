@@ -16,12 +16,12 @@ FoamFixedValueBC::validParams()
 }
 
 FoamFixedValueBC::FoamFixedValueBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters, FoamBCType::fixedValue)
+  : FoamVariableBCBase(parameters)
 {
 }
 
 void
-FoamFixedValueBC::imposeBoundaryCondition()
+FoamFixedValueBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
@@ -35,6 +35,6 @@ FoamFixedValueBC::imposeBoundaryCondition()
 
     assert(var_array.size() == static_cast<std::size_t>(foam_var.size()));
 
-    std::copy(var_array.begin(), var_array.end(), foam_var.begin());
+    updateBC(foam_var, var_array, initialisation);
   }
 }

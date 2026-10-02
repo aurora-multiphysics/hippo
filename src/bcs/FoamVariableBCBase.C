@@ -30,8 +30,8 @@ FoamVariableBCBase::validParams()
   return params;
 }
 
-FoamVariableBCBase::FoamVariableBCBase(const InputParameters & params, const FoamBCType bc_type)
-  : FoamBCBase(params, bc_type), _moose_var()
+FoamVariableBCBase::FoamVariableBCBase(const InputParameters & params)
+  : FoamBCBase(params), _moose_var()
 {
 }
 
@@ -49,6 +49,8 @@ FoamVariableBCBase::initialSetup()
   // Check variable is constant monomial in case it is provided.
   if (!is_constant_monomial(_moose_var->get()))
     mooseError("Variable '", var_name, "' must be a constant monomial.");
+
+  FoamBCBase::initialSetup();
 }
 
 BCInfoTableRow

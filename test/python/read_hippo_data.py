@@ -1,13 +1,12 @@
 """Helper functions for reading OpenFOAM and MOOSE exodus data"""
 
-import os
-import re
-
 from pathlib import Path
 from typing import Literal
 
 import numpy as np
 import pyvista as pv
+
+from foam_reader import FoamReader as FoamReader, get_foam_times as get_foam_times
 
 
 def get_exodus_times(exo_file: Path | str | bytes) -> list[float]:
@@ -25,26 +24,6 @@ def get_exodus_times(exo_file: Path | str | bytes) -> list[float]:
     """
     reader: pv.ExodusIIReader = pv.get_reader(exo_file)
     return reader.time_values
-
-
-def get_foam_times(case_dir: str | bytes, string=False) -> list[str]:
-    """Get the times from the foam case directory
-
-    Parameters
-    ----------
-    case_dir : str | bytes
-        Case directory
-
-    Returns
-    -------
-    list[str]
-        Sorted list of times
-    """
-    return sorted(
-        folder if string else np.float64(folder)
-        for folder in os.listdir(case_dir)
-        if re.match(r"[-+]?([0-9]*\.[0-9]+|[0-9]+)", folder)
-    )
 
 
 def read_moose_exodus_data(
@@ -98,42 +77,23 @@ def read_moose_exodus_data(
     return foam_coords, foam_variable
 
 
+def read_openfoam_patch_entry(
+    case_dir: Path | str | bytes,
+    time: str | float,
+    variable: str,
+    patch: str,
+    entry: str = "value",
+) -> np.ndarray:
+    """Read a patch entry; compatibility wrapper for FoamReader.read_patch_entry."""
+    return FoamReader(case_dir).read_patch_entry(time, variable, patch, entry)
+
+
 def read_openfoam_data(
     case_dir: Path | str | bytes,
-    time: float,
+    time: str | float,
     variable: str,
     block: str = "internalMesh",
     case_type: Literal["decomposed", "reconstructed"] = "reconstructed",
 ) -> tuple[dict[str, np.ndarray], np.ndarray]:
-    """Read OpenFOAM data file and return coordinate and variable data
-
-    Parameters
-    ----------
-    case_dir : Path | str | bytes
-        OpenFOAM results directory
-    time : float
-        time
-    variable : str
-        Name of variable
-    block : str, optional
-        Which part of the mesh to read, by default 'internalMesh'
-    case_type : Literal[decomposed, reconstructed], optional
-        Whether data has been reconstructed or not, by default 'reconstructed'
-
-    Returns
-    -------
-    tuple[dict[str, np.ndarray], np.ndarray]
-        Dictionary of coordinates and variable array
-    """
-    file_name = Path(case_dir) / "case.foam"
-    file_name.touch()
-
-    reader: pv.POpenFOAMReader = pv.get_reader(file_name)
-    reader.case_type = case_type
-    reader.set_active_time_value(time)
-    data: pv.UnstructuredGrid = reader.read()[block]
-
-    coords = data.cell_centers().points
-    foam_variable = data.cell_data[variable]
-    foam_coords = dict(zip(("x", "y", "z"), coords.T))
-    return foam_coords, foam_variable
+    """Read coordinates and values; compatibility wrapper for FoamReader.read_field."""
+    return FoamReader(case_dir, case_type).read_field(time, variable, block)

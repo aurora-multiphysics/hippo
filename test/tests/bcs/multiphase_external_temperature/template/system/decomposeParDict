@@ -1,0 +1,9 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object decomposeParDict;
+}
+numberOfSubdomains 2;
+method simple;
+simple { n (2 1 1); }

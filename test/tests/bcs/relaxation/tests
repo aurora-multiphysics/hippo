@@ -1,0 +1,20 @@
+[Tests]
+  [relaxation]
+    [setup]
+      type = RunCommand
+      command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      max_parallel = 1
+      prereq = relaxation/setup
+      requirement = 'Fixed-value variable and postprocessor BCs shall impose initial values directly and relax subsequent updates.'
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = relaxation/run
+    []
+  []
+[]

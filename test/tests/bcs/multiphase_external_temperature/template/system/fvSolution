@@ -1,0 +1,98 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    "alpha.*"
+    {
+        nCorrectors     1;
+        nSubCycles      1;
+    }
+
+    p_rgh
+    {
+        solver          GAMG;
+        smoother        DIC;
+        tolerance       1e-8;
+        relTol          0.01;
+        maxIter         20;
+        minIter         2;
+    }
+
+    p_rghFinal
+    {
+        $p_rgh;
+        relTol          0;
+    }
+
+    "(e|h).*"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-12;
+        relTol          0.001;
+        minIter         1;
+        maxIter         20;
+    }
+
+    "(k|epsilon|omega).*"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-8;
+        relTol          0;
+        minIter         1;
+    }
+
+    "kappai.*"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-6;
+        relTol          0;
+    }
+}
+
+PIMPLE
+{
+    momentumPredictor   no;
+    nOuterCorrectors    1;
+    nCorrectors         1;
+    nNonOrthogonalCorrectors 0;
+    nEnergyCorrectors   1;
+
+    faceMomentum        no;
+    VmDdtCorrection     yes;
+    dragCorrection      yes;
+}
+
+relaxationFactors
+{
+    fields
+    {
+        heatTransferLimitedPhaseChange:mDot 1;
+    }
+
+    equations
+    {
+        ".*"            1;
+        "U\..*"         1;
+        "h\..*"         1;
+    }
+}
+
+
+// ************************************************************************* //

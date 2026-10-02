@@ -122,14 +122,24 @@ FoamProblem::verifyFoamVariables()
 void
 FoamProblem::verifyFoamBCs()
 {
-  // Check BC
+  // Check every affected field before any BC can replace a patch.
+  std::set<std::string> unique_vars;
+  std::set<std::pair<std::string, SubdomainName>> assignments;
+  for (const auto & bc : _foam_bcs)
+    for (const auto & var : bc->foamVariables())
+    {
+      unique_vars.insert(var);
+      for (const auto & boundary : bc->boundary())
+        if (!assignments.emplace(var, boundary).second)
+          mooseError("Imposed FoamBC has duplicated boundary '",
+                     boundary,
+                     "' for foam variable '",
+                     var,
+                     "'");
+    }
+
   for (auto & bc : _foam_bcs)
     bc->initialSetup();
-
-  // Get list of all variables used by all BCs
-  std::set<std::string> unique_vars;
-  for (const auto & bc : _foam_bcs)
-    unique_vars.insert(bc->foamVariable());
 
   // Create table for printing BC information
   VariadicTable<std::string, std::string, std::string, std::string, std::string, std::string> vt(
@@ -149,24 +159,16 @@ FoamProblem::verifyFoamBCs()
     std::vector<SubdomainName> used_bcs;
     for (auto & bc : _foam_bcs)
     {
-      if (bc->foamVariable() == var)
+      const auto fields = bc->foamVariables();
+      if (std::find(fields.begin(), fields.end(), var) != fields.end())
       {
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
         // List info about BC
         auto [name, type, foam_var, moose_var, boundaries, patch_replaced] = bc->getInfoRow();
-        vt.addRow(name, type, foam_var, moose_var, boundaries, patch_replaced);
+        vt.addRow(name, type, var, moose_var, boundaries, patch_replaced);
       }
     }
-
-    // Find duplicates
-    auto unique_bc = std::unique(used_bcs.begin(), used_bcs.end());
-    if (unique_bc != used_bcs.end())
-      mooseError("Imposed FoamBC has duplicated boundary '",
-                 *unique_bc,
-                 "' for foam variable '",
-                 var,
-                 "'");
 
     // Add table entry for boundaries which do not have a BC for variable
     std::vector<SubdomainName> unused_bcs;

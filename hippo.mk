@@ -5,6 +5,9 @@ FOAM_LIB_DIR := $(FOAM_ROOT_DIR)/lib
 
 FOAM_INCLUDE_ROOT := $(shell echo $(WM_PROJECT_DIR)/src)
 ADDITIONAL_LIBS := -L$(FOAM_LIB_DIR) \
+    -lmultiphaseEulerThermophysicalTransportModels \
+    -lphaseSystem \
+    -lcoupledThermophysicalTransportModels \
     -lfiniteVolume \
     -lfvModels \
     -lfvConstraints \
@@ -13,6 +16,17 @@ ADDITIONAL_LIBS := -L$(FOAM_LIB_DIR) \
     $(ADDITIONAL_LIBS)
 
 ADDITIONAL_INCLUDES := \
+    -isystem $(FOAM_INCLUDE_ROOT)/twoPhaseModels/compressibleTwoPhases/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/twoPhaseModels/twoPhaseMixture/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/sampling/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/thermophysicalModels/multicomponentThermo/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/thermophysicalTransportModel/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluid/lnInclude \
+    -isystem $(WM_PROJECT_DIR)/applications/modules/multiphaseEuler/phaseSystem/lnInclude \
+    -isystem $(WM_PROJECT_DIR)/applications/modules/multiphaseEuler/thermophysicalTransportModels/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/coupledThermophysicalTransportModels/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/thermophysicalModels/specie/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/MomentumTransportModels/phaseCompressible/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT) \
     -isystem $(FOAM_INCLUDE_ROOT)/finiteVolume/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/conversion/lnInclude \

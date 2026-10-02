@@ -49,5 +49,8 @@
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <functionObjects/field/wallShearStress/wallShearStress.H>
 
+// phaseSystem uses MRFZone, whose inline methods need the OpenFOAM macro.
+#include <phaseSystem.H>
+
 #undef NotImplemented
 #undef FunctionName

@@ -1,0 +1,58 @@
+[Tests]
+  [setup_reference]
+    type = RunCommand
+    command = 'bash prep.sh reference'
+  []
+  [reference]
+    type = RunApp
+    input = reference.i
+    prereq = setup_reference
+    max_parallel = 1
+  []
+  [setup_coupled]
+    type = RunCommand
+    command = 'bash prep.sh coupled'
+    prereq = reference
+  []
+  [coupled]
+    type = RunApp
+    input = main.i
+    prereq = setup_coupled
+    max_parallel = 1
+  []
+  [verify_coupled]
+    type = PythonUnitTest
+    input = test.py
+    test_case = TestMultiphaseExternalTemperature.test_coupled
+    prereq = coupled
+  []
+  [setup_spatial]
+    type = RunCommand
+    command = 'bash prep.sh spatial'
+    prereq = verify_coupled
+  []
+  [spatial]
+    type = RunApp
+    input = main.i
+    cli_args = "Executioner/end_time=0.0002 AuxKernels/heat_flux/expression='73890*(0.8+0.2*x/3.5)*(1+t)' FoamBCs/heat_flux/relaxation_factor=0.5"
+    prereq = setup_spatial
+    max_parallel = 1
+  []
+  [verify_spatial]
+    type = PythonUnitTest
+    input = test.py
+    test_case = TestMultiphaseExternalTemperature.test_spatial_relaxation
+    prereq = spatial
+  []
+  [setup_nonphase]
+    type = RunCommand
+    command = 'bash prep.sh nonphase'
+  []
+  [missing_phase_system]
+    type = RunException
+    input = main.i
+    cli_args = 'Mesh/case=nonphase Mesh/foam_patch=left FoamBCs/heat_flux/boundary=left'
+    expect_err = 'FoamMultiphaseExternalTemperatureBC requires an OpenFOAM phaseSystem'
+    prereq = setup_nonphase
+  []
+[]
