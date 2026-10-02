@@ -1,14 +1,14 @@
-#include "FoamVariableField.h"
 #include "FoamMesh.h"
 #include "FoamProblem.h"
 #include "FoamSolver.h"
 #include "hippoUtils.h"
 #include "FoamSidePostprocessor.h"
 
-#include "Attributes.h"
-#include "ExternalProblem.h"
-#include "VariadicTable.h"
-#include "MooseTypes.h"
+#include <AuxiliarySystem.h>
+#include <MooseError.h>
+#include <MooseTypes.h>
+#include <MooseVariableFieldBase.h>
+#include <algorithm>
 #include "InputParameters.h"
 #include "VariadicTable.h"
 

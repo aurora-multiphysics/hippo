@@ -8,8 +8,9 @@ InputParameters
 FoamSideAdvectiveFluxIntegral::validParams()
 {
   auto params = FoamSidePostprocessor::validParams();
-  params.addClassDescription("Class that calculates the integrated advective flux of a scalar over "
-                             "OpenFOAM boundary patches.");
+  params.addClassDescription(
+      "Computes the surface integral of a scalar field times the outward normal advective "
+      "velocity over the selected OpenFOAM boundary patches.");
   params.addRequiredParam<std::string>("foam_scalar", "Foam scalar being advected.");
   params.addParam<std::string>("advective_velocity", "U", "Advection velocity");
   return params;

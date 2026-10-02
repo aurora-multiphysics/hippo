@@ -17,7 +17,7 @@
         [run_parallel]
             type = RunApp
             input = main.i
-            prereq = postprocessor_test/setup
+            prereq = postprocessor_test/verify_serial
             min_parallel=2
             max_parallel=2
         []
@@ -26,12 +26,28 @@
             input = test.py
             prereq = postprocessor_test/run_parallel
         []
+        [empty_boundaries]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            cli_args = "Postprocessors/t_avg/boundary=''"
+            expect_err = "At least one boundary must be specified"
+            max_parallel = 1
+        []
+        [duplicate_boundaries]
+            type = RunException
+            input = main.i
+            prereq = postprocessor_test/setup
+            cli_args = "Postprocessors/t_avg/boundary='right top right'"
+            expect_err = "Boundary 'right' is listed more than once"
+            max_parallel = 1
+        []
         [boundary_err]
             type = RunException
             input = main.i
             prereq = postprocessor_test/setup
             cli_args='Postprocessors/t_avg/boundary=top1'
-            expect_err = "Boundary 'top1' not found in FoamMesh."
+            expect_err = "Boundary 'top1' not found in the available boundaries."
         []
         [invalid_foam_scalar]
             type = RunException

@@ -1,0 +1,37 @@
+[Tests]
+  [setup]
+    type = RunCommand
+    command = 'bash prep.sh'
+  []
+  [serial]
+    type = RunApp
+    input = main.i
+    prereq = setup
+    max_parallel = 1
+  []
+  [verify_serial]
+    type = PythonUnitTest
+    input = test.py
+    prereq = serial
+  []
+  [parallel]
+    type = RunApp
+    input = main.i
+    prereq = verify_serial
+    min_parallel = 2
+    max_parallel = 2
+  []
+  [verify_parallel]
+    type = PythonUnitTest
+    input = test.py
+    prereq = parallel
+  []
+  [bulk_temperature_count]
+    type = RunException
+    input = main.i
+    cli_args = "Postprocessors/htc_opposite/bulk_temperature_uo=cold_left"
+    expect_err = 'Exactly one bulk temperature user object must be provided per boundary'
+    prereq = verify_parallel
+    max_parallel = 1
+  []
+[]

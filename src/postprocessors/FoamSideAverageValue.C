@@ -7,7 +7,9 @@ InputParameters
 FoamSideAverageValue::validParams()
 {
   InputParameters params = FoamSideIntegratedValue::validParams();
-  params.addClassDescription("Class that averages a variable over OpenFOAM boundary patches.");
+  params.addClassDescription(
+      "Computes the area-weighted average of an OpenFOAM scalar field or selected vector "
+      "component over the selected boundary patches.");
   return params;
 }
 

@@ -7,7 +7,8 @@ FoamSideAverageFunctionObject::validParams()
 {
   InputParameters params = FoamSideIntegratedFunctionObject::validParams();
   params.addClassDescription(
-      "Class that averages a function object over OpenFOAM boundary patches.");
+      "Computes the area-weighted average of the field produced by an OpenFOAM function object "
+      "over the selected boundary patches, using the selected component for vector fields.");
   return params;
 }
 

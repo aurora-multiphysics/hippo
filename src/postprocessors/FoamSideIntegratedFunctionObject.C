@@ -13,7 +13,8 @@ FoamSideIntegratedFunctionObject::validParams()
   params.addRequiredParam<MooseEnum>(
       "function_object", function_objects, "OpenFOAM function object");
   params.addClassDescription(
-      "Class that integrates a function object over OpenFOAM boundary patches.");
+      "Computes the surface integral of the field produced by an OpenFOAM function object over "
+      "the selected boundary patches, using the selected component for vector fields.");
   return params;
 }
 

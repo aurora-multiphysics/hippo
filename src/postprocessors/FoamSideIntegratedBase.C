@@ -71,21 +71,3 @@ FoamSideIntegratedBase::integrateValue(const std::string & variable)
 
   return value;
 }
-
-Real
-FoamSideIntegratedBase::getArea()
-{
-  Real area = 0.;
-  // loop over boundary ids
-  for (auto & boundary : _boundary)
-  {
-    auto & areas = getFvMesh().boundary()[boundary].magSf();
-    for (int i = 0; i < areas.size(); ++i)
-    {
-      area += areas[i];
-    }
-  }
-  // sum over ranks
-  gatherSum(area);
-  return area;
-}

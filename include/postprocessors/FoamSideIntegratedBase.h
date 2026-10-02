@@ -13,7 +13,5 @@ public:
 protected:
   virtual Real integrateValue(const std::string & variable);
 
-  Real getArea();
-
   Real _value;
 };

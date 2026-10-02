@@ -14,4 +14,6 @@ public:
 
 protected:
   std::vector<SubdomainName> _boundary;
+
+  Real getArea();
 };

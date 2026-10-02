@@ -10,7 +10,9 @@ FoamSideIntegratedValue::validParams()
   auto params = FoamSideIntegratedBase::validParams();
   params.addRequiredParam<std::string>("foam_variable",
                                        "Foam variable to be averaged over a boundary patch.");
-  params.addClassDescription("Class that integrates a variable over OpenFOAM boundary patches.");
+  params.addClassDescription(
+      "Computes the surface integral of an OpenFOAM scalar field or selected vector component "
+      "over the selected boundary patches.");
   return params;
 }
 

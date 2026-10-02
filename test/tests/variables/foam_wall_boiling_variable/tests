@@ -1,0 +1,42 @@
+[Tests]
+  [boiling]
+    [setup]
+      type = RunCommand
+      command = 'bash prep.sh'
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      min_parallel = 1
+      max_parallel = 1
+      prereq = boiling/setup
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = boiling/run
+    []
+    [setup_parallel]
+      type = RunCommand
+      command = 'bash prep.sh'
+      prereq = boiling/verify
+    []
+    [run_parallel]
+      type = RunApp
+      input = main.i
+      min_parallel = 4
+      max_parallel = 4
+      prereq = boiling/setup_parallel
+    []
+    [reconstruct]
+      type = RunCommand
+      command = 'reconstructPar -case foam -time "0.0009,0.001"'
+      prereq = boiling/run_parallel
+    []
+    [verify_parallel]
+      type = PythonUnitTest
+      input = test.py
+      prereq = boiling/reconstruct
+    []
+  []
+[]

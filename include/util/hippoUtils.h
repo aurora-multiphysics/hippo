@@ -1,8 +1,15 @@
 #pragma once
 
 #include "MooseError.h"
+#include "MooseTypes.h"
+#include "MooseVariableFieldBase.h"
+#include "FoamMesh.h"
 #include <InputParameters.h>
+#include <fvBoundaryMesh.H>
+#include <optional>
+#include <set>
 #include <string>
+#include <vector>
 
 namespace Hippo
 {
@@ -22,6 +29,31 @@ getDemangleName()
 
 namespace internal
 {
+/// Return the first repeated value in input order without modifying the vector.
+template <typename T>
+inline std::optional<T>
+findDuplicate(const std::vector<T> & values)
+{
+  std::set<T> seen;
+  for (const auto & value : values)
+    if (!seen.insert(value).second)
+      return value;
+  return std::nullopt;
+}
+
+/// Validate unique boundary names against the caller's allowed names; empty lists are allowed.
+inline void
+validateBoundaries(const std::vector<SubdomainName> & boundaries,
+                   const Foam::fvBoundaryMesh & patches)
+{
+  if (const auto duplicate = findDuplicate(boundaries))
+    mooseError("Boundary '", *duplicate, "' is listed more than once.");
+
+  for (const auto & boundary : boundaries)
+    if (patches.findIndex(boundary) < 0)
+      mooseError("Boundary '", boundary, "' not found in the available boundaries.");
+}
+
 template <typename T>
 inline void
 copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)
@@ -59,5 +91,25 @@ listFromVector(std::vector<StrType> vec, const char * sep = ", ")
   auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
   return std::accumulate(vec.begin() + 1, vec.end(), str, binary_op);
 }
+
+template <typename FoamField>
+inline void
+copyFieldFoamToMoose(const FoamMesh & mesh,
+                     const FoamField & field,
+                     MooseVariableFieldBase & moose_var,
+                     SubdomainID subdomain)
+{
+  size_t patch_count = mesh.getPatchCount(subdomain);
+  size_t patch_offset = mesh.getPatchOffset(subdomain);
+  for (size_t j = 0; j < patch_count; ++j)
+  {
+    auto elem = patch_offset + j;
+    auto elem_ptr = mesh.getElemPtr(elem + mesh.rank_element_offset);
+    assert(elem_ptr);
+    auto dof_t = elem_ptr->dof_number(moose_var.sys().number(), moose_var.number(), 0);
+    moose_var.sys().solution().set(dof_t, field[j]);
+  }
+}
+
 }
 }
