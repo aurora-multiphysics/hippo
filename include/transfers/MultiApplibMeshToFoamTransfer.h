@@ -13,6 +13,8 @@ public:
 
   MultiApplibMeshToFoamTransfer(const InputParameters & params);
 
+  void execute() override;
+
 protected:
   template <typename T>
   void buildTransferMapping();
@@ -31,4 +33,8 @@ private:
   const VariableName & _libmesh_var_name;
   /// number of points
   unsigned _n_points{0};
+
+  std::map<processor_id_type, std::vector<Point>> _outgoing_points;
+
+  bool _mapping_built{false};
 };

@@ -1,9 +1,12 @@
 #include "MooseEnum.h"
 #include "MooseError.h"
 #include "MooseTypes.h"
+#include "Registry.h"
 #include "fvCFD_moose.h"
 #include "InputParameters.h"
 #include "FEProblemBase.h"
+#include "FoamProblem.h"
+#include "MultiApp.h"
 
 #include "libmesh/mesh_function.h"
 #include <memory>
@@ -14,6 +17,8 @@
 #include <vectorField.H>
 #include "MultiAppFoamTransfer.h"
 #include "MultiApplibMeshToFoamTransfer.h"
+
+registerMooseObject("hippoApp", MultiApplibMeshToFoamTransfer);
 
 InputParameters
 MultiApplibMeshToFoamTransfer::validParams()
@@ -29,9 +34,9 @@ MultiApplibMeshToFoamTransfer::MultiApplibMeshToFoamTransfer(const InputParamete
   : MultiAppFoamTransfer(params),
     _mesh_function(),
     _foam_var_name(getParam<VariableName>("foam_variable")),
-    _libmesh_var_name(getParam<VariableName>("libmesh_variable"))
+    _libmesh_var_name(getParam<VariableName>("libmesh_variable")),
+    _outgoing_points()
 {
-  buildTransferMapping<Foam::scalar>();
 }
 
 template <typename T>
@@ -50,22 +55,26 @@ template <typename T>
 void
 MultiApplibMeshToFoamTransfer::buildTransferMapping()
 {
+  _outgoing_points.clear();
   _n_points = 0;
+
+  auto & foam_problem = foamProblem(getActiveToProblem());
+  auto & foam_mesh = foam_problem.mesh().fvMesh();
+
   const auto & foam_boundaries = getParam<std::vector<std::string>>("foam_boundaries");
-  std::map<processor_id_type, std::vector<Point>> outgoing_points;
   if (foam_boundaries.empty())
   {
-    const auto & cell_centers = getFvMesh().Cf();
+    const auto & cell_centers = foam_mesh.C();
     for (const auto & point : cell_centers)
     {
       libMesh::Point point_in_target_frame;
       for (auto d = 0; d < Foam::vector::nComponents; ++d)
       {
-        point_in_target_frame = point[d];
+        point_in_target_frame(d) = point[d];
       }
       const auto point_in_source_frame = mapPointToActiveSourceFrame(point_in_target_frame);
       for (const auto i_proc : make_range(n_processors()))
-        outgoing_points[i_proc].push_back(point_in_source_frame);
+        _outgoing_points[i_proc].push_back(point_in_source_frame);
     }
 
     _n_points = cell_centers.size();
@@ -74,18 +83,18 @@ MultiApplibMeshToFoamTransfer::buildTransferMapping()
   {
     for (const auto & boundary : foam_boundaries)
     {
-      const auto & patch = getFvMesh().boundary()[boundary];
+      const auto & patch = foam_mesh.boundary()[boundary];
       const auto & cell_centers = patch.Cf();
       for (const auto & point : cell_centers)
       {
         libMesh::Point point_in_target_frame;
         for (auto d = 0; d < Foam::vector::nComponents; ++d)
         {
-          point_in_target_frame = point[d];
+          point_in_target_frame(d) = point[d];
         }
         const auto point_in_source_frame = mapPointToActiveSourceFrame(point_in_target_frame);
         for (const auto i_proc : make_range(n_processors()))
-          outgoing_points[i_proc].push_back(point_in_source_frame);
+          _outgoing_points[i_proc].push_back(point_in_source_frame);
       }
       _n_points += cell_centers.size();
     }
@@ -154,7 +163,33 @@ MultiApplibMeshToFoamTransfer::transferVariables()
   // Set interpolated field values at points on local processor
   interp_vals = FoamOutOfRangeValue<T>(); // default to the out-of-mesh value
   // We assume incoming_vals is ordered in the same way as outgoing_points
-  std::pair<mfem::real_t, unsigned> * dummy = nullptr;
+  std::pair<T, unsigned> * dummy = nullptr;
   libMesh::Parallel::pull_parallel_vector_data(
-      comm(), outgoing_points, gather_functor, action_functor, dummy);
+      comm(), _outgoing_points, gather_functor, action_functor, dummy);
+}
+
+void
+MultiApplibMeshToFoamTransfer::execute()
+{
+  getAppInfo();
+
+  if (_current_direction != TO_MULTIAPP)
+    mooseError("MultiApplibMeshToFoamTransfer currently supports only parent-to-child transfers.");
+
+  auto multi_app = getToMultiApp();
+
+  // TODO: Support all MultiApp instances and directions with per-pair mappings before merge.
+  if (!multi_app->hasLocalApp(0))
+    return;
+
+  setActiveFromProblem(multi_app->problemBase(), 0);
+  setActiveToProblem(multi_app->appProblemBase(0), 0);
+
+  if (!_mapping_built)
+  {
+    buildTransferMapping<Foam::scalar>();
+    _mapping_built = true;
+  }
+
+  transferVariables<Foam::scalar>();
 }

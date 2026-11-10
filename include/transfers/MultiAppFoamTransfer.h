@@ -1,17 +1,30 @@
 #pragma once
 
-#include "HippoInterface.h"
 #include "InputParameters.h"
 #include "MultiAppTransfer.h"
 #include <functional>
 
-class MultiAppFoamTransfer : public MultiAppTransfer, public HippoInterface
+class FoamProblem;
+
+class MultiAppFoamTransfer : public MultiAppTransfer
 {
 public:
   static InputParameters validParams();
   MultiAppFoamTransfer(const InputParameters & params);
 
 protected:
+  /// Set the active source problem and its global app index.
+  void setActiveFromProblem(FEProblemBase & problem, unsigned int global_app_index)
+  {
+    _active_from_problem = std::ref(problem);
+    _active_from_global_app_index = global_app_index;
+  }
+  /// Set the active destination problem and its global app index.
+  void setActiveToProblem(FEProblemBase & problem, unsigned int global_app_index)
+  {
+    _active_to_problem = std::ref(problem);
+    _active_to_global_app_index = global_app_index;
+  }
   /// Getter for the active source transform
   const MultiAppCoordTransform & getActiveFromTransform() const
   {
@@ -31,6 +44,8 @@ protected:
   virtual FEProblemBase & getActiveFromProblem() { return *_active_from_problem; }
   /// Getter for current problem containing destination variables
   virtual FEProblemBase & getActiveToProblem() { return *_active_to_problem; }
+  /// Casts problem to a FoamProblem with checks
+  FoamProblem & foamProblem(FEProblemBase & problem) const;
   /// Get libMesh EquationSystem, which may or may not be displaced
   libMesh::EquationSystems & getlibMeshEquationSystem(FEProblemBase & problem,
                                                       bool use_displaced) const;
