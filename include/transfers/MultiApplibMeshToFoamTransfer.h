@@ -21,6 +21,9 @@ public:
 
 protected:
   template <typename T>
+  void prepareSourceEvaluator();
+
+  template <typename T>
   void buildTransferMapping();
 
   template <typename T>

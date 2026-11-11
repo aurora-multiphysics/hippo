@@ -24,8 +24,8 @@ InputParameters
 MultiApplibMeshToFoamTransfer::validParams()
 {
   InputParameters params = MultiAppFoamTransfer::validParams();
-  params.addParam<std::vector<std::string>>("foam_boundaries",
-                                            "Native OpenFOAM destination patches.");
+  params.addParam<std::vector<std::string>>(
+      "foam_boundaries", std::vector<std::string>{}, "Native OpenFOAM destination patches.");
   params.addRequiredParam<VariableName>("foam_variable",
                                         "Registered OpenFOAM destination container name");
   params.addRequiredParam<VariableName>("libmesh_variable", "Source libMesh scalar field variable");
@@ -89,7 +89,12 @@ MultiApplibMeshToFoamTransfer::buildTransferMapping()
         outgoing_points[i_proc].push_back(point_in_source_frame);
     }
   }
+}
 
+template <typename T>
+void
+MultiApplibMeshToFoamTransfer::prepareSourceEvaluator()
+{
   FEProblemBase & from_problem = getActiveFromProblem();
   MooseVariableFieldBase & from_var = from_problem.getVariable(
       0, _libmesh_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_ANY);
@@ -111,6 +116,7 @@ template <typename T>
 void
 MultiApplibMeshToFoamTransfer::transferVariables()
 {
+  const auto source_processor_id = getActiveFromProblem().mesh().getMesh().processor_id();
   // Evaluate interpolated values at incoming points.
   auto gather_functor = [&](processor_id_type /*pid*/,
                             const std::vector<Point> & incoming_points,
@@ -122,7 +128,7 @@ MultiApplibMeshToFoamTransfer::transferVariables()
     {
       const auto map = _mesh_function->discontinuous_value(incoming_points[i_pt]);
       for (const auto & [elem, val] : map)
-        if (elem && elem->processor_id() == this->processor_id())
+        if (elem && elem->processor_id() == source_processor_id)
         {
           vals_for_incoming_points[i_pt].first += val;
           vals_for_incoming_points[i_pt].second++;
@@ -131,15 +137,22 @@ MultiApplibMeshToFoamTransfer::transferVariables()
   };
 
   static_assert(std::is_same_v<T, Foam::scalar>, "Only scalar boundary transfers are supported.");
+  std::map<processor_id_type, std::vector<Point>> empty_requests;
   // All participating ranks process boundaries in input order, including locally empty patches.
   for (const auto & boundary : getParam<std::vector<std::string>>("foam_boundaries"))
   {
-    auto & interp_vals = _boundary_transfer->get().boundaryField(boundary);
-    std::vector<unsigned> neighbor_elems(interp_vals.size(), 0);
+    std::vector<unsigned> neighbor_elems;
+    if (_boundary_transfer)
+      neighbor_elems.resize(_boundary_transfer->get().boundaryField(boundary).size(), 0);
+
     auto action_functor = [&](processor_id_type /*pid*/,
                               const std::vector<Point> & /*my_outgoing_points*/,
                               const std::vector<std::pair<T, unsigned>> & vals_for_outgoing_points)
     {
+      if (!_boundary_transfer)
+        return;
+
+      auto & interp_vals = _boundary_transfer->get().boundaryField(boundary);
       for (const auto i : make_range(interp_vals.size()))
       {
         const auto val = vals_for_outgoing_points[i].first;
@@ -158,8 +171,9 @@ MultiApplibMeshToFoamTransfer::transferVariables()
 
     // Returned values follow the ordering of this boundary's requested face centres.
     std::pair<T, unsigned> * dummy = nullptr;
+    auto & requests = _boundary_transfer ? _outgoing_points.at(boundary) : empty_requests;
     libMesh::Parallel::pull_parallel_vector_data(
-        comm(), _outgoing_points.at(boundary), gather_functor, action_functor, dummy);
+        comm(), requests, gather_functor, action_functor, dummy);
 
     for (const auto i : index_range(neighbor_elems))
       if (!neighbor_elems[i])
@@ -182,18 +196,22 @@ MultiApplibMeshToFoamTransfer::execute()
   auto multi_app = getToMultiApp();
 
   // TODO: Support all MultiApp instances and directions with per-pair mappings before merge.
-  if (!multi_app->hasLocalApp(0))
-    return;
-
   setActiveFromProblem(multi_app->problemBase(), 0);
-  setActiveToProblem(multi_app->appProblemBase(0), 0);
+  const bool has_destination = multi_app->hasLocalApp(0);
+  if (has_destination)
+    setActiveToProblem(multi_app->appProblemBase(0), 0);
 
   if (!_mapping_built)
   {
-    FoamProblem & foam_problem = foamProblem(getActiveToProblem());
-    _boundary_transfer = std::ref(
-        foam_problem.getBoundaryTransfer<Foam::scalar>(_foam_var_name, TransferQuantity::Value));
-    buildTransferMapping<Foam::scalar>();
+    // Every parent rank can own source elements needed by a destination rank.
+    prepareSourceEvaluator<Foam::scalar>();
+    if (has_destination)
+    {
+      FoamProblem & foam_problem = foamProblem(getActiveToProblem());
+      _boundary_transfer = std::ref(
+          foam_problem.getBoundaryTransfer<Foam::scalar>(_foam_var_name, TransferQuantity::Value));
+      buildTransferMapping<Foam::scalar>();
+    }
     _mapping_built = true;
   }
 
