@@ -30,7 +30,8 @@ public:
   virtual void addExternalVariables() override {};
   virtual void initialSetup() override;
 
-  /// Register borrowed fields, or append disjoint boundaries to an unlocked container.
+  /// Register borrowed fields, or merge compatible references into an unlocked container.
+  /// Existing boundaries must reference the same field object; locked containers reject all calls.
   template <typename T>
   BoundaryTransferContainer<T> &
   addBoundaryTransfer(const std::string & name,

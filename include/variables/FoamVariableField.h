@@ -10,6 +10,11 @@ public:
 
   explicit FoamVariableField(const InputParameters & params);
 
+  void initialSetup() override;
+
+  // Register native patch-field references after the complete object is constructed.
+  void registerTransfer();
+
   // transfer variable from OpenFOAM field to MOOSE variable
   virtual void transferVariable() override;
 
@@ -19,4 +24,5 @@ public:
 protected:
   // variable name or functionObject to be shadowed
   std::string _foam_variable;
+  const bool _create_aux_variable;
 };

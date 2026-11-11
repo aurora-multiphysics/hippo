@@ -9,6 +9,9 @@ public:
 
   explicit FoamFieldBase(const InputParameters & params);
 
+  // Called by FoamProblem before the base problem's initial setup and INITIAL transfers.
+  virtual void initialSetup() {}
+
   // transfer variable from OpenFOAM field to MOOSE variable
   virtual void transferVariable() = 0;
 

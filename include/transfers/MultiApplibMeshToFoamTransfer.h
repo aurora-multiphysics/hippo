@@ -1,7 +1,6 @@
 #pragma once
 
 #include "InputParameters.h"
-#include "MooseEnum.h"
 #include "MultiAppFoamTransfer.h"
 #include "BoundaryTransferContainer.h"
 #include "libmesh/mesh_function.h"

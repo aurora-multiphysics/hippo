@@ -1,6 +1,5 @@
 #include "FoamBoundaryVariable.h"
 #include "FoamProblem.h"
-#include "MooseError.h"
 #include "Registry.h"
 
 #include <type_traits>

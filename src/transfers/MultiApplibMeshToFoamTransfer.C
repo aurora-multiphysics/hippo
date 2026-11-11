@@ -9,6 +9,7 @@
 #include "MultiApp.h"
 
 #include "libmesh/mesh_function.h"
+#include "libmesh/parallel_algebra.h"
 #include <memory>
 #include <scalar.H>
 #include <typeInfo.H>

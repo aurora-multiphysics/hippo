@@ -21,13 +21,16 @@ template <typename T>
 void
 BoundaryTransferContainer<T>::addBoundaries(const FieldRefMap & data)
 {
-  if (!modifiable())
+  if (!this->modifiable())
     mooseError("Cannot add boundaries to a locked transfer container.");
 
   // Validate the entire registration before changing any references.
   for (const auto & entry : data)
-    if (_data.find(entry.first) != _data.end())
-      mooseError("Boundary '", entry.first, "' is already registered in the transfer container.");
+  {
+    const auto existing = _data.find(entry.first);
+    if (existing != _data.end() && &existing->second.get() != &entry.second.get())
+      mooseError("Boundary '", entry.first, "' is already registered with a different field.");
+  }
 
   _data.insert(data.begin(), data.end());
 }

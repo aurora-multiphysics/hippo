@@ -17,7 +17,9 @@ public:
   explicit BoundaryTransferContainer(FieldMap & data);
   explicit BoundaryTransferContainer(FieldRefMap & data);
 
-  /// Add borrowed fields; their owners must outlive this container.
+  /// Merge borrowed fields, accepting repeated references to the same field object.
+  /// Conflicts reject the whole batch; locked containers reject every call.
+  /// Field owners must outlive this container.
   void addBoundaries(const FieldRefMap & data);
 
   Field & boundaryField(const BoundaryName & boundary) override;

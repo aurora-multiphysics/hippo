@@ -1,10 +1,10 @@
 #pragma once
 
 #include "fvCFD_moose.h"
-"
+
 #include "MooseEnum.h"
 
-    class LibMeshVariableNearestLocationEvaluator
+class LibMeshVariableNearestLocationEvaluator
 {
 public:
   LibMeshVariableNearestLocationEvaluator(const MooseEnum & mode,

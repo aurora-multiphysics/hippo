@@ -47,11 +47,15 @@ FoamProblem::FoamProblem(InputParameters const & params)
 void
 FoamProblem::initialSetup()
 {
-  ExternalProblem::initialSetup();
-
   // Get FoamVariables created by the action AddFoamVariableAction
   TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
   query_vars.queryInto(_foam_variables);
+
+  // Register native fields before the base setup initializes and executes INITIAL transfers.
+  for (auto * variable : _foam_variables)
+    variable->initialSetup();
+
+  ExternalProblem::initialSetup();
 
   verifyFoamVariables();
 

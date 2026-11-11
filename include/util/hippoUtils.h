@@ -2,6 +2,7 @@
 
 #include "MooseError.h"
 #include "MooseTypes.h"
+#include "SystemBase.h"
 #include "MooseVariableFieldBase.h"
 #include "FoamMesh.h"
 #include <InputParameters.h>

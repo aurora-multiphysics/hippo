@@ -28,7 +28,10 @@ AddFoamVariableAction::act()
   // Add variable through [FoamVariables] block
   if (_current_task == "add_foam_variable")
   {
-    if (_moose_object_pars.get<bool>("_create_aux_variable"))
+    const bool create_aux_variable = _moose_object_pars.isParamValid("create_aux_variable")
+                                         ? _moose_object_pars.get<bool>("create_aux_variable")
+                                         : _moose_object_pars.get<bool>("_create_aux_variable");
+    if (create_aux_variable)
       createAuxVariable();
 
     _problem->addObject<FoamFieldBase>(_type, _name, _moose_object_pars, false);
