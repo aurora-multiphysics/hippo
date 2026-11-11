@@ -12,7 +12,7 @@ InputParameters
 AddFoamVariableAction::validParams()
 {
   auto params = MooseObjectAction::validParams();
-  params.addClassDescription("Adds a FoamVariable that shadows an OpenFOAM scalar field.");
+  params.addClassDescription("Adds a mirrored OpenFOAM variable or a standalone OpenFOAM field.");
   return params;
 }
 
@@ -28,7 +28,8 @@ AddFoamVariableAction::act()
   // Add variable through [FoamVariables] block
   if (_current_task == "add_foam_variable")
   {
-    createAuxVariable();
+    if (_moose_object_pars.get<bool>("_create_aux_variable"))
+      createAuxVariable();
 
     _problem->addObject<FoamFieldBase>(_type, _name, _moose_object_pars, false);
   }
