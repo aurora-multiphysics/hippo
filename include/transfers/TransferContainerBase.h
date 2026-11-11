@@ -7,6 +7,16 @@ class TransferContainerBase
 {
 public:
   virtual ~TransferContainerBase() = default;
+
+  /// Assignment must not reset the lock or replace registered field references.
+  TransferContainerBase & operator=(const TransferContainerBase &) = delete;
+
+  bool modifiable() const { return _modifiable; }
+  void lock() { _modifiable = false; }
+
+private:
+  /// Controls registration changes, not writes to the referenced field values.
+  bool _modifiable = true;
 };
 
 enum class TransferFieldType

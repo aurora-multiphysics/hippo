@@ -17,6 +17,9 @@ public:
   explicit BoundaryTransferContainer(FieldMap & data);
   explicit BoundaryTransferContainer(FieldRefMap & data);
 
+  /// Add borrowed fields; their owners must outlive this container.
+  void addBoundaries(const FieldRefMap & data);
+
   Field & boundaryField(const BoundaryName & boundary) override;
   Field & volumeField() override;
 

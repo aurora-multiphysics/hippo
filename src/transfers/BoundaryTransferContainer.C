@@ -14,10 +14,22 @@ BoundaryTransferContainer<T>::BoundaryTransferContainer(FieldMap & data)
 template <typename T>
 BoundaryTransferContainer<T>::BoundaryTransferContainer(FieldRefMap & data)
 {
-  for (auto & [name, field] : data)
-  {
-    _data.emplace(name, field);
-  }
+  addBoundaries(data);
+}
+
+template <typename T>
+void
+BoundaryTransferContainer<T>::addBoundaries(const FieldRefMap & data)
+{
+  if (!modifiable())
+    mooseError("Cannot add boundaries to a locked transfer container.");
+
+  // Validate the entire registration before changing any references.
+  for (const auto & entry : data)
+    if (_data.find(entry.first) != _data.end())
+      mooseError("Boundary '", entry.first, "' is already registered in the transfer container.");
+
+  _data.insert(data.begin(), data.end());
 }
 
 template <typename T>
