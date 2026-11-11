@@ -27,12 +27,12 @@ FoamBoundaryVariable<T>::FoamBoundaryVariable(const InputParameters & params)
 {
   const auto & boundaries = getParam<std::vector<BoundaryName>>("boundary");
   if (boundaries.empty())
-    paramError("boundary", "At least one native OpenFOAM patch must be specified.");
+    mooseError("At least one native OpenFOAM patch must be specified.");
 
   const auto & initial = getParam<std::vector<Real>>("initial_condition");
   constexpr unsigned int components = std::is_same_v<T, Foam::scalar> ? 1 : 3;
   if (initial.size() != components)
-    paramError("initial_condition", "Expected ", components, " component(s).");
+    mooseError("Expected ", components, " component(s) in initial conditions.");
 
   const T initial_value = [&]() -> T
   {

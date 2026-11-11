@@ -24,9 +24,11 @@ InputParameters
 MultiApplibMeshToFoamTransfer::validParams()
 {
   InputParameters params = MultiAppFoamTransfer::validParams();
-  params.addParam<std::vector<std::string>>("foam_boundaries", "OpenFOAM boundaries.");
-  params.addRequiredParam<VariableName>("foam_variable", "OpenFOAM variable");
-  params.addRequiredParam<VariableName>("libmesh_variable", "OpenFOAM variable");
+  params.addParam<std::vector<std::string>>("foam_boundaries",
+                                            "Native OpenFOAM destination patches.");
+  params.addRequiredParam<VariableName>("foam_variable",
+                                        "Registered OpenFOAM destination container name");
+  params.addRequiredParam<VariableName>("libmesh_variable", "Source libMesh scalar field variable");
   return params;
 }
 
@@ -55,54 +57,44 @@ template <typename T>
 void
 MultiApplibMeshToFoamTransfer::buildTransferMapping()
 {
+  static_assert(std::is_same_v<T, Foam::scalar>, "Only scalar boundary transfers are supported.");
   _outgoing_points.clear();
-  _n_points = 0;
 
   auto & foam_problem = foamProblem(getActiveToProblem());
-  auto & foam_mesh = foam_problem.mesh().fvMesh();
-
+  const auto & patches = foam_problem.mesh().fvMesh().boundary();
   const auto & foam_boundaries = getParam<std::vector<std::string>>("foam_boundaries");
-  if (foam_boundaries.empty())
+
+  for (const auto & boundary : foam_boundaries)
   {
-    const auto & cell_centers = foam_mesh.C();
-    for (const auto & point : cell_centers)
+    if (_outgoing_points.find(boundary) != _outgoing_points.end())
+      mooseError("Patch '", boundary, "' is specified more than once.");
+
+    const auto patch_id = patches.findIndex(boundary);
+    if (patch_id < 0)
+      mooseError("Unknown OpenFOAM patch '", boundary, "'.");
+
+    const auto & patch = patches[patch_id];
+    const auto & field = _boundary_transfer->get().boundaryField(boundary);
+    if (field.size() != patch.size())
+      mooseError("Destination field size does not match OpenFOAM patch '", boundary, "'.");
+
+    auto & outgoing_points = _outgoing_points[boundary];
+    for (const auto & point : patch.Cf())
     {
       libMesh::Point point_in_target_frame;
       for (auto d = 0; d < Foam::vector::nComponents; ++d)
-      {
         point_in_target_frame(d) = point[d];
-      }
       const auto point_in_source_frame = mapPointToActiveSourceFrame(point_in_target_frame);
       for (const auto i_proc : make_range(n_processors()))
-        _outgoing_points[i_proc].push_back(point_in_source_frame);
-    }
-
-    _n_points = cell_centers.size();
-  }
-  else
-  {
-    for (const auto & boundary : foam_boundaries)
-    {
-      const auto & patch = foam_mesh.boundary()[boundary];
-      const auto & cell_centers = patch.Cf();
-      for (const auto & point : cell_centers)
-      {
-        libMesh::Point point_in_target_frame;
-        for (auto d = 0; d < Foam::vector::nComponents; ++d)
-        {
-          point_in_target_frame(d) = point[d];
-        }
-        const auto point_in_source_frame = mapPointToActiveSourceFrame(point_in_target_frame);
-        for (const auto i_proc : make_range(n_processors()))
-          _outgoing_points[i_proc].push_back(point_in_source_frame);
-      }
-      _n_points += cell_centers.size();
+        outgoing_points[i_proc].push_back(point_in_source_frame);
     }
   }
 
   FEProblemBase & from_problem = getActiveFromProblem();
   MooseVariableFieldBase & from_var = from_problem.getVariable(
       0, _libmesh_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_ANY);
+  if (from_var.fieldType() != Moose::VarFieldType::VAR_FIELD_STANDARD)
+    mooseError("The source must be a scalar field variable.");
   System & from_sys = from_var.sys().system();
   unsigned int from_var_num = from_sys.variable_number(_libmesh_var_name);
   // Construct a local mesh function for each origin problem
@@ -138,34 +130,45 @@ MultiApplibMeshToFoamTransfer::transferVariables()
     }
   };
 
-  Foam::Field<T> interp_vals(_n_points);
-  // Counters for the no. of elements sharing/neighboring a given point to perform arithmetic avg
-  std::vector<unsigned> neighbor_elems(interp_vals.size(), 0);
-  // Copy data out to interp_vals
-  auto action_functor = [&](processor_id_type /*pid*/,
-                            const std::vector<Point> & /*my_outgoing_points*/,
-                            const std::vector<std::pair<T, unsigned>> & vals_for_outgoing_points)
+  static_assert(std::is_same_v<T, Foam::scalar>, "Only scalar boundary transfers are supported.");
+  // All participating ranks process boundaries in input order, including locally empty patches.
+  for (const auto & boundary : getParam<std::vector<std::string>>("foam_boundaries"))
   {
-    for (const auto i : make_range(interp_vals.size()))
+    auto & interp_vals = _boundary_transfer->get().boundaryField(boundary);
+    std::vector<unsigned> neighbor_elems(interp_vals.size(), 0);
+    auto action_functor = [&](processor_id_type /*pid*/,
+                              const std::vector<Point> & /*my_outgoing_points*/,
+                              const std::vector<std::pair<T, unsigned>> & vals_for_outgoing_points)
     {
-      const auto val = vals_for_outgoing_points[i].first;
-      const auto elems = vals_for_outgoing_points[i].second;
+      for (const auto i : make_range(interp_vals.size()))
+      {
+        const auto val = vals_for_outgoing_points[i].first;
+        const auto elems = vals_for_outgoing_points[i].second;
+        if (!elems)
+          continue;
 
-      if (!elems)
-        continue;
-      else if (interp_vals[i] == FoamOutOfRangeValue<T>())
-        interp_vals[i] = val / (neighbor_elems[i] += elems);
-      else
-        interp_vals[i] = (interp_vals[i] * neighbor_elems[i] + val) / (neighbor_elems[i] += elems);
-    }
-  };
+        const auto previous_elems = neighbor_elems[i];
+        neighbor_elems[i] += elems;
+        if (!previous_elems)
+          interp_vals[i] = val / neighbor_elems[i];
+        else
+          interp_vals[i] = (interp_vals[i] * previous_elems + val) / neighbor_elems[i];
+      }
+    };
 
-  // Set interpolated field values at points on local processor
-  interp_vals = FoamOutOfRangeValue<T>(); // default to the out-of-mesh value
-  // We assume incoming_vals is ordered in the same way as outgoing_points
-  std::pair<T, unsigned> * dummy = nullptr;
-  libMesh::Parallel::pull_parallel_vector_data(
-      comm(), _outgoing_points, gather_functor, action_functor, dummy);
+    // Returned values follow the ordering of this boundary's requested face centres.
+    std::pair<T, unsigned> * dummy = nullptr;
+    libMesh::Parallel::pull_parallel_vector_data(
+        comm(), _outgoing_points.at(boundary), gather_functor, action_functor, dummy);
+
+    for (const auto i : index_range(neighbor_elems))
+      if (!neighbor_elems[i])
+        mooseError("No source element contributed to OpenFOAM boundary '",
+                   boundary,
+                   "', local face ",
+                   i,
+                   ".");
+  }
 }
 
 void
@@ -187,6 +190,9 @@ MultiApplibMeshToFoamTransfer::execute()
 
   if (!_mapping_built)
   {
+    FoamProblem & foam_problem = foamProblem(getActiveToProblem());
+    _boundary_transfer = std::ref(
+        foam_problem.getBoundaryTransfer<Foam::scalar>(_foam_var_name, TransferQuantity::Value));
     buildTransferMapping<Foam::scalar>();
     _mapping_built = true;
   }

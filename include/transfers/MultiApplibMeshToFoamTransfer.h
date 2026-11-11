@@ -3,8 +3,12 @@
 #include "InputParameters.h"
 #include "MooseEnum.h"
 #include "MultiAppFoamTransfer.h"
+#include "BoundaryTransferContainer.h"
 #include "libmesh/mesh_function.h"
+#include <functional>
+#include <map>
 #include <memory>
+#include <optional>
 
 class MultiApplibMeshToFoamTransfer : public MultiAppFoamTransfer
 {
@@ -27,14 +31,14 @@ protected:
 
 private:
   std::unique_ptr<libMesh::MeshFunction> _mesh_function;
-  /// Vector of source variable names to be transferred
+  /// Registered destination container name
   const VariableName & _foam_var_name;
-  /// Vector of destination variable names to transfer to
+  /// Source libMesh variable name
   const VariableName & _libmesh_var_name;
-  /// number of points
-  unsigned _n_points{0};
+  /// Borrowed destination container, bound once the active problems are selected
+  std::optional<std::reference_wrapper<BoundaryTransferContainer<Foam::scalar>>> _boundary_transfer;
 
-  std::map<processor_id_type, std::vector<Point>> _outgoing_points;
+  std::map<std::string, std::map<processor_id_type, std::vector<Point>>> _outgoing_points;
 
   bool _mapping_built{false};
 };
