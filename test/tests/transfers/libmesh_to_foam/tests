@@ -1,0 +1,41 @@
+[Tests]
+  [setup_uniform]
+    type = RunCommand
+    command = 'bash setup.sh'
+  []
+  [run_uniform]
+    type = RunApp
+    input = main.i
+    cli_args = "Functions/source_function/expression='7 + 2*t'"
+    prereq = setup_uniform
+    min_parallel = 1
+    max_parallel = 1
+    requirement = 'Hippo shall transfer a spatially uniform time-dependent scalar into native OpenFOAM boundary fields at each timestep.'
+  []
+  [verify_uniform]
+    type = PythonUnitTest
+    input = test.py
+    test_case = TestTransfer.test_uniform
+    prereq = run_uniform
+  []
+  [setup_spatial]
+    type = RunCommand
+    command = 'bash setup.sh'
+    prereq = verify_uniform
+  []
+  [run_spatial]
+    type = RunApp
+    input = main.i
+    cli_args = "Functions/source_function/expression='10 + 2*x + 3*y + 5*z + t*(1 + x + 2*y + 3*z)'"
+    prereq = setup_spatial
+    min_parallel = 1
+    max_parallel = 1
+    requirement = 'Hippo shall transfer a spatially and temporally varying scalar into native OpenFOAM boundary fields at each timestep.'
+  []
+  [verify_spatial]
+    type = PythonUnitTest
+    input = test.py
+    test_case = TestTransfer.test_spatial
+    prereq = run_spatial
+  []
+[]

@@ -1,0 +1,24 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object controlDict;
+}
+
+application foamRun;
+solver fieldTransferTest;
+libs ("libbaseTestSolver.so" "libfieldTransferTestSolver.so");
+startFrom startTime;
+startTime 0;
+stopAt endTime;
+endTime 3;
+deltaT 1;
+adjustTimeStep no;
+writeControl timeStep;
+writeInterval 1;
+writeFormat ascii;
+writePrecision 17;
+writeCompression off;
+timeFormat general;
+timePrecision 17;
+runTimeModifiable false;

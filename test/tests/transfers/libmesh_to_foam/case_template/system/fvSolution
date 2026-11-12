@@ -1,0 +1,14 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object fvSolution;
+}
+
+solvers {}
+PIMPLE
+{
+    nOuterCorrectors 1;
+    nCorrectors 1;
+    nNonOrthogonalCorrectors 0;
+}
