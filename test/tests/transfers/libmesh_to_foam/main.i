@@ -21,7 +21,7 @@
 [Functions]
   [source_function]
     type = ParsedFunction
-    expression = '7 + 2*t'
+    expression = '10 + 2*x + 3*y + 5*z + t*(1 + x + 2*y + 3*z)'
   []
 []
 [AuxVariables]

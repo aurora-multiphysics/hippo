@@ -8,7 +8,7 @@ import numpy as np
 
 
 class TestTransfer(unittest.TestCase):
-    """Each method checks the output from its corresponding harness run."""
+    """Check native output from the serial and MPI spatial transfer runs."""
 
     def read_values(self, case, time, boundary=None):
         self.assertTrue((Path(case) / str(time) / "transferField").is_file())
@@ -26,9 +26,6 @@ class TestTransfer(unittest.TestCase):
         # OpenFOAM may write a uniform value instead of an explicit list.
         self.assertTrue(np.isfinite(values).all())
         return values
-
-    def test_uniform(self):
-        self.check_target_boundaries(lambda x, y, z, t: np.full_like(x, 7 + 2 * t))
 
     def test_spatial(self):
         self.check_target_boundaries(
