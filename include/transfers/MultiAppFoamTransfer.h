@@ -3,6 +3,7 @@
 #include "InputParameters.h"
 #include "MultiAppTransfer.h"
 #include <functional>
+#include <optional>
 
 class FoamProblem;
 
@@ -46,9 +47,6 @@ protected:
   virtual FEProblemBase & getActiveToProblem() { return *_active_to_problem; }
   /// Casts problem to a FoamProblem with checks
   FoamProblem & foamProblem(FEProblemBase & problem) const;
-  /// Get libMesh EquationSystem, which may or may not be displaced
-  libMesh::EquationSystems & getlibMeshEquationSystem(FEProblemBase & problem,
-                                                      bool use_displaced) const;
 
 private:
   /// Pointer to active destination problem variable is being transferred to

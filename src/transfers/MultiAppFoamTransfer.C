@@ -1,9 +1,6 @@
-#include "HippoInterface.h"
 #include "MultiAppFoamTransfer.h"
-#include "MultiAppTransfer.h"
 #include "FoamProblem.h"
-#include "DisplacedProblem.h"
-#include "libmesh/equation_systems.h"
+#include "MooseError.h"
 
 InputParameters
 MultiAppFoamTransfer::validParams()
@@ -14,20 +11,6 @@ MultiAppFoamTransfer::validParams()
 MultiAppFoamTransfer::MultiAppFoamTransfer(const InputParameters & params)
   : MultiAppTransfer(params)
 {
-}
-
-libMesh::EquationSystems &
-MultiAppFoamTransfer::getlibMeshEquationSystem(FEProblemBase & problem, bool use_displaced) const
-{
-  if (use_displaced)
-  {
-    if (!problem.getDisplacedProblem())
-      mooseError("No displaced problem to provide a displaced equation system");
-
-    return problem.getDisplacedProblem()->es();
-  }
-  else
-    return problem.es();
 }
 
 FoamProblem &
