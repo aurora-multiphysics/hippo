@@ -4,16 +4,17 @@
 #include "LibMeshTransferEvaluator.h"
 #include "libmesh/mesh_function.h"
 #include <memory>
-#include <type_traits>
 
 class FEProblemBase;
+namespace libMesh
+{
+class System;
+}
 
 /// Evaluate scalar FE fields using locally owned elements, including discontinuous traces.
 template <typename T>
 class LibMeshShapeFunctionEvaluator : public LibMeshTransferEvaluator<T>
 {
-  static_assert(std::is_same_v<T, Foam::scalar>, "Only scalar FE evaluation is supported.");
-
 public:
   /// The source problem and its solution must outlive this evaluator.
   LibMeshShapeFunctionEvaluator(FEProblemBase & problem,
@@ -21,8 +22,18 @@ public:
                                 bool use_displaced,
                                 const libMesh::Parallel::Communicator & communicator);
 
+  /// Direct libMesh entry point. All borrowed dependencies must outlive the evaluator.
+  /// Geometry must have matching entity IDs, topology, and variable DOF numbering.
+  LibMeshShapeFunctionEvaluator(libMesh::System & system,
+                                unsigned int variable_number,
+                                libMesh::EquationSystems & geometry,
+                                const libMesh::Parallel::Communicator & communicator);
+
 protected:
-  std::pair<T, unsigned> evaluateLocal(const Point & point) const override;
+  using LibMeshTransferEvaluator<T>::getSourceVariable;
+  using LibMeshTransferEvaluator<T>::getSourceEquationSystems;
+  using Candidate = typename LibMeshTransferEvaluator<T>::Candidate;
+  Candidate evaluateLocal(const Point & point) const override;
 
 private:
   std::unique_ptr<libMesh::MeshFunction> _mesh_function;

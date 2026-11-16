@@ -2,10 +2,24 @@
 
 #include "MooseTypes.h"
 #include "libmesh/parallel.h"
-#include <utility>
+#include <tuple>
 #include <vector>
 
-/// Distributed source evaluation, independent of destination fields and coordinate transforms.
+class FEProblemBase;
+class MooseVariableFieldBase;
+namespace libMesh
+{
+class EquationSystems;
+class MeshBase;
+}
+
+namespace Foam
+{
+template <typename T>
+class Field;
+}
+
+/// Distributed source evaluation, independent of destination mesh and coordinate transforms.
 /// The distributed implementation is currently instantiated for Foam::scalar only.
 template <typename T>
 class LibMeshTransferEvaluator
@@ -19,14 +33,48 @@ public:
 
   virtual ~LibMeshTransferEvaluator() = default;
 
-  /// Collective: return averaged values in input point order.
+  /// Collective: write evaluated values into the destination in input point order.
   /// Points are in the source frame. All ranks must call, even with an empty point list.
-  /// Error if any requested point has no contributing source element across all ranks.
-  std::vector<T> evaluate(const std::vector<Point> & points) const;
+  /// Error if any requested point has no contributing source sample across all ranks.
+  /// Destination size must match points; the borrowed field is never resized.
+  void evaluate(const std::vector<Point> & points, Foam::Field<T> & destination) const;
 
 protected:
-  /// Return the local value sum and owned-element count, or {0, 0} if none contribute.
-  virtual std::pair<T, unsigned> evaluateLocal(const Point & point) const = 0;
+  /// Look up and validate a scalar source field variable.
+  static MooseVariableFieldBase & getSourceVariable(FEProblemBase & problem,
+                                                    const VariableName & variable);
+
+  /// Select the source geometry, checking that a requested displaced problem exists.
+  static libMesh::EquationSystems & getSourceEquationSystems(FEProblemBase & problem,
+                                                             bool use_displaced);
+  static libMesh::MeshBase & getSourceMesh(FEProblemBase & problem, bool use_displaced);
+
+  /// A zero count represents no candidate; distance and ID are ignored in that case.
+  struct Candidate
+  {
+    using Tuple = std::tuple<T, unsigned, Real, dof_id_type>;
+
+    Tuple asTuple() const { return {value, count, distance_squared, entity_id}; }
+
+    static Candidate fromTuple(const Tuple & tuple)
+    {
+      const auto & [value, count, distance_squared, entity_id] = tuple;
+      return {value, count, distance_squared, entity_id};
+    }
+
+    /// FE: local sum in incoming candidates, weighted average in accumulated results.
+    /// Nearest-location: the selected sample value.
+    T value = T(0);
+    unsigned count = 0;
+    Real distance_squared = 0.;
+    dof_id_type entity_id = 0;
+  };
+
+  virtual Candidate evaluateLocal(const Point & point) const = 0;
+
+  /// Maintain an element-count-weighted FE average from incoming local sums.
+  /// Nearest-location overrides this to retain the closest sample.
+  virtual void accumulateContribution(Candidate & result, const Candidate & candidate) const;
 
 private:
   const libMesh::Parallel::Communicator & _communicator;

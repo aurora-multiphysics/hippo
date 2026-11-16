@@ -21,10 +21,8 @@ public:
   void execute() override;
 
 protected:
-  template <typename T>
   void buildTransferMapping();
 
-  template <typename T>
   void transferVariables();
 
 private:
