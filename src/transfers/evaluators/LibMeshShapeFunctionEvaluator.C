@@ -50,7 +50,7 @@ LibMeshShapeFunctionEvaluator<T>::LibMeshShapeFunctionEvaluator(
 }
 
 template <typename T>
-typename LibMeshShapeFunctionEvaluator<T>::Candidate
+std::vector<typename LibMeshShapeFunctionEvaluator<T>::Candidate>
 LibMeshShapeFunctionEvaluator<T>::evaluateLocal(const Point & point) const
 {
   Candidate result;
@@ -60,7 +60,7 @@ LibMeshShapeFunctionEvaluator<T>::evaluateLocal(const Point & point) const
       result.value += value;
       ++result.count;
     }
-  return result;
+  return {result};
 }
 
 template class LibMeshShapeFunctionEvaluator<Foam::scalar>;

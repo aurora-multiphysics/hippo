@@ -29,6 +29,12 @@ MultiApplibMeshToFoamTransfer::validParams()
       "Sampling for nearest_location: nodes, centroids (vertex averages), or "
       "variable_default (nodes for nodal variables, centroids otherwise). "
       "Source geometry and destination mappings are cached and must remain fixed.");
+  params.addRangeCheckedParam<unsigned int>(
+      "num_nearest_points",
+      1,
+      "num_nearest_points > 0",
+      "Number of globally nearest samples to average equally. Distance ties are resolved by "
+      "global entity ID, independently of source rank ownership.");
   return params;
 }
 
@@ -41,6 +47,9 @@ MultiApplibMeshToFoamTransfer::MultiApplibMeshToFoamTransfer(const InputParamete
   if (getParam<MooseEnum>("evaluation_method") != "nearest_location" &&
       isParamSetByUser("source_type"))
     paramError("source_type", "Only valid with evaluation_method = nearest_location.");
+  if (getParam<MooseEnum>("evaluation_method") != "nearest_location" &&
+      isParamSetByUser("num_nearest_points"))
+    paramError("num_nearest_points", "Only valid with evaluation_method = nearest_location.");
 }
 
 void
@@ -119,7 +128,8 @@ MultiApplibMeshToFoamTransfer::execute()
           _libmesh_var_name,
           _displaced_source_mesh,
           comm(),
-          getParam<MooseEnum>("source_type"));
+          getParam<MooseEnum>("source_type"),
+          getParam<unsigned int>("num_nearest_points"));
     }
     else
       _source_evaluator = std::make_unique<LibMeshShapeFunctionEvaluator<Foam::scalar>>(

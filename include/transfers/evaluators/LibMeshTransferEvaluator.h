@@ -49,7 +49,7 @@ protected:
                                                              bool use_displaced);
   static libMesh::MeshBase & getSourceMesh(FEProblemBase & problem, bool use_displaced);
 
-  /// A zero count represents no candidate; distance and ID are ignored in that case.
+  /// A zero count represents no candidate; distance and entity ID are ignored in that case.
   struct Candidate
   {
     using Tuple = std::tuple<T, unsigned, Real, dof_id_type>;
@@ -63,18 +63,19 @@ protected:
     }
 
     /// FE: local sum in incoming candidates, weighted average in accumulated results.
-    /// Nearest-location: the selected sample value.
+    /// Nearest-location: the individual sample value.
     T value = T(0);
     unsigned count = 0;
     Real distance_squared = 0.;
     dof_id_type entity_id = 0;
   };
 
-  virtual Candidate evaluateLocal(const Point & point) const = 0;
+  virtual std::vector<Candidate> evaluateLocal(const Point & point) const = 0;
 
   /// Maintain an element-count-weighted FE average from incoming local sums.
-  /// Nearest-location overrides this to retain the closest sample.
-  virtual void accumulateContribution(Candidate & result, const Candidate & candidate) const;
+  /// Nearest-location overrides this to retain the globally nearest samples.
+  virtual void accumulateContribution(std::vector<Candidate> & results,
+                                      const Candidate & candidate) const;
 
 private:
   const libMesh::Parallel::Communicator & _communicator;

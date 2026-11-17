@@ -33,7 +33,7 @@ protected:
   using LibMeshTransferEvaluator<T>::getSourceVariable;
   using LibMeshTransferEvaluator<T>::getSourceEquationSystems;
   using Candidate = typename LibMeshTransferEvaluator<T>::Candidate;
-  Candidate evaluateLocal(const Point & point) const override;
+  std::vector<Candidate> evaluateLocal(const Point & point) const override;
 
 private:
   std::unique_ptr<libMesh::MeshFunction> _mesh_function;

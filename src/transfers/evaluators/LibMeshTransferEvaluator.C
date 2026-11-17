@@ -52,36 +52,38 @@ LibMeshTransferEvaluator<T>::evaluate(const std::vector<Point> & points,
       requests.emplace(pid, points);
 
   // TIMPI already supports tuples; keep their positional layout confined to communication.
-  std::vector<Candidate> results(points.size());
+  using Response = std::vector<typename Candidate::Tuple>;
+  std::vector<std::vector<Candidate>> results(points.size());
   auto gather = [&](processor_id_type /*pid*/,
                     const std::vector<Point> & incoming_points,
-                    std::vector<typename Candidate::Tuple> & values)
+                    std::vector<Response> & values)
   {
     values.resize(incoming_points.size());
     for (std::size_t i = 0; i < incoming_points.size(); ++i)
     {
-      values[i] = evaluateLocal(incoming_points[i]).asTuple();
+      for (const auto & candidate : evaluateLocal(incoming_points[i]))
+        if (candidate.count)
+          values[i].push_back(candidate.asTuple());
     }
   };
 
   auto accumulate = [&](processor_id_type /*pid*/,
                         const std::vector<Point> & /*outgoing_points*/,
-                        const std::vector<typename Candidate::Tuple> & values)
+                        const std::vector<Response> & values)
   {
     for (std::size_t i = 0; i < values.size(); ++i)
-    {
-      accumulateContribution(results[i], Candidate::fromTuple(values[i]));
-    }
+      for (const auto & value : values[i])
+        accumulateContribution(results[i], Candidate::fromTuple(value));
   };
 
-  typename Candidate::Tuple * dummy = nullptr;
+  Response * dummy = nullptr;
   libMesh::Parallel::pull_parallel_vector_data(_communicator, requests, gather, accumulate, dummy);
 
   // A local miss is valid until every source rank has answered. Synchronize failure
   // before returning so ranks with no missing points cannot start the next lookup.
   std::size_t missing_index = results.size();
   for (std::size_t i = 0; i < results.size(); ++i)
-    if (!results[i].count)
+    if (results[i].empty())
     {
       missing_index = i;
       break;
@@ -104,17 +106,25 @@ LibMeshTransferEvaluator<T>::evaluate(const std::vector<Point> & points,
   }
 
   for (std::size_t i = 0; i < results.size(); ++i)
-    destination[i] = results[i].value;
+  {
+    T value = T(0);
+    for (const auto & candidate : results[i])
+      value += candidate.value;
+    destination[i] = value / results[i].size();
+  }
 }
 
 template <typename T>
 void
-LibMeshTransferEvaluator<T>::accumulateContribution(Candidate & result,
+LibMeshTransferEvaluator<T>::accumulateContribution(std::vector<Candidate> & results,
                                                     const Candidate & candidate) const
 {
   if (!candidate.count)
     return;
 
+  if (results.empty())
+    results.emplace_back();
+  auto & result = results.front();
   const auto total_count = result.count + candidate.count;
   result.value = (result.value * result.count + candidate.value) / total_count;
   result.count = total_count;

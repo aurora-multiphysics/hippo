@@ -15,7 +15,7 @@ class Elem;
 class MeshBase;
 }
 
-/// Nearest owned node or element vertex-average sample on a fixed source mesh.
+/// Fixed-count nearest sampling of owned nodes or element vertex averages on a fixed mesh.
 template <typename T>
 class LibMeshNearestLocationEvaluator : public LibMeshTransferEvaluator<T>
 {
@@ -26,7 +26,8 @@ public:
                                   const VariableName & variable,
                                   bool use_displaced,
                                   const libMesh::Parallel::Communicator & communicator,
-                                  const MooseEnum & source_type);
+                                  const MooseEnum & source_type,
+                                  unsigned int num_nearest_points = 1);
 
   /// Direct libMesh entry point; source_is_nodal supplies variable_default semantics.
   /// Geometry must share source entity IDs/topology. All dependencies must outlive this object.
@@ -36,18 +37,20 @@ public:
                                   const libMesh::Parallel::Communicator & communicator,
                                   const MooseEnum & source_type,
                                   bool source_is_nodal,
-                                  unsigned int max_leaf_size);
+                                  unsigned int max_leaf_size,
+                                  unsigned int num_nearest_points = 1);
 
 protected:
   using LibMeshTransferEvaluator<T>::getSourceVariable;
   using LibMeshTransferEvaluator<T>::getSourceMesh;
   using Candidate = typename LibMeshTransferEvaluator<T>::Candidate;
-  Candidate evaluateLocal(const Point & point) const override;
-  void accumulateContribution(Candidate & result, const Candidate & candidate) const override;
+  std::vector<Candidate> evaluateLocal(const Point & point) const override;
+  void accumulateContribution(std::vector<Candidate> & results,
+                              const Candidate & candidate) const override;
 
 private:
-  /// Read the selected local sample and attach its search metadata.
-  Candidate sampleCandidate(std::size_t sample_index, Real distance_squared) const;
+  /// Read a selected local sample without synchronizing the solution.
+  T sampleValue(std::size_t sample_index) const;
 
   struct Sample
   {
@@ -59,6 +62,7 @@ private:
 
   libMesh::System * _source_system = nullptr;
   unsigned int _variable_number = 0;
+  const unsigned int _num_nearest_points;
   std::vector<Sample> _samples;
   std::vector<Point> _points;
   // Declared last so the tree is destroyed before the points it references.
