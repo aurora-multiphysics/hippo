@@ -41,8 +41,7 @@ MultiApplibMeshToFoamTransfer::validParams()
 MultiApplibMeshToFoamTransfer::MultiApplibMeshToFoamTransfer(const InputParameters & params)
   : MultiAppFoamTransfer(params),
     _foam_var_name(getParam<VariableName>("foam_variable")),
-    _libmesh_var_name(getParam<VariableName>("libmesh_variable")),
-    _outgoing_points()
+    _libmesh_var_name(getParam<VariableName>("libmesh_variable"))
 {
   if (getParam<MooseEnum>("evaluation_method") != "nearest_location" &&
       isParamSetByUser("source_type"))
@@ -111,8 +110,13 @@ MultiApplibMeshToFoamTransfer::execute()
     mooseError("MultiApplibMeshToFoamTransfer currently supports only parent-to-child transfers.");
 
   auto multi_app = getToMultiApp();
+  if (multi_app->numGlobalApps() != 1)
+    paramError("to_multi_app",
+               "MultiApplibMeshToFoamTransfer requires exactly one child instance in the selected "
+               "MultiApp; received ",
+               multi_app->numGlobalApps(),
+               ".");
 
-  // TODO: Support all MultiApp instances and directions with per-pair mappings before merge.
   setActiveFromProblem(multi_app->problemBase(), 0);
   const bool has_destination = multi_app->hasLocalApp(0);
   if (has_destination)

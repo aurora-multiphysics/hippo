@@ -31,9 +31,8 @@ private:
   const VariableName & _foam_var_name;
   /// Source libMesh variable name
   const VariableName & _libmesh_var_name;
-  /// Borrowed destination container, bound once the active problems are selected
+  /// Borrowed destination container, bound once the active problems are selected.
   std::optional<std::reference_wrapper<BoundaryTransferContainer<Foam::scalar>>> _boundary_transfer;
-
   std::map<std::string, std::vector<Point>> _outgoing_points;
 
   bool _mapping_built{false};
