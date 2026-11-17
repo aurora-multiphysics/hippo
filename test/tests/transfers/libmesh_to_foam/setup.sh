@@ -3,16 +3,22 @@ set -euo pipefail
 
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 
-case "${1:-serial}" in
-    serial) parent_ranks=1; child_ranks=1 ;;
-    mpi_2_2) parent_ranks=2; child_ranks=2 ;;
-    mpi_4_2) parent_ranks=4; child_ranks=2 ;;
-    *) echo "Usage: $0 [serial|mpi_2_2|mpi_4_2]" >&2; exit 1 ;;
-esac
+parent_ranks=1
+child_ranks=1
+if [[ "${1:-serial}" == mpi_4_2 ]]; then
+    parent_ranks=4
+    child_ranks=2
+fi
+
+mesh_profile=${2:-shape}
 
 for case_dir in parent_case child_case; do
     rm -rf -- "$case_dir"
     cp -R -- case_template "$case_dir"
+    if [[ "$case_dir" == child_case && "$mesh_profile" == nearest ]]; then
+        # Different face centers make nearest sampling distinguishable from interpolation.
+        sed -i 's/(4 3 2) simpleGrading/(4 4 3) simpleGrading/' "$case_dir/system/blockMeshDict"
+    fi
     blockMesh -case "$case_dir"
 
     if [[ "$case_dir" == parent_case ]]; then
