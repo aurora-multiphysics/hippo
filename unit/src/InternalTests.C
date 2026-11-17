@@ -2,6 +2,7 @@
 #include <string>
 
 #include "InputParameters.h"
+#include "TestUtils.h"
 #include "hippoUtils.h"
 
 InputParameters
@@ -16,6 +17,8 @@ setupParameters()
 
 TEST(HippoTestInternals, copyParamTest)
 {
+  HippoTest::ScopedThrowOnError throw_on_error;
+
   InputParameters src(setupParameters());
   InputParameters dst(setupParameters());
 
@@ -39,21 +42,17 @@ TEST(HippoTestInternals, copyParamTest)
   Hippo::internal::copyParamFromParam<Real>(dst, src, "param2");
   EXPECT_DOUBLE_EQ(dst.get<Real>("param2"), 2.1) << "param2 doesn't match expect value";
 
-  // Check missing parameters results in an exit with status 1
-  EXPECT_EXIT(
-      { Hippo::internal::copyParamFromParam<Real>(dst, src, "param4"); },
-      ::testing::ExitedWithCode(1),
-      "Parameter 'param4' of type double not available in src parameters.");
-  EXPECT_EXIT(
-      { Hippo::internal::copyParamFromParam<Real>(dst, src, "param3"); },
-      ::testing::ExitedWithCode(1),
-      "Parameter 'param3' of type double not available in dst parameters.");
+  // Missing source/destination parameters must report the corresponding error.
+  HippoTest::expectError([&]() { Hippo::internal::copyParamFromParam<Real>(dst, src, "param4"); },
+                         "Parameter 'param4' of type double not available in src parameters.");
+  HippoTest::expectError([&]() { Hippo::internal::copyParamFromParam<Real>(dst, src, "param3"); },
+                         "Parameter 'param3' of type double not available in dst parameters.");
 
-  // Check error occurs if parameter is of the wrong type
-  EXPECT_EXIT(
-      { Hippo::internal::copyParamFromParam<std::string>(dst, src, "param1"); },
-      ::testing::ExitedWithCode(1),
-      "Parameter 'param1' of type .* not available in src parameters.");
+  // Use the actual demangled type name instead of a subprocess-output regex.
+  HippoTest::expectError([&]()
+                         { Hippo::internal::copyParamFromParam<std::string>(dst, src, "param1"); },
+                         "Parameter 'param1' of type " + Hippo::getDemangleName<std::string>() +
+                             " not available in src parameters.");
 }
 
 TEST(HippoTestInternals, ListFromVectorTest)

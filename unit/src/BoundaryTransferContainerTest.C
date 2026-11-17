@@ -1,6 +1,5 @@
 #include "BoundaryTransferContainer.h"
-#include "Moose.h"
-#include "MooseError.h"
+#include "TestUtils.h"
 #include "gtest/gtest.h"
 
 #include <functional>
@@ -24,35 +23,9 @@ sampleValue(Foam::scalar offset)
   }
 }
 
-template <typename Callable>
-void
-expectContainerError(Callable action, const std::string & message)
-{
-  try
-  {
-    action();
-    FAIL() << "Expected a container error containing: " << message;
-  }
-  catch (const MooseRuntimeError & error)
-  {
-    EXPECT_NE(std::string(error.what()).find(message), std::string::npos) << error.what();
-  }
-}
-
 template <typename T>
-class BoundaryTransferContainerTest : public ::testing::Test
+class BoundaryTransferContainerTest : public HippoTest::ErrorFixture
 {
-protected:
-  void SetUp() override
-  {
-    _previous_throw_on_error = Moose::_throw_on_error;
-    Moose::_throw_on_error = true;
-  }
-
-  void TearDown() override { Moose::_throw_on_error = _previous_throw_on_error; }
-
-private:
-  bool _previous_throw_on_error = false;
 };
 
 using FieldTypes = ::testing::Types<Foam::scalar, Foam::vector, Foam::tensor>;
@@ -124,10 +97,10 @@ TYPED_TEST(BoundaryTransferContainerTest, ConflictingBatchLeavesRegistrationUnch
   typename Container::FieldRefMap additions{{"inlet", std::ref(inlet)},
                                             {"wall", std::ref(other_wall)}};
 
-  expectContainerError([&]() { container.addBoundaries(additions); }, "different field");
+  HippoTest::expectError([&]() { container.addBoundaries(additions); }, "different field");
   EXPECT_EQ(&container.boundaryField("wall"), &wall);
   EXPECT_TRUE(wall[0] == sampleValue<TypeParam>(1));
-  expectContainerError([&]() { container.boundaryField("inlet"); }, "not found");
+  HippoTest::expectError([&]() { container.boundaryField("inlet"); }, "not found");
 }
 
 // Locked containers reject all registration calls, including identical and empty requests,
@@ -146,10 +119,10 @@ TYPED_TEST(BoundaryTransferContainerTest, LockRejectsAllRegistrationButAllowsVal
   container.lock();
   container.lock();
   EXPECT_FALSE(container.modifiable());
-  expectContainerError([&]() { container.addBoundaries(original); }, "locked");
-  expectContainerError([&]() { container.addBoundaries(additions); }, "locked");
-  expectContainerError([&]() { container.addBoundaries(empty); }, "locked");
-  expectContainerError([&]() { container.boundaryField("inlet"); }, "not found");
+  HippoTest::expectError([&]() { container.addBoundaries(original); }, "locked");
+  HippoTest::expectError([&]() { container.addBoundaries(additions); }, "locked");
+  HippoTest::expectError([&]() { container.addBoundaries(empty); }, "locked");
+  HippoTest::expectError([&]() { container.boundaryField("inlet"); }, "not found");
   EXPECT_EQ(&container.boundaryField("wall"), &wall);
   container.boundaryField("wall")[0] = sampleValue<TypeParam>(20);
   EXPECT_TRUE(wall[0] == sampleValue<TypeParam>(20));
@@ -166,9 +139,9 @@ TYPED_TEST(BoundaryTransferContainerTest, EmptyStorageAndInvalidAccess)
   Container from_references(references);
 
   from_fields.addBoundaries(references);
-  expectContainerError([&]() { from_fields.boundaryField("missing"); }, "not found");
-  expectContainerError([&]() { from_references.boundaryField("missing"); }, "not found");
-  expectContainerError([&]() { from_fields.volumeField(); }, "No volume field");
+  HippoTest::expectError([&]() { from_fields.boundaryField("missing"); }, "not found");
+  HippoTest::expectError([&]() { from_references.boundaryField("missing"); }, "not found");
+  HippoTest::expectError([&]() { from_fields.volumeField(); }, "No volume field");
   references.emplace("empty", std::ref(empty_field));
   from_fields.addBoundaries(references);
   EXPECT_EQ(&from_fields.boundaryField("empty"), &empty_field);
