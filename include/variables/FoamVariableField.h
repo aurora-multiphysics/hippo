@@ -12,9 +12,6 @@ public:
 
   void initialSetup() override;
 
-  // Register native patch-field references after the complete object is constructed.
-  void registerTransfer();
-
   // transfer variable from OpenFOAM field to MOOSE variable
   virtual void transferVariable() override;
 

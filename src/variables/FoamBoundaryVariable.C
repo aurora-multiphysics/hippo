@@ -42,8 +42,8 @@ FoamBoundaryVariable<T>::FoamBoundaryVariable(const InputParameters & params)
   }();
 
   FoamProblem & problem = getFoamProblem();
-  if (problem.hasBoundaryTransfer<T>(name(), TransferQuantity::Value))
-    mooseError("Boundary transfer '", name(), "' is already registered for this field type.");
+  if (problem.hasField(name()))
+    mooseError("Field name '", name(), "' is already registered.");
 
   const auto & patches = getFvMesh().boundary();
   for (const auto & boundary : boundaries)
@@ -59,7 +59,7 @@ FoamBoundaryVariable<T>::FoamBoundaryVariable(const InputParameters & params)
   }
 
   // Register only after all owned fields have been initialized and validated.
-  problem.addBoundaryTransfer<T>(name(), TransferQuantity::Value, _data).lock();
+  problem.registerField<T>(name(), std::make_unique<FoamFieldAccessor<T>>(_data));
 }
 
 template class FoamBoundaryVariable<Foam::scalar>;

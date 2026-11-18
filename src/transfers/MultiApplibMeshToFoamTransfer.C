@@ -8,6 +8,7 @@
 #include "MultiApp.h"
 #include "Registry.h"
 #include <memory>
+#include <set>
 
 registerMooseObject("hippoApp", MultiApplibMeshToFoamTransfer);
 
@@ -16,9 +17,13 @@ MultiApplibMeshToFoamTransfer::validParams()
 {
   InputParameters params = MultiAppFoamTransfer::validParams();
   params.addParam<std::vector<std::string>>(
-      "foam_boundaries", std::vector<std::string>{}, "Native OpenFOAM destination patches.");
-  params.addRequiredParam<VariableName>("foam_variable",
-                                        "Registered OpenFOAM destination container name");
+      "foam_boundaries",
+      std::vector<std::string>{},
+      "Destination patches. If omitted, use all boundaries exposed by the receiving accessor. "
+      "An explicitly empty list transfers no boundary values.");
+  params.addParam<bool>("volume", false, "Transfer internal-field values (not implemented).");
+  params.addRequiredParam<VariableName>(
+      "foam_variable", "Registered destination object name (variable, BC, or other field owner)");
   params.addRequiredParam<VariableName>("libmesh_variable", "Source libMesh scalar field variable");
   params.addParam<MooseEnum>("evaluation_method",
                              MooseEnum("shape_function nearest_location", "shape_function"),
@@ -43,6 +48,8 @@ MultiApplibMeshToFoamTransfer::MultiApplibMeshToFoamTransfer(const InputParamete
     _foam_var_name(getParam<VariableName>("foam_variable")),
     _libmesh_var_name(getParam<VariableName>("libmesh_variable"))
 {
+  if (getParam<bool>("volume"))
+    paramError("volume", "Volume transfers are not implemented.");
   if (getParam<MooseEnum>("evaluation_method") != "nearest_location" &&
       isParamSetByUser("source_type"))
     paramError("source_type", "Only valid with evaluation_method = nearest_location.");
@@ -58,7 +65,9 @@ MultiApplibMeshToFoamTransfer::buildTransferMapping()
 
   auto & foam_problem = foamProblem(getActiveToProblem());
   const auto & patches = foam_problem.mesh().fvMesh().boundary();
-  const auto & foam_boundaries = getParam<std::vector<std::string>>("foam_boundaries");
+  const auto foam_boundaries = isParamSetByUser("foam_boundaries")
+                                   ? getParam<std::vector<std::string>>("foam_boundaries")
+                                   : _boundary_transfer->get().boundaryNames();
 
   for (const auto & boundary : foam_boundaries)
   {
@@ -91,11 +100,12 @@ MultiApplibMeshToFoamTransfer::transferVariables()
 {
   const std::vector<Point> empty_points;
   Foam::Field<Foam::scalar> empty_field;
-  for (const auto & boundary : getParam<std::vector<std::string>>("foam_boundaries"))
+  for (const auto & boundary : _boundaries)
   {
-    const auto & points = _boundary_transfer ? _outgoing_points.at(boundary) : empty_points;
-    auto & field =
-        _boundary_transfer ? _boundary_transfer->get().boundaryField(boundary) : empty_field;
+    const auto local = _outgoing_points.find(boundary);
+    const bool has_boundary = local != _outgoing_points.end();
+    const auto & points = has_boundary ? local->second : empty_points;
+    auto & field = has_boundary ? _boundary_transfer->get().boundaryField(boundary) : empty_field;
     // Every source rank participates, including those without a destination app.
     _source_evaluator->evaluate(points, field);
   }
@@ -141,9 +151,20 @@ MultiApplibMeshToFoamTransfer::execute()
     if (has_destination)
     {
       FoamProblem & foam_problem = foamProblem(getActiveToProblem());
-      _boundary_transfer = std::ref(
-          foam_problem.getBoundaryTransfer<Foam::scalar>(_foam_var_name, TransferQuantity::Value));
+      _boundary_transfer = std::ref(foam_problem.getFieldAccessor<Foam::scalar>(_foam_var_name));
       buildTransferMapping();
+    }
+    if (isParamSetByUser("foam_boundaries"))
+      _boundaries = getParam<std::vector<std::string>>("foam_boundaries");
+    else
+    {
+      // Partial accessors may expose different patches on different child ranks.
+      // Use the same collective evaluation order even on ranks without those patches.
+      std::set<std::string> boundaries;
+      for (const auto & entry : _outgoing_points)
+        boundaries.insert(entry.first);
+      comm().set_union(boundaries);
+      _boundaries.assign(boundaries.begin(), boundaries.end());
     }
     _mapping_built = true;
   }
