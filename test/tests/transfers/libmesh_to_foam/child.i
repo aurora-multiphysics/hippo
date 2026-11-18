@@ -19,9 +19,15 @@
   end_time = 3
 []
 [FoamVariables]
-  [received]
+  # Both objects borrow the same native field through separate accessors; one also mirrors it.
+  [received_alias]
     type = FoamVariableField
     foam_variable = transferField
     create_aux_variable = false
+  []
+  [received]
+    type = FoamVariableField
+    foam_variable = transferField
+    create_aux_variable = true
   []
 []

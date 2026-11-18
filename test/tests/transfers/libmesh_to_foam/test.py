@@ -30,8 +30,8 @@ class TestTransfer(unittest.TestCase):
         ).reshape(-1)
         return values
 
-    def check_target_boundaries(self, expected_value, face_count):
-        for boundary in ("left", "right"):
+    def check_target_boundaries(self, expected_value, boundaries=("left", "right")):
+        for boundary in boundaries:
             coordinates = ff.readmesh(
                 "child_case", boundary=boundary, precision=17, verbose=False
             )
@@ -41,12 +41,30 @@ class TestTransfer(unittest.TestCase):
                     actual = self.read_values(time, boundary)
                     # OpenFOAM may write a uniform value instead of an explicit list.
                     if actual.size == 1:
-                        actual = np.full(face_count, actual[0])
+                        actual = np.full(len(points), actual[0])
                     expected = expected_value(points, time)
                     np.testing.assert_allclose(actual, expected, atol=1e-12, rtol=0)
 
     def test_shape(self):
-        self.check_target_boundaries(source_value, face_count=6)
+        self.check_target_boundaries(source_value)
+
+    def test_default_boundaries(self):
+        """Check that not specifying references all boundaries in accessor"""
+        self.check_target_boundaries(
+            source_value,
+            boundaries=("left", "right", "bottom", "top", "front", "back"),
+        )
+        # Boundary defaults must not enable volume transfer.
+        for time in (1, 2, 3):
+            np.testing.assert_array_equal(self.read_values(time), -99.0)
+
+    def test_empty_boundaries(self):
+        """Check boundary field remains unchanged"""
+        for boundary in (None, "left", "right", "bottom", "top", "front", "back"):
+            for time in (1, 2, 3):
+                with self.subTest(boundary=boundary, time=time):
+                    values = self.read_values(time, boundary)
+                    np.testing.assert_array_equal(values, -99.0)
 
     def test_nearest_nodes(self):
         # Parent mirror: both x-normal patches of a 4 x 3 x 2 unit-cube mesh.
@@ -61,7 +79,7 @@ class TestTransfer(unittest.TestCase):
             nearest = samples[np.argmin(distances, axis=1)]
             return source_value(nearest, time)
 
-        self.check_target_boundaries(expected_value, face_count=12)
+        self.check_target_boundaries(expected_value)
 
     def test_nearest_centroids(self):
         # The left and right faces are at 0 and 1
@@ -80,4 +98,4 @@ class TestTransfer(unittest.TestCase):
             # evaluate at closest 2
             return np.mean(source_value(nearest_two, time), axis=1)
 
-        self.check_target_boundaries(expected_value, face_count=12)
+        self.check_target_boundaries(expected_value)

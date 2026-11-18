@@ -1,7 +1,7 @@
 [Mesh]
   type = FoamMesh
   case = parent_case
-  foam_patch = 'left right'
+  foam_patch = 'left right bottom top front back'
 []
 [Problem]
   type = FoamProblem
@@ -26,6 +26,7 @@
 []
 [AuxVariables]
   [source]
+    block = 'left right'
     family = MONOMIAL
     order = CONSTANT
   []
@@ -54,12 +55,21 @@
   []
 []
 [Transfers]
+  active = to_foam
   [to_foam]
     type = MultiApplibMeshToFoamTransfer
     to_multi_app = receiver
     libmesh_variable = source
     foam_variable = received
     foam_boundaries = 'left right'
+    execute_on = 'initial timestep_end'
+  []
+  [to_foam_default]
+    type = MultiApplibMeshToFoamTransfer
+    to_multi_app = receiver
+    libmesh_variable = source
+    foam_variable = received
+    # Omitted: use every physical boundary exposed by the receiver.
     execute_on = 'initial timestep_end'
   []
 []
