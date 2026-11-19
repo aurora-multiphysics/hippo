@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+# Generate cases in the calling test directory, using the shared template.
+template_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/case_template"
 
 parent_ranks=1
 child_ranks=1
@@ -14,7 +15,7 @@ mesh_profile=${2:-shape}
 
 for case_dir in parent_case child_case; do
     rm -rf -- "$case_dir"
-    cp -R -- case_template "$case_dir"
+    cp -R -- "$template_dir" "$case_dir"
     if [[ "$case_dir" == child_case && "$mesh_profile" == nearest ]]; then
         # Different face centers make nearest sampling distinguishable from interpolation.
         sed -i 's/(4 3 2) simpleGrading/(4 4 3) simpleGrading/' "$case_dir/system/blockMeshDict"

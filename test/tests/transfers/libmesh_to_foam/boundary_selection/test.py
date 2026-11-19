@@ -1,6 +1,5 @@
 """Check native transfer output against independently constructed source samples."""
 
-from itertools import product
 import unittest
 
 import fluidfoam as ff
@@ -14,8 +13,6 @@ def source_value(points, time):
 
 
 class TestTransfer(unittest.TestCase):
-    """Exercise transfer configuration, native field writes, and timestep updates."""
-
     def read_values(self, time, boundary=None):
         values = np.asarray(
             ff.readscalar(
@@ -45,9 +42,6 @@ class TestTransfer(unittest.TestCase):
                     expected = expected_value(points, time)
                     np.testing.assert_allclose(actual, expected, atol=1e-12, rtol=0)
 
-    def test_shape(self):
-        self.check_target_boundaries(source_value)
-
     def test_default_boundaries(self):
         """Check that not specifying references all boundaries in accessor"""
         self.check_target_boundaries(
@@ -65,37 +59,3 @@ class TestTransfer(unittest.TestCase):
                 with self.subTest(boundary=boundary, time=time):
                     values = self.read_values(time, boundary)
                     np.testing.assert_array_equal(values, -99.0)
-
-    def test_nearest_nodes(self):
-        # Parent mirror: both x-normal patches of a 4 x 3 x 2 unit-cube mesh.
-        x = (0.0, 1.0)
-        y = np.linspace(0.0, 1.0, 4)
-        z = np.linspace(0.0, 1.0, 3)
-        samples = np.array(list(product(x, y, z)))
-
-        def expected_value(points, time):
-            # The child face centers have unique nearest parent nodes.
-            distances = np.sum((points[:, None, :] - samples[None, :, :]) ** 2, axis=2)
-            nearest = samples[np.argmin(distances, axis=1)]
-            return source_value(nearest, time)
-
-        self.check_target_boundaries(expected_value)
-
-    def test_nearest_centroids(self):
-        # The left and right faces are at 0 and 1
-        x = (0.0, 1.0)
-        # centroid will be in the middle of the element
-        y = (np.arange(3) + 0.5) / 3  # (0.5 1.5 2.5)/3 unit length split in 3
-        z = (np.arange(2) + 0.5) / 2  # (0.5 1.5)/2 unit length split in 2
-        samples = np.array(list(product(x, y, z)))
-
-        def expected_value(points, time):
-            # No tie crosses the two-sample cutoff for this mesh pair. Averaging these
-            # centroids differs from both nearest-one sampling and interpolation.
-            distances = np.sum((points[:, None, :] - samples[None, :, :]) ** 2, axis=2)
-            nearest_two = samples[np.argsort(distances, axis=1)[:, :2]]
-
-            # evaluate at closest 2
-            return np.mean(source_value(nearest_two, time), axis=1)
-
-        self.check_target_boundaries(expected_value)

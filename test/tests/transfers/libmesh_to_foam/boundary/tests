@@ -2,7 +2,7 @@
   [shape_evaluation]
     [setup_serial]
       type = RunCommand
-      command = 'bash setup.sh serial shape'
+      command = 'bash ../setup.sh serial shape'
     []
     [run_serial]
       type = RunApp
@@ -20,7 +20,7 @@
     []
     [setup_mpi_4_2]
       type = RunCommand
-      command = 'bash setup.sh mpi_4_2 shape'
+      command = 'bash ../setup.sh mpi_4_2 shape'
       prereq = nearest_nodes/verify
     []
     [run_mpi_4_2]
@@ -47,7 +47,7 @@
   [nearest_nodes]
     [setup]
       type = RunCommand
-      command = 'bash setup.sh serial nearest'
+      command = 'bash ../setup.sh serial nearest'
       prereq = shape_evaluation/verify_serial
     []
     [run]
@@ -69,7 +69,7 @@
   [nearest_centroids]
     [setup]
       type = RunCommand
-      command = 'bash setup.sh mpi_4_2 nearest'
+      command = 'bash ../setup.sh mpi_4_2 nearest'
       prereq = shape_evaluation/verify_mpi_4_2
     []
     [run]
@@ -91,75 +91,6 @@
       input = test.py
       test_case = TestTransfer.test_nearest_centroids
       prereq = nearest_centroids/reconstruct
-    []
-  []
-  [default_boundaries]
-    [setup_serial]
-      type = RunCommand
-      command = 'bash setup.sh serial shape'
-      prereq = nearest_centroids/verify
-    []
-    [run_serial]
-      type = RunApp
-      input = main.i
-      cli_args = "Transfers/active=to_foam_default AuxVariables/source/block='left right bottom top front back' AuxVariables/source/family=LAGRANGE AuxVariables/source/order=FIRST"
-      prereq = default_boundaries/setup_serial
-      min_parallel = 1
-      max_parallel = 1
-      requirement = 'Hippo shall default to every physical boundary exposed by the receiving accessor when the boundary list is omitted.'
-    []
-    [verify_serial]
-      type = PythonUnitTest
-      input = test.py
-      test_case = TestTransfer.test_default_boundaries
-      prereq = default_boundaries/run_serial
-    []
-    [setup_mpi_4_2]
-      type = RunCommand
-      command = 'bash setup.sh mpi_4_2 shape'
-      prereq = default_boundaries/verify_serial
-    []
-    [run_mpi_4_2]
-      type = RunApp
-      input = main.i
-      cli_args = "Transfers/active=to_foam_default AuxVariables/source/block='left right bottom top front back' AuxVariables/source/family=LAGRANGE AuxVariables/source/order=FIRST MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2"
-      prereq = default_boundaries/setup_mpi_4_2
-      min_parallel = 4
-      max_parallel = 4
-      requirement = 'Hippo shall transfer to default physical boundaries collectively when only a subset of parent ranks hosts the child, excluding processor patches.'
-    []
-    [reconstruct_mpi_4_2]
-      type = RunCommand
-      command = "reconstructPar -case child_case -time '1,2,3' -fields '(transferField)'"
-      prereq = default_boundaries/run_mpi_4_2
-    []
-    [verify_mpi_4_2]
-      type = PythonUnitTest
-      input = test.py
-      test_case = TestTransfer.test_default_boundaries
-      prereq = default_boundaries/reconstruct_mpi_4_2
-    []
-  []
-  [empty_boundaries]
-    [setup]
-      type = RunCommand
-      command = 'bash setup.sh serial shape'
-      prereq = default_boundaries/verify_mpi_4_2
-    []
-    [run]
-      type = RunApp
-      input = main.i
-      cli_args = "Transfers/active=to_foam Transfers/to_foam/foam_boundaries=''"
-      prereq = empty_boundaries/setup
-      min_parallel = 1
-      max_parallel = 1
-      requirement = 'Hippo shall leave boundary and internal field values unchanged when the boundary list is explicitly empty and volume transfer is disabled.'
-    []
-    [verify]
-      type = PythonUnitTest
-      input = test.py
-      test_case = TestTransfer.test_empty_boundaries
-      prereq = empty_boundaries/run
     []
   []
 []

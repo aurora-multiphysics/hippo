@@ -68,6 +68,7 @@ TYPED_TEST(FoamFieldAccessorTest, ReferenceMapBorrowsStorage)
 TYPED_TEST(FoamFieldAccessorTest, MissingStorageErrors)
 {
   FoamFieldAccessor<TypeParam> empty;
+  EXPECT_FALSE(empty.hasInternalField());
   EXPECT_TRUE(empty.boundaryNames().empty());
   HippoTest::expectError([&]() { empty.boundaryField("missing"); }, "not found");
   HippoTest::expectError([&]() { empty.internalField(); }, "No internal field");
@@ -82,6 +83,7 @@ TYPED_TEST(FoamFieldAccessorTest, PartialAccessorExposesOnlySelectedBoundaries)
 
   const typename Accessor::FieldRefMap selected{{"wall", std::ref(fields.at("wall"))}};
   Accessor accessor(selected);
+  EXPECT_FALSE(accessor.hasInternalField());
 
   // Check only wall is present in boundaryNames
   EXPECT_EQ(accessor.boundaryNames(), (std::vector<std::string>{"wall"}));
@@ -120,6 +122,7 @@ TYPED_TEST(FoamFieldAccessorTest, InternalOnlyAccessorBorrowsStorage)
 {
   Foam::Field<TypeParam> field(2, sampleValue<TypeParam>(1));
   FoamFieldAccessor<TypeParam> accessor(field);
+  EXPECT_TRUE(accessor.hasInternalField());
 
   // Internal field address should match
   EXPECT_EQ(&accessor.internalField(), &field);
@@ -158,6 +161,7 @@ TYPED_TEST(FoamFieldAccessorTest, VolumeFieldBorrowsInternalAndBoundaryStorage)
 
   // Even though the field is empty we can still check address and boundary names
   FoamFieldAccessor<TypeParam> accessor(field);
+  EXPECT_TRUE(accessor.hasInternalField());
   EXPECT_EQ(accessor.boundaryNames(), (std::vector<std::string>{"inlet", "wall"}));
   EXPECT_EQ(&accessor.internalField(), &field.primitiveFieldRef());
   EXPECT_EQ(&accessor.boundaryField("wall"),
