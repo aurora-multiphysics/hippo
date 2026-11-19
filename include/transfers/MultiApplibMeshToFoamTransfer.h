@@ -21,6 +21,8 @@ public:
   void execute() override;
 
 protected:
+  void validateVolumeDestination();
+
   void buildTransferMapping();
 
   void transferVariables();
@@ -32,8 +34,10 @@ private:
   /// Source libMesh variable name
   const VariableName & _libmesh_var_name;
   /// Borrowed destination field accessor, bound once the active problems are selected.
-  std::optional<std::reference_wrapper<FoamFieldAccessor<Foam::scalar>>> _boundary_transfer;
+  std::optional<std::reference_wrapper<FoamFieldAccessor<Foam::scalar>>> _destination_accessor;
   std::map<std::string, std::vector<Point>> _outgoing_points;
+  /// Source-frame cell centres in local OpenFOAM cell order.
+  std::vector<Point> _volume_points;
 
   /// Common evaluation order on all parent ranks, including ranks without the child.
   std::vector<std::string> _boundaries;

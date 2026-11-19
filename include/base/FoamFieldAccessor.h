@@ -37,6 +37,9 @@ public:
   /// Borrow internal storage and non-processor boundary values of a volume field.
   explicit FoamFieldAccessor(Foam::VolField<T> & vol_field);
 
+  /// Whether internal storage was supplied, including a valid zero-length field.
+  bool hasInternalField() const { return _internal_field.has_value(); }
+
   /// Return writable internal values; report an error if no internal field was supplied.
   Field & internalField();
   /// Return values for an exposed patch name; report an error if that name is absent.

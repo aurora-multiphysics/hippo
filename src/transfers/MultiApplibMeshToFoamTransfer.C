@@ -21,7 +21,8 @@ MultiApplibMeshToFoamTransfer::validParams()
       std::vector<std::string>{},
       "Destination patches. If omitted, use all boundaries exposed by the receiving accessor. "
       "An explicitly empty list transfers no boundary values.");
-  params.addParam<bool>("volume", false, "Transfer internal-field values (not implemented).");
+  params.addParam<bool>(
+      "volume", false, "Transfer values at cell centres into the receiving internal field.");
   params.addRequiredParam<VariableName>(
       "foam_variable", "Registered destination object name (variable, BC, or other field owner)");
   params.addRequiredParam<VariableName>("libmesh_variable", "Source libMesh scalar field variable");
@@ -48,8 +49,6 @@ MultiApplibMeshToFoamTransfer::MultiApplibMeshToFoamTransfer(const InputParamete
     _foam_var_name(getParam<VariableName>("foam_variable")),
     _libmesh_var_name(getParam<VariableName>("libmesh_variable"))
 {
-  if (getParam<bool>("volume"))
-    paramError("volume", "Volume transfers are not implemented.");
   if (getParam<MooseEnum>("evaluation_method") != "nearest_location" &&
       isParamSetByUser("source_type"))
     paramError("source_type", "Only valid with evaluation_method = nearest_location.");
@@ -59,40 +58,109 @@ MultiApplibMeshToFoamTransfer::MultiApplibMeshToFoamTransfer(const InputParamete
 }
 
 void
+MultiApplibMeshToFoamTransfer::validateVolumeDestination()
+{
+  if (!getParam<bool>("volume"))
+    return;
+
+  bool missing_internal = false;
+  bool size_mismatch = false;
+
+  // Check local storage only on parent ranks hosting the child.
+  if (_destination_accessor)
+  {
+    auto & accessor = _destination_accessor->get();
+    missing_internal = !accessor.hasInternalField();
+    if (!missing_internal)
+      size_mismatch = accessor.internalField().size() !=
+                      foamProblem(getActiveToProblem()).mesh().fvMesh().nCells();
+  }
+
+  // Ranks without a child must report the same failure before entering evaluation collectives.
+  comm().max(missing_internal);
+  if (missing_internal)
+    paramError("volume", "Receiving accessor '", _foam_var_name, "' has no internal field.");
+
+  comm().max(size_mismatch);
+  if (size_mismatch)
+    paramError("volume",
+               "Destination internal field size must match the local OpenFOAM cell count.");
+}
+
+void
 MultiApplibMeshToFoamTransfer::buildTransferMapping()
 {
   _outgoing_points.clear();
+  _volume_points.clear();
 
-  auto & foam_problem = foamProblem(getActiveToProblem());
-  const auto & patches = foam_problem.mesh().fvMesh().boundary();
-  const auto foam_boundaries = isParamSetByUser("foam_boundaries")
-                                   ? getParam<std::vector<std::string>>("foam_boundaries")
-                                   : _boundary_transfer->get().boundaryNames();
-
-  for (const auto & boundary : foam_boundaries)
+  // Collect destination points on parent ranks hosting the Hippo child.
+  if (_destination_accessor)
   {
-    if (_outgoing_points.find(boundary) != _outgoing_points.end())
-      mooseError("Patch '", boundary, "' is specified more than once.");
+    auto & foam_problem = foamProblem(getActiveToProblem());
+    const auto & mesh = foam_problem.mesh().fvMesh();
+    const auto & patches = mesh.boundary();
 
-    const auto patch_id = patches.findIndex(boundary);
-    if (patch_id < 0)
-      mooseError("Unknown OpenFOAM patch '", boundary, "'.");
-
-    const auto & patch = patches[patch_id];
-    const auto & field = _boundary_transfer->get().boundaryField(boundary);
-    if (field.size() != patch.size())
-      mooseError("Destination field size does not match OpenFOAM patch '", boundary, "'.");
-
-    auto & points = _outgoing_points[boundary];
-    points.reserve(patch.size());
-    for (const auto & point : patch.Cf())
+    // Use cell centres as the volume points to be passed to libMesh
+    if (getParam<bool>("volume"))
     {
-      libMesh::Point point_in_target_frame;
-      for (auto d = 0; d < Foam::vector::nComponents; ++d)
-        point_in_target_frame(d) = point[d];
-      points.push_back(mapPointToActiveSourceFrame(point_in_target_frame));
+      const auto & centres = mesh.C().primitiveField();
+      _volume_points.reserve(centres.size());
+      for (const auto & point : centres)
+      {
+        libMesh::Point point_in_target_frame;
+        for (auto d = 0; d < Foam::vector::nComponents; ++d)
+          point_in_target_frame(d) = point[d];
+        _volume_points.push_back(mapPointToActiveSourceFrame(point_in_target_frame));
+      }
+    }
+
+    const auto foam_boundaries = isParamSetByUser("foam_boundaries")
+                                     ? getParam<std::vector<std::string>>("foam_boundaries")
+                                     : _destination_accessor->get().boundaryNames();
+
+    for (const auto & boundary : foam_boundaries)
+    {
+      if (_outgoing_points.find(boundary) != _outgoing_points.end())
+        mooseError("Patch '", boundary, "' is specified more than once.");
+
+      const auto patch_id = patches.findIndex(boundary);
+      if (patch_id < 0)
+        mooseError("Unknown OpenFOAM patch '", boundary, "'.");
+
+      const auto & patch = patches[patch_id];
+      const auto & field = _destination_accessor->get().boundaryField(boundary);
+      if (field.size() != patch.size())
+        mooseError("Destination field size does not match OpenFOAM patch '", boundary, "'.");
+
+      // Store boundary face centres in patch field order.
+      auto & points = _outgoing_points[boundary];
+      points.reserve(patch.size());
+
+      for (const auto & point : patch.Cf())
+      {
+        libMesh::Point point_in_target_frame;
+        for (auto d = 0; d < Foam::vector::nComponents; ++d)
+          point_in_target_frame(d) = point[d];
+        points.push_back(mapPointToActiveSourceFrame(point_in_target_frame));
+      }
     }
   }
+
+  if (isParamSetByUser("foam_boundaries"))
+    _boundaries = getParam<std::vector<std::string>>("foam_boundaries");
+  else
+  {
+    // OpenFOAM physical patches normally exist on every child rank, even with zero faces.
+    // Parent ranks without the child still need their names for collective evaluation.
+    // The union gives all parent ranks the same order and also permits rank-dependent
+    // boundary selections in partial accessors.
+    std::set<std::string> boundaries;
+    for (const auto & entry : _outgoing_points)
+      boundaries.insert(entry.first);
+    comm().set_union(boundaries);
+    _boundaries.assign(boundaries.begin(), boundaries.end());
+  }
+  _mapping_built = true;
 }
 
 void
@@ -100,12 +168,20 @@ MultiApplibMeshToFoamTransfer::transferVariables()
 {
   const std::vector<Point> empty_points;
   Foam::Field<Foam::scalar> empty_field;
+  if (getParam<bool>("volume"))
+  {
+    auto & field =
+        _destination_accessor ? _destination_accessor->get().internalField() : empty_field;
+    // All parent ranks evaluate volume first, including those without a destination.
+    _source_evaluator->evaluate(_volume_points, field);
+  }
   for (const auto & boundary : _boundaries)
   {
     const auto local = _outgoing_points.find(boundary);
     const bool has_boundary = local != _outgoing_points.end();
     const auto & points = has_boundary ? local->second : empty_points;
-    auto & field = has_boundary ? _boundary_transfer->get().boundaryField(boundary) : empty_field;
+    auto & field =
+        has_boundary ? _destination_accessor->get().boundaryField(boundary) : empty_field;
     // Every source rank participates, including those without a destination app.
     _source_evaluator->evaluate(points, field);
   }
@@ -146,27 +222,19 @@ MultiApplibMeshToFoamTransfer::execute()
           getParam<unsigned int>("num_nearest_points"));
     }
     else
+    {
       _source_evaluator = std::make_unique<LibMeshShapeFunctionEvaluator<Foam::scalar>>(
           getActiveFromProblem(), _libmesh_var_name, _displaced_source_mesh, comm());
+    }
+
     if (has_destination)
     {
       FoamProblem & foam_problem = foamProblem(getActiveToProblem());
-      _boundary_transfer = std::ref(foam_problem.getFieldAccessor<Foam::scalar>(_foam_var_name));
-      buildTransferMapping();
+      _destination_accessor = std::ref(foam_problem.getFieldAccessor<Foam::scalar>(_foam_var_name));
     }
-    if (isParamSetByUser("foam_boundaries"))
-      _boundaries = getParam<std::vector<std::string>>("foam_boundaries");
-    else
-    {
-      // Partial accessors may expose different patches on different child ranks.
-      // Use the same collective evaluation order even on ranks without those patches.
-      std::set<std::string> boundaries;
-      for (const auto & entry : _outgoing_points)
-        boundaries.insert(entry.first);
-      comm().set_union(boundaries);
-      _boundaries.assign(boundaries.begin(), boundaries.end());
-    }
-    _mapping_built = true;
+
+    validateVolumeDestination();
+    buildTransferMapping();
   }
 
   transferVariables();

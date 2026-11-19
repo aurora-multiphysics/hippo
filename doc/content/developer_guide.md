@@ -31,15 +31,15 @@ For example, `temperature` may wrap native `T` while a standalone object named
 
 The existing transfer parameter `foam_variable` accepts any registered object
 name, including storage supplied by a BC. BCs and future sources must explicitly
-register the storage they expose. This does not automatically expose BC storage
-or add internal-field transfers.
+register the storage they expose. Registering an accessor does not automatically
+expose existing BC storage.
 
 `FoamVariableField` registers native access during initialization regardless of
 `create_aux_variable`; that option controls auxiliary mirroring only.
 `FoamBoundaryVariable` owns its boundary buffers and registers a boundary-only
 accessor under its object name. OpenFOAM owns native storage. Owners must outlive
 accessors, and referenced field and patch objects must remain stable after
-construction. Volume transfers are not implemented by this interface.
+construction. Internal storage can receive cell-centred volume transfers.
 
 ## libMesh-to-OpenFOAM source evaluation
 
@@ -56,9 +56,30 @@ empty list transfers no boundary values. A partial accessor therefore defaults t
 its selected patches; a full volume-field accessor excludes processor patches. Default patch names are combined across destination ranks so
 all parent ranks participate in the same sequence of collective evaluations.
 
-`volume` defaults to `false`. Setting it to `true` reports a parameter error because
-internal-field transfers are not implemented yet. An empty boundary selection with
-`volume = false` is a valid no-op.
+`volume` defaults to `false`. Setting it to `true` transfers values evaluated at
+OpenFOAM cell centres into the receiving accessor's internal field. This field
+must exist and have one entry per local cell. Missing storage and size mismatches
+are reported collectively, including on parent ranks without a child.
+
+For volume-only transfers, use:
+
+```text
+volume = true
+foam_boundaries = ''
+```
+
+For combined transfers, set `volume = true` and omit `foam_boundaries` to select
+all exposed physical boundaries, or provide an explicit boundary list. Volume is
+evaluated first, followed by the common boundary order. No boundary-condition
+correction is performed after writing. An empty boundary selection with
+`volume = false` remains a valid no-op.
+
+Cell and face centres are mapped into the source coordinate frame and cached at
+setup. Geometry, topology, ownership, and receiving storage must remain fixed;
+source values are read again on every execution. Shape evaluation requires source
+elements covering the target cell centres; a boundary-only source mesh generally
+cannot provide volume values. Nearest-location evaluation retains its existing
+extrapolation behavior. MOOSE auxiliary mirroring remains boundary-only.
 
 `MultiApplibMeshToFoamTransfer` uses `evaluation_method = shape_function` by default.
 To transfer the globally nearest source sample instead, set:
