@@ -51,7 +51,7 @@ FoamProblem::initialSetup()
   TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
   query_vars.queryInto(_foam_variables);
 
-  // Register native fields before the base setup initializes and executes INITIAL transfers.
+  // Finish variable registration before the base setup executes INITIAL transfers.
   for (auto * variable : _foam_variables)
     variable->initialSetup();
 
@@ -87,10 +87,10 @@ FoamProblem::syncSolutions(Direction dir)
 
   if (dir == ExternalProblem::Direction::FROM_EXTERNAL_APP)
   {
-    // Loop of shadowed variables and perform transfer
+    // Update variable values and perform enabled mirroring.
     for (auto & var : _foam_variables)
     {
-      var->transferVariable();
+      var->syncVariable();
     }
     for (auto & fpp : _foam_postprocessor)
     {

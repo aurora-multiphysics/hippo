@@ -1,24 +1,22 @@
 #pragma once
 
-#include "FoamFieldBase.h"
+#include "FoamVariable.h"
 #include "MooseTypes.h"
 #include "WallQuantitiesBase.h"
 
 /**
  * Base class for transferring derived OpenFOAM wall quantities to MOOSE variables.
  * Delegates quantity evaluation to the selected WallQuantities implementation
- * and maps boundary-face values onto the corresponding MOOSE elements.
+ * and stores the results in registered boundary buffers before optional MOOSE mirroring.
  */
-class FoamWallVariableBase : public FoamFieldBase
+class FoamWallVariableBase : public FoamScalarVariable
 {
 public:
   static InputParameters validParams();
 
   FoamWallVariableBase(const InputParameters & params);
 
-  void transferVariable() override;
-
-  std::string foamVariable() const override { return ""; };
+  void syncVariable() override;
 
 protected:
   std::unique_ptr<WallQuantitiesBase> _wall_quantities;
