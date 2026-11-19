@@ -22,7 +22,7 @@
 
 [FoamVariables]
     [fluid_wall_temp]
-        type = FoamVariableField
+        type = FoamScalarVariable
         foam_variable = T
     []
 []

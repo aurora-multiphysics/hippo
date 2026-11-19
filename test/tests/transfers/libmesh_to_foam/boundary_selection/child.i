@@ -20,7 +20,7 @@
 []
 [FoamVariables]
   [received]
-    type = FoamVariableField
+    type = FoamScalarVariable
     foam_variable = transferField
     create_aux_variable = true
   []

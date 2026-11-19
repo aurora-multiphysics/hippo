@@ -21,11 +21,11 @@
 [FoamVariables]
   # Used by the missing-internal-storage error case.
   [boundary_only]
-    type = FoamBoundaryScalarVariable
+    type = FoamScalarVariable
     boundary = 'left right'
   []
   [received]
-    type = FoamVariableField
+    type = FoamScalarVariable
     foam_variable = transferField
     create_aux_variable = true
   []
