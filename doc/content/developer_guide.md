@@ -34,12 +34,25 @@ name, including storage supplied by a BC. BCs and future sources must explicitly
 register the storage they expose. Registering an accessor does not automatically
 expose existing BC storage.
 
-`FoamVariableField` registers native access during initialization regardless of
-`create_aux_variable`; that option controls auxiliary mirroring only.
-`FoamBoundaryVariable` owns its boundary buffers and registers a boundary-only
-accessor under its object name. OpenFOAM owns native storage. Owners must outlive
-accessors, and referenced field and patch objects must remain stable after
-construction. Internal storage can receive cell-centred volume transfers.
+`FoamScalarVariable` and `FoamVectorVariable` share the templated `FoamVariable<T>`
+implementation. Supplying `foam_variable` wraps an existing OpenFOAM volume field;
+otherwise `boundary` selects owned patch buffers and `volume = true` allocates
+owned internal storage. Allocation parameters cannot be combined with `foam_variable`.
+Owned storage uses `initial_condition` (zero by default).
+
+`create_aux_variable` controls boundary-only scalar mirroring. It defaults to true
+for wrapped scalar fields and false for owned fields and vectors. Vector mirroring
+is rejected. Mirroring is restricted to exposed boundaries present in FoamMesh;
+internal storage does not imply volumetric MOOSE mirroring.
+
+Owned buffers register during construction; wrapped fields register during
+`initialSetup()`, before INITIAL transfers. Derived variables can update values through the protected
+`getFieldAccessor()` method, then call the base `syncVariable()` to mirror them. `FoamWallVariableBase` uses this path to store calculated wall quantities
+in owned boundary buffers, then mirror them by default. Disabling mirroring still
+updates those buffers during solution synchronization; accessor reads return the
+most recently calculated values. Wall variables do not wrap existing fields or
+allocate internal storage. OpenFOAM owns wrapped storage; the variable owns allocated buffers. Both
+must keep referenced field objects stable for the accessor's lifetime.
 
 ## libMesh-to-OpenFOAM source evaluation
 

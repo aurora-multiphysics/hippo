@@ -6,7 +6,7 @@
 
 [FoamVariables]
     [fluid_wall_temp]
-        type = FoamVariableField
+        type = FoamScalarVariable
         foam_variable = 'T'
         initial_condition = 300
     []
