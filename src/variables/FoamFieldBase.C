@@ -1,5 +1,6 @@
 #include "fvCFD_moose.h"
 #include "FoamFieldBase.h"
+#include "MooseError.h"
 #include "MooseVariableBase.h"
 
 InputParameters
@@ -25,6 +26,6 @@ FoamFieldBase::mirrorEnabled(const InputParameters & params)
                           ? params.get<bool>("create_aux_variable")
                           : scalar && params.isParamValid("foam_variable");
   if (mirror && !scalar)
-    mooseError("Vector boundary mirroring is not supported; set create_aux_variable = false.");
+    ::mooseError("Vector boundary mirroring is not supported; set create_aux_variable = false.");
   return mirror;
 }

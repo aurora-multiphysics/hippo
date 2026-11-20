@@ -296,7 +296,8 @@ Foam2MooseMeshAdapter::calcSubdomAndRankArrays(HippoPtr<int32_t> subdom_count,
            id < subdom_count[rank * nsubdom + subdom + 1];
            ++id)
       {
-        _face_subdom[count] = subdom;
+        // Match FoamMesh's block names and lookup tables, which use OpenFOAM patch IDs.
+        _face_subdom[count] = _patch_id[subdom];
         _face_rank[count] = rank;
         // check count < number of faces
         assert(count < nface);
