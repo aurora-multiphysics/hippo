@@ -20,6 +20,8 @@
 #include <volFields.H>
 
 #include <algorithm>
+#include <map>
+#include <set>
 
 registerMooseObject("hippoApp", FoamProblem);
 
@@ -47,25 +49,14 @@ FoamProblem::FoamProblem(InputParameters const & params)
 void
 FoamProblem::initialSetup()
 {
-  // Get FoamVariables created by the action AddFoamVariableAction
-  TheWarehouse::Query query_vars = theWarehouse().query().condition<AttribSystem>("FoamVariable");
-  query_vars.queryInto(_foam_variables);
-
-  // Finish variable registration before the base setup executes INITIAL transfers.
-  for (auto * variable : _foam_variables)
-    variable->initialSetup();
-
-  ExternalProblem::initialSetup();
-
   verifyFoamVariables();
-
-  // Get FoamBCs created by the action AddFoamBCAction
-  TheWarehouse::Query query_bcs = theWarehouse().query().condition<AttribSystem>("FoamBC");
-  query_bcs.queryInto(_foam_bcs);
 
   verifyFoamBCs();
 
   verifyFoamPostprocessors();
+
+  // All field accessors must be registered before the base setup executes INITIAL transfers.
+  ExternalProblem::initialSetup();
 }
 
 void
@@ -109,6 +100,13 @@ FoamProblem::syncSolutions(Direction dir)
 void
 FoamProblem::verifyFoamVariables()
 {
+  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamVariable");
+  query.queryInto(_foam_variables);
+
+  // Patch replacement finishes during construction, before variables borrow patch storage.
+  for (auto * variable : _foam_variables)
+    variable->initialSetup();
+
   // Create table summarising FoamVariables
   VariadicTable<std::string, std::string, std::string> vt({
       "FoamVariable name",
@@ -125,6 +123,21 @@ FoamProblem::verifyFoamVariables()
 void
 FoamProblem::verifyFoamBCs()
 {
+  TheWarehouse::Query query = theWarehouse().query().condition<AttribSystem>("FoamBC");
+  query.queryInto(_foam_bcs);
+
+  std::map<std::string, std::set<SubdomainName>> selected;
+  for (const auto * bc : _foam_bcs)
+    for (const auto & boundary : bc->boundary())
+      if (!selected[bc->foamVariable()].insert(boundary).second)
+        mooseError("Imposed FoamBC has duplicated boundary '",
+                   boundary,
+                   "' for foam variable '",
+                   bc->foamVariable(),
+                   "'");
+  for (auto * bc : _foam_bcs)
+    bc->registerFieldAccessor();
+
   // Check BC
   for (auto & bc : _foam_bcs)
     bc->initialSetup();
@@ -161,15 +174,6 @@ FoamProblem::verifyFoamBCs()
         vt.addRow(name, type, foam_var, moose_var, boundaries, patch_replaced);
       }
     }
-
-    // Find duplicates
-    auto unique_bc = std::unique(used_bcs.begin(), used_bcs.end());
-    if (unique_bc != used_bcs.end())
-      mooseError("Imposed FoamBC has duplicated boundary '",
-                 *unique_bc,
-                 "' for foam variable '",
-                 var,
-                 "'");
 
     // Add table entry for boundaries which do not have a BC for variable
     std::vector<SubdomainName> unused_bcs;

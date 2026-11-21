@@ -2,6 +2,8 @@
 #include "FoamBCBase.h"
 #include "FoamProblem.h"
 #include "HippoObject.h"
+#include "hippoDiffusionFluxFvPatchScalarField.h"
+#include "processorFvPatch.H"
 
 #include <Coupleable.h>
 #include <InputParameters.h>
@@ -12,6 +14,7 @@
 #include <basicThermo.H>
 
 #include <vector>
+#include <set>
 #include <volFieldsFwd.H>
 
 namespace
@@ -25,6 +28,8 @@ bc_type_to_string(FoamBCType const & bc_type)
       return "fixedValue";
     case FoamBCType::fixedGradient:
       return "fixedGradient";
+    case FoamBCType::diffusionFlux:
+      return "hippoDiffusionFlux";
     default:
       mooseError("Unhandled (should be impossible)");
   }
@@ -58,17 +63,27 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
       !getFoamMesh().foamHasObject<Foam::volScalarField>(_foam_variable))
     mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
 
-  // check that the boundary is in the FoamMesh
-  auto all_subdomain_names = getFoamMesh().getSubdomainNames(getFoamMesh().getSubdomainList());
-  for (auto subdomain : _boundary)
-  {
-    auto it = std::find(all_subdomain_names.begin(), all_subdomain_names.end(), subdomain);
-    if (it == all_subdomain_names.end())
-      mooseError("Boundary '", subdomain, "' not found in FoamMesh");
-  }
-
+  const bool direct = isParamValid("direct") && getParam<bool>("direct");
+  const auto mirrored = getFoamMesh().getSubdomainNames(getFoamMesh().getSubdomainList());
   if (_boundary.empty())
-    _boundary = all_subdomain_names;
+    _boundary = mirrored;
+
+  std::set<SubdomainName> selected;
+  for (const auto & boundary : _boundary)
+  {
+    if (!selected.insert(boundary).second)
+      paramError("boundary", "Patch '", boundary, "' is specified more than once.");
+    if (!direct && std::find(mirrored.begin(), mirrored.end(), boundary) == mirrored.end())
+      mooseError("Boundary '", boundary, "' not found in FoamMesh");
+    const auto id = getFvMesh().boundary().findIndex(boundary);
+    if (id < 0)
+      paramError("boundary", "Unknown OpenFOAM patch '", boundary, "'.");
+    if (direct)
+    {
+      if (Foam::isA<Foam::processorFvPatch>(getFvMesh().boundary()[id]))
+        paramError("boundary", "Direct BCs require physical OpenFOAM patches.");
+    }
+  }
 
   for (auto subdomain : _boundary)
   {
@@ -88,13 +103,35 @@ FoamBCBase::constructFoamScalarPatch(const std::string & patch_name, const FoamB
   Foam::label id = getFvMesh().boundary().findIndex(patch_name);
 
   if (bc_type_to_string(bc_type) == var.boundaryField()[id].type())
+  {
+    // If there is a different diffusivity in OpenFOAM 0/ to that in the hippo input file,
+    // override it with the input file
+    if (bc_type == FoamBCType::diffusionFlux)
+    {
+      auto & patch =
+          Foam::refCast<Foam::hippoDiffusionFluxFvPatchScalarField>(var.boundaryFieldRef()[id]);
+      // Hippo input controls the coefficient, including when reusing a restart patch.
+      patch.setDiffusivity(Foam::word(getParam<std::string>("diffusivity")));
+    }
     return;
+  }
 
   // Used by getInfoRow to report in the BC table that the patch as been replaced
   _patch_replaced = true;
 
   Foam::dictionary bcDict;
   bcDict.add("type", bc_type_to_string(bc_type));
+  if (bc_type == FoamBCType::diffusionFlux)
+  {
+    const auto & diffusivity = getParam<std::string>("diffusivity");
+    if (!getFvMesh().foundObject<Foam::volScalarField>(diffusivity))
+      paramError("diffusivity", "Field '", diffusivity, "' must be an OpenFOAM volScalarField.");
+    const auto & coefficient = getFvMesh().lookupObject<Foam::volScalarField>(diffusivity);
+    bcDict.add("diffusivity", Foam::word(diffusivity));
+    bcDict.add("fluxDimensions", var.dimensions() * coefficient.dimensions() / Foam::dimLength);
+    bcDict.add("flux", "uniform 0");
+    bcDict.add("value", "uniform 0");
+  }
   if (bc_type == FoamBCType::fixedGradient)
   {
     bcDict.add("gradient", "uniform 0.");
@@ -160,7 +197,7 @@ FoamBCBase::updateEnergyPatch(const Foam::volScalarField & var,
 
     Foam::dictionary dict;
 
-    if (bc_type == FoamBCType::fixedGradient)
+    if (bc_type == FoamBCType::fixedGradient || bc_type == FoamBCType::diffusionFlux)
     {
       dict.add("type", "gradientEnergy");
       dict.add("gradient", "uniform 0");

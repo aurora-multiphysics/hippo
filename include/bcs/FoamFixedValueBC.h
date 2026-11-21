@@ -3,6 +3,7 @@
 #include "FoamVariableBCBase.h"
 #include "InputParameters.h"
 
+/// Prescribe scalar patch values through direct transfers or a MOOSE AuxVariable.
 class FoamFixedValueBC : public FoamVariableBCBase
 {
 public:
@@ -11,7 +12,4 @@ public:
 
   // Constructor
   explicit FoamFixedValueBC(const InputParameters & parameters);
-
-  // Impose boundary conditions (to be called from FoamProblem class)
-  virtual void imposeBoundaryCondition() override;
 };

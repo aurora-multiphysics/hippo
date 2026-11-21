@@ -1,10 +1,5 @@
 #include "FoamFixedGradientBC.h"
 
-#include <InputParameters.h>
-#include <MooseTypes.h>
-#include <fixedGradientFvPatchFields.H>
-#include <volFieldsFwd.H>
-
 registerMooseObject("hippoApp", FoamFixedGradientBC);
 
 InputParameters
@@ -20,23 +15,4 @@ FoamFixedGradientBC::validParams()
 FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
   : FoamVariableBCBase(parameters, FoamBCType::fixedGradient)
 {
-}
-
-void
-FoamFixedGradientBC::imposeBoundaryCondition()
-{
-  // Get subdomains this FoamBC acts on
-  // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
-  auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
-  for (auto subdomain : subdomains)
-  {
-    std::vector<Real> && grad_array = getMooseVariableArray(subdomain);
-
-    // Get the gradient associated with the field
-    auto & foam_gradient =
-        getFoamMesh().getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
-    assert(grad_array.size() == static_cast<size_t>(foam_gradient.size()));
-
-    std::copy(grad_array.begin(), grad_array.end(), foam_gradient.begin());
-  }
 }
