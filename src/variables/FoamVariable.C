@@ -83,7 +83,7 @@ FoamVariable<T>::FoamVariable(const InputParameters & params)
     internal = std::ref(*_internal_data);
   }
   getFoamProblem().registerField<T>(
-      name(), std::make_unique<FoamFieldAccessor<T>>(_boundary_data, internal));
+      "FoamVariables/" + name(), std::make_unique<FoamFieldAccessor<T>>(_boundary_data, internal));
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ template <typename T>
 FoamFieldAccessor<T> &
 FoamVariable<T>::getFieldAccessor()
 {
-  return getFoamProblem().getFieldAccessor<T>(name());
+  return getFoamProblem().getFieldAccessor<T>("FoamVariables/" + name());
 }
 
 template <typename T>

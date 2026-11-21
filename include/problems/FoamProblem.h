@@ -27,7 +27,7 @@ public:
   virtual void addExternalVariables() override {};
   virtual void initialSetup() override;
 
-  /// Resolve any registered object name, regardless of which object supplied it.
+  /// Retrieve an accessor by its qualified object name.
   template <typename T>
   FoamFieldAccessor<T> & getFieldAccessor(const std::string & name)
   {
@@ -40,7 +40,7 @@ public:
   template <typename T>
   void registerVolFieldVariable(const std::string & variable, const std::string & field);
 
-  /// Register storage exposed by a variable, BC, source, or other field owner.
+  /// Register storage under a qualified name, such as FoamBCs/inlet.
   template <typename T>
   FoamFieldAccessor<T> & registerField(const std::string & name,
                                        std::unique_ptr<FoamFieldAccessor<T>> accessor)
@@ -85,12 +85,13 @@ template <typename T>
 void
 FoamProblem::registerVolFieldVariable(const std::string & variable, const std::string & field)
 {
-  if (hasField(variable))
+  if (hasField("FoamVariables/" + variable))
     mooseError("Field accessor '", variable, "' is already registered.");
   auto & mesh = _foam_mesh->fvMesh();
   if (!mesh.foundObject<Foam::VolField<T>>(field))
     mooseError("OpenFOAM volume field '", field, "' is missing or has an incompatible field type.");
 
   auto & volume_field = mesh.lookupObjectRef<Foam::VolField<T>>(field);
-  registerField<T>(variable, std::make_unique<FoamFieldAccessor<T>>(volume_field));
+  registerField<T>("FoamVariables/" + variable,
+                   std::make_unique<FoamFieldAccessor<T>>(volume_field));
 }

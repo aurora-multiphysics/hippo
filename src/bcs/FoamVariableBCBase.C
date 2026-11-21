@@ -132,7 +132,7 @@ FoamVariableBCBase::registerFieldAccessor()
       entry.second.get() = initial[0];
   }
   getFoamProblem().registerField<Foam::scalar>(
-      name(), std::make_unique<FoamFieldAccessor<Foam::scalar>>(fields));
+      "FoamBCs/" + name(), std::make_unique<FoamFieldAccessor<Foam::scalar>>(fields));
 }
 
 void
@@ -143,7 +143,7 @@ FoamVariableBCBase::imposeBoundaryCondition()
 
   // If mirror transfer is used copy values from MOOSE variable data and copy to
   // Foam field via the accessor
-  auto & accessor = getFoamProblem().getFieldAccessor<Foam::scalar>(name());
+  auto & accessor = getFoamProblem().getFieldAccessor<Foam::scalar>("FoamBCs/" + name());
   for (const auto & boundary : _boundary)
   {
     const auto id = getFvMesh().boundary().findIndex(boundary);

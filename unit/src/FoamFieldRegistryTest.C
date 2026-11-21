@@ -12,13 +12,14 @@ TEST_F(FoamFieldRegistryTest, SeparateAccessorsShareStorage)
   Foam::scalarField field(2, 1.);
   FoamFieldRegistry registry;
   auto & first =
-      registry.add("temperature", std::make_unique<FoamFieldAccessor<Foam::scalar>>(field));
-  auto & second = registry.add("copy", std::make_unique<FoamFieldAccessor<Foam::scalar>>(field));
+      registry.add("FoamVariables/T", std::make_unique<FoamFieldAccessor<Foam::scalar>>(field));
+  auto & second =
+      registry.add("FoamBCs/T", std::make_unique<FoamFieldAccessor<Foam::scalar>>(field));
 
   EXPECT_NE(&first, &second);
   // The address of object returned by registry should match the created accessor
-  EXPECT_EQ(&registry.getFieldAccessor<Foam::scalar>("temperature"), &first);
-  EXPECT_EQ(&registry.getFieldAccessor<Foam::scalar>("copy"), &second);
+  EXPECT_EQ(&registry.getFieldAccessor<Foam::scalar>("FoamVariables/T"), &first);
+  EXPECT_EQ(&registry.getFieldAccessor<Foam::scalar>("FoamBCs/T"), &second);
 
   // Changing the field should change the reference field
   first.internalField()[0] = 5.;
