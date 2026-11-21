@@ -23,7 +23,7 @@ hippoDiffusionFluxFvPatchScalarField::hippoDiffusionFluxFvPatchScalarField(
   if (dict.found("value"))
     fvPatchScalarField::operator=(scalarField("value", field.dimensions(), dict, patch.size()));
   else
-    fvPatchScalarField::operator=(patchInternalField());
+    fvPatchScalarField::operator=(patchInternalField() + gradient() / patch.deltaCoeffs());
 }
 
 hippoDiffusionFluxFvPatchScalarField::hippoDiffusionFluxFvPatchScalarField(
@@ -97,6 +97,5 @@ hippoDiffusionFluxFvPatchScalarField::write(Ostream & os) const
   writeEntry(os, "diffusivity", diffusivity_);
   writeEntry(os, "fluxDimensions", fluxDimensions_);
   writeEntry(os, "flux", flux_);
-  writeEntry(os, "value", *this);
 }
 }

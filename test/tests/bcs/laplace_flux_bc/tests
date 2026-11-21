@@ -9,7 +9,7 @@
             input = main.i
             prereq = foam_bc_diffusion_flux/setup
             cli_args ='FoamBCs/T_flux/diffusivity=kappa1'
-            expect_err = "Diffusivity 'kappa1' not a Foam volScalarField"
+            expect_err = "Field 'kappa1' must be an OpenFOAM volScalarField"
         []
         [run]
             type = RunApp

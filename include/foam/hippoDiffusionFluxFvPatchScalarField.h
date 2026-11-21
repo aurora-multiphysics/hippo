@@ -50,7 +50,7 @@ public:
   void map(const fvPatchScalarField &, const fieldMapper &) override;
   /// Reset patch values, gradients and flux from another patch of this type.
   void reset(const fvPatchScalarField &) override;
-  /// Write patch configuration, prescribed flux and values for restart.
+  /// Write patch configuration, prescribed flux and gradient for restart.
   void write(Ostream &) const override;
 };
 }

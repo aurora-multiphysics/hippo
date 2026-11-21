@@ -65,7 +65,7 @@
     type = MultiApplibMeshToFoamTransfer
     to_multi_app = receiver
     libmesh_variable = source
-    foam_variable = received
+    foam_variable = FoamVariables/received
     volume = true
     # Omitted boundary selection enables both volume and physical boundary transfers.
     execute_on = 'initial timestep_end'

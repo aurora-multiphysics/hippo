@@ -13,6 +13,7 @@
 [FoamBCs]
   [T]
     type = FoamFixedValueBC
+    direct = false
     foam_variable = T
     initial_condition = 111
   []

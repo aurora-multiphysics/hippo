@@ -7,6 +7,7 @@
 [FoamBCs]
     [solid_wall_temp]
         type = FoamFixedValueBC
+        direct = false
         foam_variable = T
         initial_condition = 300
     []

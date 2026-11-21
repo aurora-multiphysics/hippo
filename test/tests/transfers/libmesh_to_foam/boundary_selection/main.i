@@ -60,7 +60,7 @@
     type = MultiApplibMeshToFoamTransfer
     to_multi_app = receiver
     libmesh_variable = source
-    foam_variable = received
+    foam_variable = FoamVariables/received
     foam_boundaries = 'left right'
     execute_on = 'initial timestep_end'
   []
@@ -68,7 +68,7 @@
     type = MultiApplibMeshToFoamTransfer
     to_multi_app = receiver
     libmesh_variable = source
-    foam_variable = received
+    foam_variable = FoamVariables/received
     # Omitted: use every physical boundary exposed by the receiver.
     execute_on = 'initial timestep_end'
   []

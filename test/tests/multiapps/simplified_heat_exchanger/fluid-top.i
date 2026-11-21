@@ -7,6 +7,7 @@
 [FoamBCs]
     [solid_heat_flux]
         type = FoamDiffusionFluxBC
+        direct = false
         foam_variable = T
         initial_condition = 3
     []

@@ -15,12 +15,14 @@
 [FoamBCs]
     [T_value]
         type=FoamFixedValueBC
+        direct = false
         foam_variable = T
         initial_condition = 0.
         boundary = 'left'
     []
     [T_flux]
         type=FoamFixedGradientBC
+        direct = false
         foam_variable = T
         boundary = 'right'
     []

@@ -47,8 +47,8 @@
     [missing_internal]
       type = RunException
       input = main.i
-      cli_args = "Transfers/to_foam/foam_variable=boundary_only Transfers/to_foam/foam_boundaries='' MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2"
-      expect_err = "Receiving accessor 'boundary_only' has no internal field."
+      cli_args = "Transfers/to_foam/foam_variable=FoamVariables/boundary_only Transfers/to_foam/foam_boundaries='' MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2"
+      expect_err = "Receiving accessor 'FoamVariables/boundary_only' has no internal field."
       prereq = volume/verify_combined
       min_parallel = 4
       max_parallel = 4
