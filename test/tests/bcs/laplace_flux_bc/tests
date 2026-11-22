@@ -1,5 +1,5 @@
 [Tests]
-    [foam_bc_diffusion_flux]
+    [diffusion_flux]
         [setup]
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
@@ -7,30 +7,53 @@
         [check_invalid_diffusivity]
             type = RunException
             input = main.i
-            prereq = foam_bc_diffusion_flux/setup
-            cli_args ='FoamBCs/T_flux/diffusivity=kappa1'
+            max_parallel = 1
+            prereq = diffusion_flux/setup
+            cli_args = 'MultiApps/receiver/cli_args=FoamBCs/T_flux/diffusivity=kappa1'
             expect_err = "Field 'kappa1' must be an OpenFOAM volScalarField"
         []
         [run]
             type = RunApp
             input = main.i
-            prereq = foam_bc_diffusion_flux/setup
+            cli_args = "Transfers/active='aux_T_value aux_T_flux' MultiApps/receiver/cli_args='FoamBCs/T_value/direct=false;FoamBCs/T_flux/direct=false'"
+            max_parallel = 1
+            prereq = diffusion_flux/setup
         []
         [verify]
             type = PythonUnitTest
             input = test.py
-            prereq = foam_bc_diffusion_flux/run
+            prereq = diffusion_flux/run
         []
         [run_diffusivity]
             type = RunApp
             input = main.i
-            prereq = foam_bc_diffusion_flux/setup
-            cli_args ='FoamBCs/T_flux/diffusivity=Cv AuxKernels/T_flux/expression=t'
+            max_parallel = 1
+            prereq = diffusion_flux/verify
+            cli_args = "Transfers/active='aux_T_value aux_T_flux' MultiApps/receiver/cli_args='FoamBCs/T_value/direct=false;FoamBCs/T_flux/direct=false;FoamBCs/T_flux/diffusivity=Cv' Functions/T_flux/expression=t"
         []
         [verify_diffusivity]
             type = PythonUnitTest
             input = test.py
-            prereq = foam_bc_diffusion_flux/run
+            prereq = diffusion_flux/run_diffusivity
+        []
+    []
+    [diffusion_flux_direct]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+            prereq = diffusion_flux/verify_diffusivity
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = diffusion_flux_direct/setup
+            max_parallel = 1
+            requirement = 'Hippo shall reproduce the existing BC reference with direct libMesh transfers.'
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = diffusion_flux_direct/run
         []
     []
 []

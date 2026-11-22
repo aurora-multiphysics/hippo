@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Generate cases in the calling test directory, using the shared template.
-template_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/case_template"
+# Generate cases in the calling test directory.
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+template_dir="$script_dir/case_template"
 
 parent_ranks=1
 child_ranks=1

@@ -12,7 +12,7 @@ Each group has its own `main.i`, `child.i`, `test.py`, and `tests` specification
 Inputs and analytical output checks are local to the group. Evaluator algorithm
 coverage remains in the unit tests.
 
-All groups share `case_template/` and `setup.sh`. The harness runs
+All groups share the local `case_template/` and `setup.sh`. The harness runs
 `bash ../setup.sh [serial|mpi_4_2] [shape|nearest]` from the group directory, creating
 that group's own `parent_case/` and `child_case/`. Existing cases there are replaced
 on each setup. Prerequisites sequence runs within a group; no prerequisite crosses

@@ -1,5 +1,5 @@
 [Tests]
-    [foam_bc_fixed_gradient]
+    [fixed_gradient]
         [setup]
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
@@ -7,12 +7,33 @@
         [run]
             type = RunApp
             input = main.i
-            prereq = foam_bc_fixed_gradient/setup
+            cli_args = "Transfers/active='aux_T_value aux_T_flux' MultiApps/receiver/cli_args='FoamBCs/T_value/direct=false;FoamBCs/T_flux/direct=false'"
+            max_parallel = 1
+            prereq = fixed_gradient/setup
         []
         [verify]
             type = PythonUnitTest
             input = test.py
-            prereq = foam_bc_fixed_gradient/run
+            prereq = fixed_gradient/run
+        []
+    []
+    [fixed_gradient_direct]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
+            prereq = fixed_gradient/verify
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = fixed_gradient_direct/setup
+            max_parallel = 1
+            requirement = 'Hippo shall reproduce the existing BC reference with direct libMesh transfers.'
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = fixed_gradient_direct/run
         []
     []
 []
