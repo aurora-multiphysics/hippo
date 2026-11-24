@@ -2,15 +2,11 @@
 
 The focused `fixed_value`, `laplace_fixed_gradient` and `laplace_flux_bc` suites
 compare direct and AuxVariable inputs against their existing solution references.
-This suite checks transfer execution and checkpoint recovery.
+This suite checks invalid direct input and checkpoint recovery.
 
-INITIAL-only, time-varying and MPI transfer runs use `solve = false` in the child.
-These runs check that transfers complete without errors or deadlocks. The child
-mirrors only the bottom patch, so transfers also target patches outside its
-mirrored mesh. The MPI run uses four parent ranks and two child ranks, with
-front/back patches empty on one child rank. Numerical correctness is covered by
-the focused BC suites and the recovery solution check. Invalid `v` input is
-checked during setup.
+Supplying `v` with direct mode enabled is rejected during setup. The recovery
+case mirrors only the bottom patch, so it also exercises transfers to physical
+patches outside the mirrored mesh.
 
 Recovery is the only scenario that enables the OpenFOAM solve. It uses
 INITIAL-only inputs for `T = 100 + x + y + z`, with

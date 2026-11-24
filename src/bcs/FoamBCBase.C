@@ -4,6 +4,7 @@
 #include "HippoObject.h"
 #include "hippoDiffusionFluxFvPatchScalarField.h"
 #include "processorFvPatch.H"
+#include "regIOobject.H"
 
 #include <Coupleable.h>
 #include <InputParameters.h>
@@ -58,10 +59,16 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
     _boundary(params.get<std::vector<SubdomainName>>("boundary")),
     _patch_replaced(false)
 {
-  // check that the foam variable exists
-  if (!params.isPrivate("foam_variable") &&
-      !getFoamMesh().foamHasObject<Foam::volScalarField>(_foam_variable))
-    mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
+  if (!params.isPrivate("foam_variable"))
+  {
+    if (!getFvMesh().foundObject<Foam::regIOobject>(_foam_variable))
+      paramError("foam_variable", "There is no OpenFOAM field named '", _foam_variable, "'");
+    if (!getFoamMesh().foamHasObject<Foam::volScalarField>(_foam_variable))
+      paramError("foam_variable",
+                 "Field '",
+                 _foam_variable,
+                 "' must be an OpenFOAM volScalarField. This BC only supports scalar fields.");
+  }
 
   const bool direct = isParamValid("direct") && getParam<bool>("direct");
   const auto mirrored = getFoamMesh().getSubdomainNames(getFoamMesh().getSubdomainList());
@@ -89,10 +96,8 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
   {
     if (getFoamMesh().foamHasObject<Foam::volScalarField>(_foam_variable))
       constructFoamScalarPatch(subdomain, bc_type);
-    else if (getFoamMesh().foamHasObject<Foam::volVectorField>(_foam_variable))
-      constructFoamVectorPatch(subdomain, bc_type);
     else
-      mooseError("Variable must have type scalar or vector.");
+      mooseError("Variable must have type scalar.");
   }
 }
 
