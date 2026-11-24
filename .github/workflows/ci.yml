@@ -39,7 +39,7 @@ jobs:
           apptainer exec --writable-tmpfs ${IMAGE_FILE_NAME} bash -c "cd /opt/hippo && ./run_tests"
       - name: Run unit tests in container
         run: |
-          apptainer exec --writable-tmpfs ${IMAGE_FILE_NAME} bash -c "cd /opt/hippo/unit && ./run_tests"
+          apptainer exec --writable-tmpfs ${IMAGE_FILE_NAME} bash -c "cd /opt/hippo/unit && ./run_tests && mpirun -n 2 ./run_tests --separate-libmeshout"
       - name: Docs
         shell: bash
         if: ${{ matrix.mpi == 'openmpi' }}
