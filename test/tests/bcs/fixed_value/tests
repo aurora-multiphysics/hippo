@@ -1,5 +1,5 @@
 [Tests]
-    [fixed_value]
+    [foam_bc_action_test]
         requirement = "Check imposition of fixed value BCs and ability to override underlying Foam BC types."
         [setup]
             type = RunCommand
@@ -8,51 +8,29 @@
         [run]
             type = RunApp
             input = main.i
-            cli_args = "Transfers/active='aux_temp1 aux_temp2' MultiApps/receiver/cli_args='FoamBCs/temp1/direct=false;FoamBCs/temp2/direct=false'"
-            max_parallel = 1
-            prereq = fixed_value/setup
+            prereq = foam_bc_action_test/setup
         []
         [verify]
             type = PythonUnitTest
             input = test.py
-            prereq = fixed_value/run
+            prereq = foam_bc_action_test/run
         []
         [run_parallel]
             type = RunApp
             input = main.i
-            cli_args = "Transfers/active='aux_temp1 aux_temp2' MultiApps/receiver/cli_args='FoamBCs/temp1/direct=false;FoamBCs/temp2/direct=false'"
             min_parallel=4
             max_parallel=4
-            prereq = fixed_value/verify
+            prereq = foam_bc_action_test/setup
         []
         [prep_verify]
             type = RunCommand
             command = 'bash -c "reconstructPar -case foam"'
-            prereq = fixed_value/run_parallel
+            prereq = foam_bc_action_test/run_parallel
         []
         [verify_parallel]
             type = PythonUnitTest
             input = test.py
-            prereq = fixed_value/prep_verify
-        []
-    []
-    [fixed_value_direct]
-        [setup]
-            type = RunCommand
-            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam"'
-            prereq = fixed_value/verify_parallel
-        []
-        [run]
-            type = RunApp
-            input = main.i
-            prereq = fixed_value_direct/setup
-            max_parallel = 1
-            requirement = 'Hippo shall reproduce the existing BC reference with direct libMesh transfers.'
-        []
-        [verify]
-            type = PythonUnitTest
-            input = test.py
-            prereq = fixed_value_direct/run
+            prereq = foam_bc_action_test/prep_verify
         []
     []
 []

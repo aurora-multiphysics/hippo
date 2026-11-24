@@ -29,11 +29,11 @@
 
 [FoamVariables]
     [T_shadow]
-        type = FoamScalarVariable
+        type = FoamVariableField
         foam_variable = 'T'
     []
     [e_shadow]
-        type = FoamScalarVariable
+        type = FoamVariableField
         foam_variable = 'e'
     []
     [whf_shadow]

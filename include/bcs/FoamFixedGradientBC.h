@@ -3,7 +3,6 @@
 #include "FoamVariableBCBase.h"
 #include "InputParameters.h"
 
-/// Prescribe scalar outward-normal gradients through direct transfers or a MOOSE AuxVariable.
 class FoamFixedGradientBC : public FoamVariableBCBase
 {
 public:
@@ -12,4 +11,7 @@ public:
 
   // Constructor
   explicit FoamFixedGradientBC(const InputParameters & parameters);
+
+  // Impose boundary conditions (to be called from FoamProblem class)
+  virtual void imposeBoundaryCondition() override;
 };

@@ -11,12 +11,11 @@
 typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
     BCInfoTableRow;
 
-/// OpenFOAM patch behaviours supported by the BC wrappers.
+// valid underlying Foam BC types
 enum class FoamBCType
 {
   fixedValue,
-  fixedGradient,
-  diffusionFlux
+  fixedGradient
 };
 
 class FoamBCBase : public HippoObject, public Coupleable
@@ -31,13 +30,13 @@ public:
   // returns foam variable BC applies to
   std::string foamVariable() const { return _foam_variable; };
 
+  // returns the moose AuxVariable imposed on OpenFOAM
+  AuxVariableName mooseVariable() const { return _moose_var->name(); }
+
   // returns the name of the foam boundaries the BC applies to
   std::vector<SubdomainName> boundary() const { return _boundary; };
 
   virtual void initialSetup() = 0;
-
-  /// Register borrowed patch storage after patch replacement and before INITIAL transfers.
-  virtual void registerFieldAccessor() {}
 
   // Add information about BC to table
   virtual BCInfoTableRow getInfoRow() const = 0;
@@ -52,10 +51,10 @@ protected:
   // Get the data vector of the MOOSE field on a subdomain
   std::vector<Real> getMooseVariableArray(int subdomain_id);
 
-  /// Reuse a compatible scalar patch or replace it with the requested type.
+  // Construct boundary patch for scalar fields
   void constructFoamScalarPatch(const std::string & patch_name, const FoamBCType bc_type);
 
-  /// Replace the associated thermo energy patch when its temperature patch is replaced.
+  // Update the energy equation, if the temperature field is updated the energy equation must be
   void
   updateEnergyPatch(const Foam::volScalarField & var, Foam::label id, const FoamBCType bc_type);
 
