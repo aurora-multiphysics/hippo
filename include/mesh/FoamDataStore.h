@@ -2,6 +2,7 @@
 
 #include "MooseError.h"
 #include "fvCFD_moose.h"
+#include "hippoDiffusionFluxFvPatchScalarField.h"
 
 #include <DataIO.h>
 
@@ -29,6 +30,69 @@ getFieldkeys(const Foam::fvMesh & mesh)
   return fieldKeyList;
 }
 
+// Scalar gradient and flux inputs are separate from the boundary values.
+// Restore them in place so registered accessors keep referring to the same fields.
+template <typename Patch>
+inline void
+readPatchInputs(istream &, Patch &)
+{
+}
+
+inline void
+readPatchInputs(istream & stream, Foam::fvPatchScalarField & patch)
+{
+  bool has_gradient, has_flux;
+  dataLoad(stream, has_gradient, nullptr);
+  if (has_gradient)
+  {
+    auto & gradient = Foam::refCast<Foam::fixedGradientFvPatchScalarField>(patch).gradient();
+    std::vector<Foam::scalar> values(gradient.size());
+    dataLoad(stream, values, nullptr);
+    if (values.size() != static_cast<std::size_t>(gradient.size()))
+      mooseError("Checkpoint gradient size differs from patch size for ", patch.patch().name());
+    std::copy(values.begin(), values.end(), gradient.begin());
+  }
+  dataLoad(stream, has_flux, nullptr);
+  if (has_flux)
+  {
+    auto & flux = Foam::refCast<Foam::hippoDiffusionFluxFvPatchScalarField>(patch).flux();
+    std::vector<Foam::scalar> values(flux.size());
+    dataLoad(stream, values, nullptr);
+    if (values.size() != static_cast<std::size_t>(flux.size()))
+      mooseError("Checkpoint flux size differs from patch size for ", patch.patch().name());
+    std::copy(values.begin(), values.end(), flux.begin());
+  }
+}
+
+template <typename Patch>
+inline void
+writePatchInputs(ostream &, const Patch &)
+{
+}
+
+inline void
+writePatchInputs(ostream & stream, const Foam::fvPatchScalarField & patch)
+{
+  const bool has_gradient = Foam::isA<Foam::fixedGradientFvPatchScalarField>(patch);
+  dataStore(stream, has_gradient, nullptr);
+  if (has_gradient)
+  {
+    const auto & gradient =
+        Foam::refCast<const Foam::fixedGradientFvPatchScalarField>(patch).gradient();
+    std::vector<Foam::scalar> values(gradient.begin(), gradient.end());
+    dataStore(stream, values, nullptr);
+  }
+  const bool has_flux = Foam::isA<Foam::hippoDiffusionFluxFvPatchScalarField>(patch);
+  dataStore(stream, has_flux, nullptr);
+  if (has_flux)
+  {
+    const auto & flux =
+        Foam::refCast<const Foam::hippoDiffusionFluxFvPatchScalarField>(patch).flux();
+    std::vector<Foam::scalar> values(flux.begin(), flux.end());
+    dataStore(stream, values, nullptr);
+  }
+}
+
 template <class Type, class GeomMesh>
 inline void
 readBoundary([[maybe_unused]] istream & stream,
@@ -45,6 +109,7 @@ readBoundary(istream & stream, GeoField & field)
     std::vector<typename GeoField::value_type> data(bField.size());
     dataLoad(stream, data, nullptr);
     std::copy(data.begin(), data.end(), bField.begin());
+    readPatchInputs(stream, bField);
   }
 }
 
@@ -90,6 +155,7 @@ writeBoundary(ostream & stream, const GeoField & field)
     std::vector<typename GeoField::value_type> data(bField.size());
     std::copy(bField.begin(), bField.end(), data.begin());
     dataStore(stream, data, nullptr);
+    writePatchInputs(stream, bField);
   }
 }
 
