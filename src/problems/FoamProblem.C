@@ -135,8 +135,6 @@ FoamProblem::verifyFoamBCs()
                    "' for foam variable '",
                    bc->foamVariable(),
                    "'");
-  for (auto * bc : _foam_bcs)
-    bc->registerFieldAccessor();
 
   // Check BC
   for (auto & bc : _foam_bcs)

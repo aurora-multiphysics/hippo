@@ -33,9 +33,8 @@ AddFoamBCAction::act()
   // Adding BCs using [FoamBC] syntax
   if (_current_task == "add_foam_bc")
   {
-    // Do not create aux variable if variable provided or the BC uses direct transfers.
-    if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.get<bool>("direct") &&
-        !_moose_object_pars.isParamSetByUser("v"))
+    // Do not create aux variable if variable provided
+    if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
 
     // Create receiver if pp_name not provided and pp_name is an allowed parameter

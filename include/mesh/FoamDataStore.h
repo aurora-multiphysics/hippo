@@ -2,7 +2,6 @@
 
 #include "MooseError.h"
 #include "fvCFD_moose.h"
-#include "hippoDiffusionFluxFvPatchScalarField.h"
 
 #include <DataIO.h>
 
@@ -41,7 +40,7 @@ readPatchInputs(istream &, Patch &)
 inline void
 readPatchInputs(istream & stream, Foam::fvPatchScalarField & patch)
 {
-  bool has_gradient, has_flux;
+  bool has_gradient;
   dataLoad(stream, has_gradient, nullptr);
   if (has_gradient)
   {
@@ -51,16 +50,6 @@ readPatchInputs(istream & stream, Foam::fvPatchScalarField & patch)
     if (values.size() != static_cast<std::size_t>(gradient.size()))
       mooseError("Checkpoint gradient size differs from patch size for ", patch.patch().name());
     std::copy(values.begin(), values.end(), gradient.begin());
-  }
-  dataLoad(stream, has_flux, nullptr);
-  if (has_flux)
-  {
-    auto & flux = Foam::refCast<Foam::hippoDiffusionFluxFvPatchScalarField>(patch).flux();
-    std::vector<Foam::scalar> values(flux.size());
-    dataLoad(stream, values, nullptr);
-    if (values.size() != static_cast<std::size_t>(flux.size()))
-      mooseError("Checkpoint flux size differs from patch size for ", patch.patch().name());
-    std::copy(values.begin(), values.end(), flux.begin());
   }
 }
 
@@ -80,15 +69,6 @@ writePatchInputs(ostream & stream, const Foam::fvPatchScalarField & patch)
     const auto & gradient =
         Foam::refCast<const Foam::fixedGradientFvPatchScalarField>(patch).gradient();
     std::vector<Foam::scalar> values(gradient.begin(), gradient.end());
-    dataStore(stream, values, nullptr);
-  }
-  const bool has_flux = Foam::isA<Foam::hippoDiffusionFluxFvPatchScalarField>(patch);
-  dataStore(stream, has_flux, nullptr);
-  if (has_flux)
-  {
-    const auto & flux =
-        Foam::refCast<const Foam::hippoDiffusionFluxFvPatchScalarField>(patch).flux();
-    std::vector<Foam::scalar> values(flux.begin(), flux.end());
     dataStore(stream, values, nullptr);
   }
 }

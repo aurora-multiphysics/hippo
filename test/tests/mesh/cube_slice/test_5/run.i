@@ -17,7 +17,6 @@
 [FoamBCs]
   [T]
     type = FoamFixedValueBC
-    direct = false
     foam_variable = T
     v = T
   []

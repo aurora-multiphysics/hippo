@@ -15,14 +15,12 @@
 [FoamBCs]
     [temp]
         type=FoamTestBC
-        direct = false
         foam_variable = T
         v = T_value
         boundary = 'left'
     []
     [temp_r]
         type=FoamTestBC
-        direct = false
         foam_variable = T
         v = T_value
         boundary = 'right'

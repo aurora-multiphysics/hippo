@@ -145,7 +145,6 @@ although the default is the thermal conductivity `kappa`, which is what we requi
 [FoamBCs]
     [solid_heat_flux]
         type = FoamDiffusionFluxBC
-        direct = false
         foam_variable = T
     []
 []
