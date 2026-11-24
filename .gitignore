@@ -153,6 +153,10 @@ moose/include/base/Precompiled.h.gch
 # OpenFOAM mesh object files
 test/**/*.obj
 
+# Generated static geometry for test readers
+test/tests/**/constant/C
+test/tests/**/constant/Cc[x-z]
+
 # downloaded mesh tarballs
 test/tests/**/*.tar.gz
 !**/gold/*.tar.gz

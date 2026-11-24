@@ -18,12 +18,12 @@ FoamFixedGradientBC::validParams()
 }
 
 FoamFixedGradientBC::FoamFixedGradientBC(const InputParameters & parameters)
-  : FoamVariableBCBase(parameters, FoamBCType::fixedGradient)
+  : FoamVariableBCBase(parameters)
 {
 }
 
 void
-FoamFixedGradientBC::imposeBoundaryCondition()
+FoamFixedGradientBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   // TODO: replace with BoundaryRestriction member functions once FoamMesh is updated
@@ -37,6 +37,6 @@ FoamFixedGradientBC::imposeBoundaryCondition()
         getFoamMesh().getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
     assert(grad_array.size() == static_cast<size_t>(foam_gradient.size()));
 
-    std::copy(grad_array.begin(), grad_array.end(), foam_gradient.begin());
+    updateBC(foam_gradient, grad_array, initialisation);
   }
 }

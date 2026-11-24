@@ -1,0 +1,14 @@
+/reference/
+/reference_values.npz
+/coupled/
+/spatial/
+/parallel/
+/converted/
+/conversion_reference/
+/restart/
+/nonphase/
+/invalid/
+
+/foam/
+
+!/template/constant/wallBoiling-saturation.csv

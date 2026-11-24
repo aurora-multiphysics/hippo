@@ -1,0 +1,84 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      phaseProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+phases (gas liquid);
+
+gas
+{
+    type            purePhaseModel;
+
+    diameterModel
+    {
+        type            IATE;
+
+        dMax            1e-2;
+        dMin            1e-4;
+
+        residualAlpha   1e-4;
+
+        sources
+        (
+            wakeEntrainmentCoalescence
+            {
+                Cwe             0.002;
+            }
+
+            randomCoalescence
+            {
+                Crc             0.04;
+                C               3;
+                alphaMax        0.75;
+            }
+
+            turbulentBreakUp
+            {
+                Cti             0.085;
+                WeCr            6;
+            }
+        );
+    }
+
+    residualAlpha   1e-6;
+}
+
+liquid
+{
+    type            purePhaseModel;
+
+    diameterModel   none;
+
+    residualAlpha   1e-6;
+}
+
+blending
+{
+    default
+    {
+        type            continuous;
+        phase           liquid;
+    }
+}
+
+surfaceTension
+{
+    gas_liquid
+    {
+        type            constant;
+        sigma           0.00176574;
+    }
+}
+
+// ************************************************************************* //

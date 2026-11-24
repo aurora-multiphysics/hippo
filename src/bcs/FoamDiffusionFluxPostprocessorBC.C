@@ -18,8 +18,7 @@ FoamDiffusionFluxPostprocessorBC::validParams()
 }
 
 FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputParameters & params)
-  : FoamPostprocessorBCBase(params, FoamBCType::fixedGradient),
-    _diffusivity(getParam<std::string>("diffusivity"))
+  : FoamPostprocessorBCBase(params), _diffusivity(getParam<std::string>("diffusivity"))
 {
   if (!getFvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {
@@ -28,7 +27,7 @@ FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputPa
 }
 
 void
-FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
+FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition(bool initialisation)
 {
   // Get subdomains this FoamBC acts on
   auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
@@ -51,6 +50,6 @@ FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
         Foam::returnReduce(Foam::sum(coeff * area), Foam::sumOp<Foam::scalar>()) / total_area;
 
     // set gradient
-    std::fill(foam_gradient.begin(), foam_gradient.end(), _pp_value / coeff_bulk);
+    updateBC(foam_gradient, _pp_value / coeff_bulk, initialisation);
   }
 }
