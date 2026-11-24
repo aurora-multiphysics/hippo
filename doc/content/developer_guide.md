@@ -18,19 +18,20 @@ The accessor does not convert physical quantities: gradient storage still holds
 gradients, and any heat-flux conversion belongs to the provider.
 
 `FoamProblem::getFieldAccessor<T>(name)` resolves an accessor by the exposing
-object's name. `registerField(name, accessor)` gives the registry unique ownership
-of that accessor. Duplicate registered names and mismatched field types report
-errors. There are no provider keys or aliases.
+object's qualified name, such as `FoamVariables/T` or `FoamBCs/T`. Lookup uses
+the exact registered key, short names are not resolved. `registerField(name, accessor)` takes ownership
+of the accessor under the supplied qualified name. Duplicate qualified names
+and mismatched field types report errors.
 
 `registerVolFieldVariable<T>(variable, field)` creates a separate accessor under
-`variable`, borrowing the named OpenFOAM volume field. Multiple objects can wrap
+`FoamVariables/variable`, borrowing the named OpenFOAM volume field. Multiple objects can wrap
 the same volume field: their accessor reference maps are separate, but values
 remain shared. Native field names are not automatically registered or reserved.
 For example, `temperature` may wrap native `T` while a standalone object named
 `T` exposes unrelated buffers; transfers select the registered object name.
 
 The existing transfer parameter `foam_variable` accepts any registered object
-name, including storage supplied by a BC. BCs and future sources must explicitly
+qualified name, including storage supplied by a BC. BCs and future sources must explicitly
 register the storage they expose. Registering an accessor does not automatically
 expose existing BC storage.
 
@@ -195,3 +196,40 @@ A [robot account](https://docs.quay.io/glossary/robot-accounts.html)
 has been set up with write permissions for the Hippo repository.
 This robot account is used to authenticate between Quay and GitHub.
 Contact UKAEA's Quay.io admins (or the RSE team) for support with this account.
+
+## Direct boundary-condition transfers
+
+`FoamFixedValueBC`, `FoamFixedGradientBC` and `FoamDiffusionFluxBC` default to
+`direct = true`. They register a boundary-only accessor under the BC object name.
+A libMesh-to-Foam transfer targets that name through its `foam_variable` parameter,
+without creating an AuxVariable or a separate FoamVariable wrapper.
+
+The writable values are the prescribed patch values, normal gradients or diffusion
+fluxes respectively. Explicit BC boundaries can be physical OpenFOAM patches outside
+the mirrored FoamMesh. Omitting the BC boundary list retains the mirrored-boundary
+default. Transfer boundary selection follows the usual accessor rules.
+
+Set `direct = false` for the existing MOOSE-variable input path. In that mode, `v`
+selects an existing CONSTANT MONOMIAL variable, or an AuxVariable is created with the
+BC object's name. Supplying `v` in direct mode is an error. Existing variable-driven
+inputs must explicitly select `direct = false`. A BC and FoamVariable can share
+an object name, transfers select `foam_variable = FoamBCs/T` or
+`foam_variable = FoamVariables/T`. AuxVariable names must still be distinct,
+use `v` to select an existing input variable when needed.
+Postprocessor-driven BCs retain their existing input behaviour.
+
+Patch replacement finishes before accessors register and before INITIAL transfers.
+Direct BC imposition leaves transferred data untouched, with patch evaluation and
+coefficient updates handled by OpenFOAM. Explicit `initial_condition` initializes the prescribed scalar
+storage before transfers, otherwise compatible patch data is retained and newly
+created storage starts at zero.
+
+`FoamDiffusionFluxBC` uses the `hippoDiffusionFlux` OpenFOAM patch in `include/foam`
+and `src/foam`. Its writable `flux()` field stores the prescribed flux, positive
+into the domain. `updateCoeffs()` computes `gradient = flux / diffusivity` from the
+current named volume field (`kappa` by default), rejecting zero diffusivity.
+For temperature and thermal conductivity, flux is measured in W/m². The patch writes
+`flux`, `diffusivity` and `fluxDimensions` for restart, along with its gradient. Like `fixedGradient`, it omits the boundary
+value and reconstructs it from the internal field and saved gradient when reading.
+Storing dimensions explicitly lets the patch read flux before the solver
+registers its diffusivity field. Clone, mapping and reset operations preserve flux.
