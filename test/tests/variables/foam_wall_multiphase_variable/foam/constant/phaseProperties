@@ -1,0 +1,32 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object phaseProperties;
+}
+
+phases (phase1 phase2);
+phase1
+{
+ type purePhaseModel;
+ diameterModel { type constant; d 0.001; }
+ residualAlpha 1e-6;
+}
+phase2
+{
+ type purePhaseModel;
+ diameterModel { type constant; d 0.001; }
+ residualAlpha 1e-6;
+}
+blending
+{
+ default
+ {
+  type linear;
+  minFullyContinuousAlpha.phase1 0.7;
+  minPartlyContinuousAlpha.phase1 0.3;
+  minFullyContinuousAlpha.phase2 0.7;
+  minPartlyContinuousAlpha.phase2 0.3;
+ }
+}
+surfaceTension {}

@@ -1,0 +1,25 @@
+EXE_INC = \
+    -I$(FOAM_MODULES)/multiphaseEuler/lnInclude \
+    -I$(FOAM_MODULES)/basicFluidSolver/lnInclude \
+    -I$(FOAM_MODULES)/multiphaseEuler/phaseSystem/lnInclude \
+    -I$(FOAM_MODULES)/multiphaseEuler/populationBalance/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/sampling/lnInclude \
+    -I$(LIB_SRC)/physicalProperties/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/twoPhaseModels/twoPhaseMixture/lnInclude \
+    -I$(LIB_SRC)/twoPhaseModels/compressibleTwoPhases/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/compressible/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/phaseCompressible/lnInclude
+
+LIB_LIBS = \
+    -lmultiphaseEulerSolver \
+    -lbasicFluidSolver \
+    -lpopulationBalance \
+    -lmultiphaseEulerMomentumTransportModels \
+    -lmultiphaseEulerThermophysicalTransportModels \
+    -lmultiphaseEulerReactions \
+    -lfvModels \
+    -lfvConstraints

@@ -1,0 +1,8 @@
+/foam/[1-9]*/
+/foam/0.*/
+/foam/processor*/
+/foam/constant/polyMesh/
+/foam/postProcessing/
+/foam/log*
+/foam/*.foam
+!/foam/constant/wallBoiling-saturation.csv

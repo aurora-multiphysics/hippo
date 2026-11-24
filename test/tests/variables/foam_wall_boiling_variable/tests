@@ -1,0 +1,52 @@
+[Tests]
+  [boiling]
+    [setup]
+      type = RunCommand
+      command = 'bash prep.sh'
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      min_parallel = 1
+      max_parallel = 1
+      prereq = boiling/setup
+    []
+    [wall_boiling_serial]
+        type = RunCommand
+        command = 'foamPostProcess -case foam -solver multiphaseEuler -time 0.0009,0.001 -funcs "(wallBoilingProperty(qEvaporative) wallBoilingProperty(qQuenching))"'
+        prereq = boiling/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      prereq = boiling/wall_boiling_serial
+    []
+    [setup_parallel]
+      type = RunCommand
+      command = 'bash prep.sh'
+      prereq = boiling/verify
+    []
+    [run_parallel]
+      type = RunApp
+      input = main.i
+      min_parallel = 4
+      max_parallel = 4
+      prereq = boiling/setup_parallel
+    []
+    [reconstruct]
+      type = RunCommand
+      command = 'reconstructPar -case foam -time "0.0009,0.001"'
+      prereq = boiling/run_parallel
+    []
+    [wall_boiling_parallel]
+        type = RunCommand
+        command = 'foamPostProcess -case foam -solver multiphaseEuler -time 0.0009,0.001 -funcs "(wallBoilingProperty(qEvaporative) wallBoilingProperty(qQuenching))"'
+        prereq = boiling/reconstruct
+    []
+    [verify_parallel]
+      type = PythonUnitTest
+      input = test.py
+      prereq = boiling/wall_boiling_parallel
+    []
+  []
+[]

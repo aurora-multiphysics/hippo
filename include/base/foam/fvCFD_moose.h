@@ -49,5 +49,9 @@
 #include <functionObjects/field/wallHeatFlux/wallHeatFlux.H>
 #include <functionObjects/field/wallShearStress/wallShearStress.H>
 
+// WallQuantitiesMultiphaseEuler.h
+#include <phaseSystem.H>
+#include <wallBoilingPhaseChangeRateFvPatchScalarField.H>
+
 #undef NotImplemented
 #undef FunctionName

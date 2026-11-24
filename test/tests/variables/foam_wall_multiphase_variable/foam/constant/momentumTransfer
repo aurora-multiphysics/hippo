@@ -1,0 +1,12 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object momentumTransfer;
+}
+
+drag {}
+virtualMass {}
+lift {}
+wallLubrication {}
+turbulentDispersion {}

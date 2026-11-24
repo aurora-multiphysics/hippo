@@ -1,0 +1,42 @@
+FoamFile
+{
+    format ascii;
+    class volScalarField;
+    object alpha.phase1;
+}
+
+dimensions [0 0 0 0 0 0 0];
+internalField uniform 0.25;
+boundaryField
+{
+    left
+    {
+        type fixedValue;
+        value uniform 0.25;
+    }
+    right
+    {
+        type fixedValue;
+        value uniform 0.25;
+    }
+    bottom
+    {
+        type fixedValue;
+        value uniform 0.25;
+    }
+    top
+    {
+        type fixedValue;
+        value uniform 0.25;
+    }
+    back
+    {
+        type fixedValue;
+        value uniform 0.25;
+    }
+    front
+    {
+        type fixedValue;
+        value uniform 0.25;
+    }
+}

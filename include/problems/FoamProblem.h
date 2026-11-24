@@ -3,7 +3,7 @@
 #include "FoamMesh.h"
 #include "FoamPostprocessorBase.h"
 #include "FoamSolver.h"
-#include "FoamVariableField.h"
+#include "FoamFieldBase.h"
 #include "FoamBCBase.h"
 
 #include <ExternalProblem.h>
@@ -49,7 +49,7 @@ protected:
   FoamMesh * _foam_mesh = nullptr;
   Hippo::FoamSolver _solver;
 
-  std::vector<FoamVariableField *> _foam_variables;
+  std::vector<FoamFieldBase *> _foam_variables;
   std::vector<FoamBCBase *> _foam_bcs;
   std::vector<FoamPostprocessorBase *> _foam_postprocessor;
 };

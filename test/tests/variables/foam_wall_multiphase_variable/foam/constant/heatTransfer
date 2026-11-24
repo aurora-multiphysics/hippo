@@ -1,0 +1,6 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object heatTransfer;
+}

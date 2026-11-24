@@ -1,7 +1,6 @@
 #include "AddFoamVariableAction.h"
-#include "FoamProblem.h"
-#include "FoamVariableField.h"
-#include "hippoUtils.h"
+#include "FEProblemBase.h"
+#include "FoamFieldBase.h"
 
 #include "InputParameters.h"
 #include "MooseObjectAction.h"
@@ -31,7 +30,7 @@ AddFoamVariableAction::act()
   {
     createAuxVariable();
 
-    _problem->addObject<FoamVariableField>(_type, _name, _moose_object_pars, false);
+    _problem->addObject<FoamFieldBase>(_type, _name, _moose_object_pars, false);
   }
 }
 

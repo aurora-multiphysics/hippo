@@ -1,0 +1,35 @@
+[Tests]
+    [transfer_test]
+        [setup]
+            type = RunCommand
+            command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam -force"'
+        []
+        [run]
+            type = RunApp
+            input = main.i
+            prereq = transfer_test/setup
+        []
+        [verify]
+            type = PythonUnitTest
+            input = test.py
+            prereq = transfer_test/run
+        []
+        [run_parallel]
+            type = RunApp
+            input = main.i
+            prereq = transfer_test/setup
+            min_parallel=4
+            max_parallel=4
+        []
+        [reconstruct]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case foam"'
+            prereq = transfer_test/run_parallel
+        []
+        [verify_parallel]
+            type = PythonUnitTest
+            input = test.py
+            prereq = transfer_test/run_parallel
+        []
+    []
+[]

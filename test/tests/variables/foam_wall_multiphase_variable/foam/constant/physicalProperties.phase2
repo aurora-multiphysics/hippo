@@ -1,0 +1,24 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    object physicalProperties.phase2;
+}
+
+thermoType
+{
+    type heRhoThermo;
+    mixture pureMixture;
+    transport const;
+    thermo hConst;
+    equationOfState rhoConst;
+    specie specie;
+    energy sensibleEnthalpy;
+}
+mixture
+{
+    specie { molWeight 1; }
+    thermodynamics { Cp 1; Hf 0; Tref 0; }
+    equationOfState { rho 1; }
+    transport { mu 3; Pr 1; }
+}

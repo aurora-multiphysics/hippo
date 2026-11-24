@@ -10,6 +10,8 @@ ADDITIONAL_LIBS := -L$(FOAM_LIB_DIR) \
     -lfvConstraints \
     -lmeshTools \
     -lfieldFunctionObjects \
+    -lmultiphaseEulerFvModels \
+    -lphaseSystem \
     $(ADDITIONAL_LIBS)
 
 ADDITIONAL_INCLUDES := \
@@ -20,10 +22,17 @@ ADDITIONAL_INCLUDES := \
     -isystem $(FOAM_INCLUDE_ROOT)/OpenFOAM/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/MomentumTransportModels/momentumTransportModels/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluidThermo/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/fluid/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/ThermophysicalTransportModels/thermophysicalTransportModel/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/MomentumTransportModels/compressible/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/physicalProperties/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/thermophysicalModels/basic/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/twoPhaseModels/compressibleTwoPhases/lnInclude/ \
+    -isystem $(FOAM_INCLUDE_ROOT)/twoPhaseModels/twoPhaseMixture/lnInclude/ \
+    -isystem $(FOAM_INCLUDE_ROOT)/fvModels/general/lnInclude/ \
+    -isystem $(FOAM_INCLUDE_ROOT)/../applications/modules/multiphaseEuler/phaseSystem/lnInclude \
+    -isystem $(FOAM_INCLUDE_ROOT)/../applications/modules/multiphaseEuler/fvModels/lnInclude \
     -isystem $(FOAM_INCLUDE_ROOT)/OSspecific/POSIX/lnInclude \
     $(ADDITIONAL_INCLUDES)
 
