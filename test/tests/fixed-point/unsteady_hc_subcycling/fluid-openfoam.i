@@ -15,7 +15,7 @@
 
 [FoamVariables]
     [wall_temp_monomial]
-        type = FoamVariableField
+        type = FoamScalarVariable
         foam_variable = 'T'
         initial_condition = 0.075
     []

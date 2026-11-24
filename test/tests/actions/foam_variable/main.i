@@ -14,7 +14,7 @@
 
 [FoamVariables]
     [T_shadow]
-        type = FoamVariableField
+        type = FoamScalarVariable
         foam_variable = 'T'
     []
 []

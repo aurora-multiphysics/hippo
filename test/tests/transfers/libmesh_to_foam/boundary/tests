@@ -1,0 +1,96 @@
+[Tests]
+  [shape_evaluation]
+    [setup_serial]
+      type = RunCommand
+      command = 'bash ../setup.sh serial shape'
+    []
+    [run_serial]
+      type = RunApp
+      input = main.i
+      prereq = shape_evaluation/setup_serial
+      min_parallel = 1
+      max_parallel = 1
+      requirement = 'Hippo shall transfer current scalar values to explicitly selected native boundaries at each timestep.'
+    []
+    [verify_serial]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_shape
+      prereq = shape_evaluation/run_serial
+    []
+    [setup_mpi_4_2]
+      type = RunCommand
+      command = 'bash ../setup.sh mpi_4_2 shape'
+      prereq = nearest_nodes/verify
+    []
+    [run_mpi_4_2]
+      type = RunApp
+      input = main.i
+      cli_args = 'MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2'
+      prereq = shape_evaluation/setup_mpi_4_2
+      min_parallel = 4
+      max_parallel = 4
+      requirement = 'Hippo shall transfer to explicitly selected boundaries across partitions when only a subset of parent ranks hosts the child.'
+    []
+    [reconstruct_mpi_4_2]
+      type = RunCommand
+      command = "reconstructPar -case child_case -time '1,2,3' -fields '(transferField)'"
+      prereq = shape_evaluation/run_mpi_4_2
+    []
+    [verify_mpi_4_2]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_shape
+      prereq = shape_evaluation/reconstruct_mpi_4_2
+    []
+  []
+  [nearest_nodes]
+    [setup]
+      type = RunCommand
+      command = 'bash ../setup.sh serial nearest'
+      prereq = shape_evaluation/verify_serial
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      cli_args = 'AuxVariables/source/family=LAGRANGE AuxVariables/source/order=FIRST Transfers/to_foam/evaluation_method=nearest_location Transfers/to_foam/source_type=nodes'
+      prereq = nearest_nodes/setup
+      min_parallel = 1
+      max_parallel = 1
+      requirement = 'Hippo shall transfer current nearest nodal values to native OpenFOAM boundary fields on a nonmatching destination mesh.'
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_nearest_nodes
+      prereq = nearest_nodes/run
+    []
+  []
+  [nearest_centroids]
+    [setup]
+      type = RunCommand
+      command = 'bash ../setup.sh mpi_4_2 nearest'
+      prereq = shape_evaluation/verify_mpi_4_2
+    []
+    [run]
+      type = RunApp
+      input = main.i
+      cli_args = 'MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2 Transfers/to_foam/evaluation_method=nearest_location Transfers/to_foam/num_nearest_points=2'
+      prereq = nearest_centroids/setup
+      min_parallel = 4
+      max_parallel = 4
+      requirement = 'Hippo shall use elemental default sampling and average the globally nearest two source centroids into native OpenFOAM boundary fields with only a subset of parent ranks hosting the child.'
+    []
+    [reconstruct]
+      type = RunCommand
+      command = "reconstructPar -case child_case -time '1,2,3' -fields '(transferField)'"
+      prereq = nearest_centroids/run
+    []
+    [verify]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_nearest_centroids
+      prereq = nearest_centroids/reconstruct
+    []
+  []
+[]

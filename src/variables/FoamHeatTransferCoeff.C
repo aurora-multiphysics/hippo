@@ -28,7 +28,7 @@ FoamHeatTransferCoeff::validParams()
 FoamHeatTransferCoeff::FoamHeatTransferCoeff(const InputParameters & params)
   : FoamWallVariableBase(params), _t_bulk_uo_name()
 {
-  const auto & boundaries = getParam<std::vector<SubdomainName>>("boundary");
+  const auto & boundaries = getParam<std::vector<BoundaryName>>("boundary");
   const auto & t_bulks = getParam<std::vector<UserObjectName>>("bulk_temperature_uo");
 
   if (t_bulks.size() != boundaries.size())

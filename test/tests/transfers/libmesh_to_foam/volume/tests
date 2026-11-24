@@ -1,0 +1,78 @@
+[Tests]
+  [volume]
+    [setup_serial]
+      type = RunCommand
+      command = 'bash ../setup.sh serial shape'
+    []
+    [run_serial]
+      type = RunApp
+      input = main.i
+      cli_args = "Transfers/to_foam/foam_boundaries=''"
+      prereq = volume/setup_serial
+      min_parallel = 1
+      max_parallel = 1
+      requirement = 'Hippo shall transfer current source values at cell centres into an internal field without modifying boundaries when volume-only transfer is requested.'
+    []
+    [verify_serial]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_volume_shape
+      prereq = volume/run_serial
+    []
+    [setup_mpi_4_2]
+      type = RunCommand
+      command = 'bash ../setup.sh mpi_4_2 shape'
+      prereq = volume/verify_serial
+    []
+    [run_combined_mpi_4_2]
+      type = RunApp
+      input = main.i
+      cli_args = 'MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2'
+      prereq = volume/setup_mpi_4_2
+      min_parallel = 4
+      max_parallel = 4
+      requirement = 'Hippo shall transfer volume and default physical-boundary values collectively when only a subset of parent ranks hosts the child.'
+    []
+    [reconstruct]
+      type = RunCommand
+      command = "reconstructPar -case child_case -time '1,2,3' -fields '(transferField)'"
+      prereq = volume/run_combined_mpi_4_2
+    []
+    [verify_combined]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_volume_and_boundaries
+      prereq = volume/reconstruct
+    []
+    [missing_internal]
+      type = RunException
+      input = main.i
+      cli_args = "Transfers/to_foam/foam_variable=FoamVariables/boundary_only Transfers/to_foam/foam_boundaries='' MultiApps/receiver/min_procs_per_app=2 MultiApps/receiver/max_procs_per_app=2"
+      expect_err = "Receiving accessor 'FoamVariables/boundary_only' has no internal field."
+      prereq = volume/verify_combined
+      min_parallel = 4
+      max_parallel = 4
+      requirement = 'Hippo shall report missing receiving internal storage collectively, including on ranks without the child.'
+    []
+    [setup_nearest]
+      type = RunCommand
+      command = 'bash ../setup.sh serial shape'
+      prereq = volume/missing_internal
+    []
+    [run_nearest]
+      type = RunApp
+      input = main.i
+      cli_args = "Transfers/to_foam/foam_boundaries='' Transfers/to_foam/evaluation_method=nearest_location Transfers/to_foam/source_type=nodes"
+      prereq = volume/setup_nearest
+      min_parallel = 1
+      max_parallel = 1
+      requirement = 'Hippo shall transfer nearest nodal values into cell-centred internal storage on a nonmatching destination mesh.'
+    []
+    [verify_nearest]
+      type = PythonUnitTest
+      input = test.py
+      test_case = TestTransfer.test_volume_nearest_nodes
+      prereq = volume/run_nearest
+    []
+  []
+[]

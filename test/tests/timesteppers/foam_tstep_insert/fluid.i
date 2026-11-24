@@ -20,7 +20,7 @@
 
 [FoamVariables]
   [foam_T]
-    type = FoamVariableField
+    type = FoamScalarVariable
     foam_variable = T
   []
   [foam_hf]

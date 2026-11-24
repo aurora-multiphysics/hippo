@@ -1,19 +1,19 @@
 #pragma once
 
-#include "FoamVariableField.h"
+#include "FoamVariable.h"
 #include "functionObject.H"
 
 #include <volFields.H>
 
 // Class for mirroring functionObjects
-class FoamFunctionObject : public FoamVariableField
+class FoamFunctionObject : public FoamScalarVariable
 {
 public:
+  static InputParameters validParams();
   explicit FoamFunctionObject(const InputParameters & params);
 
-  // function that executes functionObject and transfers variable from
-  // OpenFOAM variable to MOOSE
-  virtual void transferVariable();
+  /// Execute the function object and optionally mirror its field into MOOSE.
+  void syncVariable() override;
 
   // Destroys functionObject pointer
   ~FoamFunctionObject() { delete _shadow_fo; };

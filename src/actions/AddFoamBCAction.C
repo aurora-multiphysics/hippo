@@ -33,7 +33,7 @@ AddFoamBCAction::act()
   // Adding BCs using [FoamBC] syntax
   if (_current_task == "add_foam_bc")
   {
-    // Do not create aux variable if variable provided.
+    // Do not create aux variable if variable provided
     if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
 

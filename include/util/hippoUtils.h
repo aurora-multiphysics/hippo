@@ -2,10 +2,13 @@
 
 #include "MooseError.h"
 #include "MooseTypes.h"
+#include "SystemBase.h"
 #include "MooseVariableFieldBase.h"
 #include "FoamMesh.h"
 #include <InputParameters.h>
 #include <string>
+#include <vector>
+#include "pTraits.H"
 
 namespace Hippo
 {
@@ -25,6 +28,24 @@ getDemangleName()
 
 namespace internal
 {
+/// Construct an OpenFOAM value in its native component order, requiring an exact component count.
+template <typename T>
+inline T
+fromComponents(const std::vector<Real> & components)
+{
+  if (components.size() != Foam::pTraits<T>::nComponents)
+    mooseError("Expected ",
+               static_cast<unsigned int>(Foam::pTraits<T>::nComponents),
+               " component(s), received ",
+               components.size(),
+               ".");
+
+  T value = Foam::pTraits<T>::zero;
+  for (Foam::direction i = 0; i < Foam::pTraits<T>::nComponents; ++i)
+    Foam::setComponent(value, i) = components[i];
+  return value;
+}
+
 template <typename T>
 inline void
 copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)

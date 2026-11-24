@@ -32,4 +32,50 @@
             prereq = transfer_test/run_parallel
         []
     []
+    [owned_storage]
+        type = RunApp
+        input = owned.i
+        prereq = 'transfer_test/verify transfer_test/verify_parallel transfer_test/reconstruct'
+        max_parallel = 1
+    []
+    [vector_mirroring]
+        type = RunException
+        input = owned.i
+        cli_args = "FoamVariables/vector_storage/create_aux_variable=true"
+        expect_err = 'Vector boundary mirroring is not supported'
+        prereq = owned_storage
+        max_parallel = 1
+    []
+    [missing_storage]
+        type = RunException
+        input = owned.i
+        cli_args = "FoamVariables/internal_only/volume=false"
+        expect_err = 'Select at least one boundary or enable volume storage'
+        prereq = owned_storage
+        max_parallel = 1
+    []
+    [missing_mirrored_boundary]
+        type = RunException
+        input = owned.i
+        cli_args = "FoamVariables/internal_only/create_aux_variable=true"
+        expect_err = 'Boundary mirroring requires at least one exposed boundary'
+        prereq = owned_storage
+        max_parallel = 1
+    []
+    [allocation_with_wrapped_field]
+        type = RunException
+        input = owned.i
+        cli_args = "FoamVariables/internal_only/foam_variable=T"
+        expect_err = 'boundary and volume only apply to owned storage'
+        prereq = owned_storage
+        max_parallel = 1
+    []
+    [invalid_components]
+        type = RunException
+        input = owned.i
+        cli_args = "FoamVariables/vector_storage/initial_condition=1"
+        expect_err = 'Expected 3 component'
+        prereq = owned_storage
+        max_parallel = 1
+    []
 []

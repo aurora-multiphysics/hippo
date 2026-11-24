@@ -13,6 +13,6 @@ public:
   virtual void act() override;
 
 protected:
-  // Create AuxVariable associated with new-style variable shadowing
+  /// Create the boundary AuxVariable used for mirroring.
   void createAuxVariable();
 };

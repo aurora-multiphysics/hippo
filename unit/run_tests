@@ -8,10 +8,10 @@ fi
 
 if [ -e ./unit/$APPLICATION_NAME-unit-$METHOD ]
 then
-  ./unit/$APPLICATION_NAME-unit-$METHOD
+  ./unit/$APPLICATION_NAME-unit-$METHOD "$@"
 elif [ -e ./$APPLICATION_NAME-unit-$METHOD ]
 then
-  ./$APPLICATION_NAME-unit-$METHOD
+  ./$APPLICATION_NAME-unit-$METHOD "$@"
 else
   echo "Executable missing!"
   exit 1

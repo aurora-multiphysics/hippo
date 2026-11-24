@@ -1,4 +1,4 @@
-#include "FoamVariableField.h"
+#include "FoamVariable.h"
 #include "FoamMesh.h"
 #include "FoamFunctionObject.h"
 #include "InputParameters.h"
@@ -10,7 +10,15 @@
 
 registerMooseObject("hippoApp", FoamFunctionObject);
 
-FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamVariableField(params)
+InputParameters
+FoamFunctionObject::validParams()
+{
+  auto params = FoamScalarVariable::validParams();
+  params.addRequiredParam<std::string>("foam_variable", "Function-object field to mirror.");
+  return params;
+}
+
+FoamFunctionObject::FoamFunctionObject(const InputParameters & params) : FoamScalarVariable(params)
 {
   // construct input Foam dictionary for the functionObject
   auto fo_dict = getFoamTime().controlDict().lookupOrDefault(_foam_variable, Foam::dictionary());
@@ -48,9 +56,9 @@ FoamFunctionObject::_getFunctionObject(Foam::dictionary fo_dict)
 }
 
 void
-FoamFunctionObject::transferVariable()
+FoamFunctionObject::syncVariable()
 {
-  // execute functionObject before transfer
+  // Update the function-object field before optional mirroring.
   _shadow_fo->execute();
-  FoamVariableField::transferVariable();
+  FoamScalarVariable::syncVariable();
 }

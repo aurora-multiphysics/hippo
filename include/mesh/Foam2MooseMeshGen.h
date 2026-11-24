@@ -147,7 +147,7 @@ private:
   // so far only support quad elements so this is always
   // [0,4,8,12,...,4n,...]
   HippoPtr<int32_t> _face_offset;
-  // subdomin of each face - TODO: this is != patch_id from openFOAM
+  // OpenFOAM patch ID used as the subdomain ID of each face.
   HippoPtr<int32_t> _face_subdom;
   // rank each face belongs to
   HippoPtr<int32_t> _face_rank;
