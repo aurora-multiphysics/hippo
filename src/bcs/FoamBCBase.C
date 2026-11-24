@@ -96,8 +96,10 @@ FoamBCBase::FoamBCBase(const InputParameters & params, const FoamBCType bc_type)
   {
     if (getFoamMesh().foamHasObject<Foam::volScalarField>(_foam_variable))
       constructFoamScalarPatch(subdomain, bc_type);
+    else if (getFoamMesh().foamHasObject<Foam::volVectorField>(_foam_variable))
+      constructFoamVectorPatch(subdomain, bc_type);
     else
-      mooseError("Variable must have type scalar.");
+      mooseError("Variable must have type scalar or vector.");
   }
 }
 
