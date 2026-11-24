@@ -11,10 +11,15 @@
       max_parallel = 1
       prereq = boiling/setup
     []
+    [wall_boiling_serial]
+        type = RunCommand
+        command = 'foamPostProcess -case foam -solver multiphaseEuler -time 0.0009,0.001 -funcs "(wallBoilingProperty(qEvaporative) wallBoilingProperty(qQuenching))"'
+        prereq = boiling/run
+    []
     [verify]
       type = PythonUnitTest
       input = test.py
-      prereq = boiling/run
+      prereq = boiling/wall_boiling_serial
     []
     [setup_parallel]
       type = RunCommand
@@ -33,10 +38,15 @@
       command = 'reconstructPar -case foam -time "0.0009,0.001"'
       prereq = boiling/run_parallel
     []
+    [wall_boiling_parallel]
+        type = RunCommand
+        command = 'foamPostProcess -case foam -solver multiphaseEuler -time 0.0009,0.001 -funcs "(wallBoilingProperty(qEvaporative) wallBoilingProperty(qQuenching))"'
+        prereq = boiling/reconstruct
+    []
     [verify_parallel]
       type = PythonUnitTest
       input = test.py
-      prereq = boiling/reconstruct
+      prereq = boiling/wall_boiling_parallel
     []
   []
 []

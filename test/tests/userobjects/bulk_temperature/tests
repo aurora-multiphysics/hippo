@@ -1,11 +1,12 @@
 [Tests]
-  requirements = 'Adjacent cell and fixed bulk temperature calculations work correctly for HTC calculations'
   [fixed_bulk_tests]
     type = CSVDiff
     input = fixed_bulk_temperature.i
     csvdiff = fixed_bulk_temperature_out.csv
+    requirement = 'This system shall have fixed bulk temperature for HTC calculations'
   []
   [adjacent_bulk_tests]
+    requirement = 'The system shall have the ability to query the bulk temperature of an adjacent fluid cell.'
     [setup]
       type = RunCommand
       command = 'bash -c "foamCleanCase -case adjacent_cell && blockMesh -case adjacent_cell && decomposePar -case adjacent_cell"'

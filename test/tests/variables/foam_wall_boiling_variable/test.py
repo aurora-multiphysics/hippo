@@ -1,7 +1,6 @@
 """Check imposed mixture heat flux while the real wall-boiling model is active."""
 
 from pathlib import Path
-import subprocess
 import unittest
 
 import numpy as np
@@ -20,23 +19,7 @@ def get_nearest_time(times: list[float], time: float) -> float:
 
 class TestBoilingWallHeatFlux(unittest.TestCase):
     def test_heat_flux(self):
-        root = Path(__file__).resolve().parent
-        # Hippo does not execute controlDict function objects during its solve loop.
         # Read the saved model state without advancing it, using OpenFOAM's exporter.
-        subprocess.run(
-            [
-                "foamPostProcess",
-                "-case",
-                str(root / "foam"),
-                "-solver",
-                "multiphaseEuler",
-                "-time",
-                ",".join(f"{time:g}" for time in FOAM_TIMES),
-                "-funcs",
-                "(wallBoilingProperty(qEvaporative) wallBoilingProperty(qQuenching))",
-            ],
-            check=True,
-        )
         exodus = pv.ExodusIIReader("main_out.e")
 
         foam_path = Path("foam/case.foam")

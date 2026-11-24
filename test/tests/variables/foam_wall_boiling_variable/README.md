@@ -1,21 +1,24 @@
 # Boiling wall heat flux
 
 This integration test derives from the OpenFOAM 14
-`tutorials/multiphaseEuler/wallBoilingIATE` case. It runs the real
-`multiphaseEuler` solver, including IATE, wall boiling, bulk phase change,
-and the tutorial's turbulence, thermophysical transport models and thermodynamic property tables.
+`tutorials/multiphaseEuler/wallBoilingIATE` case. It runs the `multiphaseEuler`
+solver, including the interfacial area transport equation (IATE) with wall
+boiling, bulk phase change, and the models for turbulence and thermophysical
+transport from the tutorial.
 
-Both phases use `multiphaseExternalTemperature` on `wall`, specifying the
-same total mixture heat flux of **73890 W/m²**. The two specifications do
-not double the heat input.
+The heat flux is imposed by using `multiphaseExternalTemperature` on `wall` for
+both phases, a heat flux of 73890 W/m2 is specified for each, which OpenFOAM
+then partitions between the two.
 
 ## Short startup
 
-The original tutorial delays heating until 0.5 s. Here heat is applied
-immediately. The last two steps, 0.0009 and 0.001 s, are checked.
-This is a short transient regression, not a converged physical validation
-of the tutorial's boiling correlations or heat-flux partition.
-The checks require measurable boiling and detect double counting of the boiling heat flux.
+We apply heat immediately, as opposed to the tutorial which delays heating until 0.5s.
+The heat flux takes some time to converge and then we check the final two
+timesteps (0.0009s and 0.001s).
+
+We check that:
+- there was substantial boiling.
+- the heat flux copied by hippo to the patch is the value we imposed.
 
 ## Running
 
